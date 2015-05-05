@@ -1,0 +1,14 @@
+Package: rfml
+Type: Package
+Title: Wrapper for the MarkLogic REST api
+Version: 0.1
+Date: 2015-03-18
+Author: Mats Stellwall [aut, cre]
+Authors@R: person("Mats", "Stellwall", email = "mats.stellwall@gmail.com",
+                  role = c("aut", "cre"))
+Description: Wrapper for the MarkLogic REST api
+License: MIT
+LazyData: TRUE
+Imports: httr,
+    PKI,
+    XML
