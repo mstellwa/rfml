@@ -4,6 +4,7 @@
 #' @name rfml
 #' @import XML
 #' @import httr
+#' @import PKI
 NULL
 
 # A package specific enviroment, used to store the RSA key
@@ -18,7 +19,7 @@ rfml.env <- new.env(parent = emptyenv())
 #' @return If successful a rfml object to use in subsequent operations.
 #' @examples
 #' \dontrun{
-#' rfml <- rfml.create("localhost","8000", "admin", "admin")
+#' rfml <- rfml_connect("localhost","8000", "admin", "admin")
 #' }
 #'
 #' @export rfml_connect
@@ -26,7 +27,7 @@ rfml.env <- new.env(parent = emptyenv())
 rfml_connect <- function(host = "localhost", port = "8000",
                         username = "admin", password = "admin") {
 
-  # We encrypt the password before storing it in the list, that is
+  # We encrypt the password before storing it in the list that is
   # visible for the package user.
   # The key is stored in a package specific enviroment, created at the top
   # of this file.

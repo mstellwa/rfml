@@ -10,7 +10,7 @@
 #' @examples
 #' \dontrun{
 #' library(rfml)
-#' con <- rfml.create("localhost","8000", "myuser", "mypassword")
+#' con <- rfml_connect("localhost","8000", "myuser", "mypassword")
 #' df <- query_string(con, "india AND sweden")
 #' df <- query_string(con, "india AND sweden", "mycollection,myothercollection", "/inmydirectory")
 #' }
@@ -41,7 +41,7 @@ query_string <- function(con, query="", collection = "", directory = "", results
     }
   }
 
-  mlHost <- paste("http://", host, ":", port, sep="")
+  mlHost <- paste("http://", con$host, ":", con$port, sep="")
   mlSearchURL <- paste(mlHost, "/LATEST/search", sep="")
   mlOptions <- "ml-r-options"
   nStart=1

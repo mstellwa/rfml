@@ -44,7 +44,7 @@
   if (status_code == 404) {
     # 404 Not found
     return(FALSE)
-  } else {
+  } else if (status_code != 200){
     # something else went wrong, could be wrong user etc
     rContent <- content(response)
     errorMsg <- paste("statusCode: ",
@@ -59,4 +59,28 @@
   return(TRUE)
 
 
+}
+
+.parse.multiresponse <- function(content, content_type) {
+  # get all positions with ..
+  positions <- gregexpr("\r\nContent-Type: application/xml", content)
+  # the number of positions
+  y <- positions[[1]][1:length(positions[[1]])]
+  end <- length(y)
+  i <- 1
+  strXML <- ""
+  while (i <= end) {
+    startPos <- y[i]
+    if (i < end) {
+      endPos <- y[i+1]
+    } else {
+      endPos <- nchar(content)
+    }
+    part <- substr(content, startPos, endPos)
+    startXML <- regexpr("<", part)[1]
+    endXML  <- regexpr(">\r", part)[1]
+    strXML <- paste(strXML, substr(part, startXML,endXML), sep = "")
+    i <- i+1
+  }
+  return(strXML)
 }
