@@ -1,14 +1,18 @@
 Package: rfml
 Type: Package
-Title: Wrapper for the MarkLogic REST api
+Title: MarkLogic Server in-database analytics for R
 Version: 0.1
 Date: 2015-03-18
 Author: Mats Stellwall [aut, cre]
 Authors@R: person("Mats", "Stellwall", email = "mats.stellwall@gmail.com",
                   role = c("aut", "cre"))
-Description: Wrapper for the MarkLogic REST api
-License: MIT
+Description: Functionality required to efficiently use R with MarkLogic Server.
+        Many basic and complex R operations are pushed down into the database, which removes
+        the main memory boundary of R and allows to make full use of MarkLogic server.
+License: GPL-3
 LazyData: TRUE
-Imports: httr,
+Imports: methods,
+    httr,
     PKI,
-    XML
+    XML,
+    jsonlite

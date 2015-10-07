@@ -1,0 +1,17 @@
+{"options": {
+  "return-aggregates": "false",
+  "return-constraints": "false",
+  "return-facets": "false",
+  "return-frequencies": "false",
+  "return-metrics": "true",
+  "return-plan": "false",
+  "return-qtext": "true",
+  "return-query": "true",
+  "return-results": "true",
+  "return-similar": "false",
+  "return-values": "true",
+  "transform-results": {
+      "apply": "raw"
+    }
+}
+}

@@ -1,5 +1,5 @@
 .onLoad <- function(libname, pkgname) {
-  rfml.env$dbOk <- FALSE
+  .rfmlEnv$dbOk <- FALSE
 
 }
 
@@ -9,6 +9,6 @@
 
 .onUnload <- function(libpath) {
   # clean up the enviroment
-  rm(list = ls(), envir = rfml.env)
+  #rm(list = ls(), envir = rfml.env)
 
 }

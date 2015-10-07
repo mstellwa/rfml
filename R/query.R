@@ -14,7 +14,7 @@
 #' df <- query_string(con, "india AND sweden")
 #' df <- query_string(con, "india AND sweden", "mycollection,myothercollection", "/inmydirectory")
 #' }
-#' @export query_string
+
 query_string <- function(con, query="", collection = "", directory = "", results = 0) {
 
   if (length(con) != 4) {
@@ -30,14 +30,14 @@ query_string <- function(con, query="", collection = "", directory = "", results
 
   # verify that the database is ok
   # TODO: Need to tidy this up.
-  if (!rfml.env$dbOk) {
+  if (!.rfmlEnv$dbOk) {
     if (!.check.database(mlHost, username, password)) {
       # TODO:Handle not finding the options compared with other http responses
-      rfml.env$dbOk <- FALSE
+      .rfmlEnv$dbOk <- FALSE
       stop(paste("The database on ",mlHost, " is not set up to work with rfml. ",
                "Use init.database for setting up the database.", sep=""))
     } else {
-      rfml.env$dbOk <- TRUE
+      .rfmlEnv$dbOk <- TRUE
     }
   }
 
@@ -143,7 +143,7 @@ query_graph <- function(){
 #' sparql <- paste("SELECT ?person WHERE { ?person <http://example.org/marklogic/predicate/livesIn>",  dQuote("London")," }", sep="")
 #' df <- query_sparql(con, sparql)
 #' }
-#' @export query_sparql
+
 query_sparql <- function(con, sparql="") {
   # options(useFancyQuotes =  FALSE)
   # sparql <- paste("SELECT ?person WHERE { ?person <http://example.org/marklogic/predicate/livesIn>",  dQuote("London")," }", sep="")
@@ -159,7 +159,7 @@ query_sparql <- function(con, sparql="") {
 
   # verify that the database is ok
   # TODO: Need to tidy this up.
-  if (!rfml.env$dbOk) {
+  if (!.rfmlEnv$dbOk) {
 #     if (!.check.database(mlHost, username, password)) {
 #       # TODO:Handle not finding the options compared with other http responses
 #       rfml.env$dbOk <- FALSE

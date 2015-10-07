@@ -1,69 +1,57 @@
 # rfml
 
-rfml is a R package for MarkLogic Server. 
-It uses the REST interfaces to allow using search for retriving data. The data is returned as a data frame with strings.
+rfml is a R package for MarkLogic Server, enabling in-dabase analytics.
 
-Currently this is very experimental and it only works with XML documents so far and rather simple ones.
+It uses the REST interfaces to allow user using search syntax for creating a data.frame similar object, ml.data.frame. There is no data brought back to the client during the creation of the object.
 
-Once you have installed it you will also need to set up a REST server, with a module database, for the MarkLogic database you will use.
+In order to use rfml you need a REST server, with a module database, for the MarkLogic database.
+
+Currently the package is not avalible on CRAN so you need to install it using devtools.
+```R
+if (packageVersion("devtools") < 1.6) {
+  install.packages("devtools")
+}
+devtools::install_github("mstellwa/rfml")
+```
+
+After the package is installed you need to setup the database that is to be used. You need to use a administrator user or a user with rest-admin role or the following privileges; http://marklogic.com/xdmp/privileges/rest-admin, http://marklogic.com/xdmp/privileges/rest-writer, http://marklogic.com/xdmp/privileges/rest-reader.
+
 ```R
 library(rfml)
-# setup the database to be used with rfml, will install query optiones named ml-r-options
-init_database("localhost", "8000", "admin", "admin")
+# setup the database to be used with rfml, will install query options and transformation
+ml.init.database("localhost", "8000", "admin", "admin")
+
+````
+After the setup you can use a standard user.
+```R
 #create a connection
-con <- rfml_connect("localhost","8000", "myuser", "mypassword")
-# run a query
-df <- query_string(con, "india AND sweden")
+ml.connect("localhost","8000", "myuser", "mypassword")
+
+# create a ml.data.frame
+mlDf <- ml.data.frame("försäkringskassan AND kalle")
+# print information for the mlDf object
+mlDf
+# get dimensions
+dim(mlDf)
+# get all column names
+colnames(mlDf)
+
+# pull back the first 6 rows, the returned object is a data.frame
+head(mlDf)
+
+# create a field based on an existing
+mlDf$newField <- df$score
+
+# create a field based on existing
+mlDf$newField2 <- df$score + df$confidence
+
+# create a field based on an previous created
+mlDf$newField3 <- df$newField + 10
+
+mlDf$abs_score <- abs(df$score)
+
+# pull back the whole result, including the previous created fields
+localDf <- as.data.frame(mlDf)
+
 ````
-The result will depend on the XML document. 
-This type of document:
-```XML
-<laureate>
-  <id>703</id>
-  <firstname>Trygve</firstname>
-  <surname>Haavelmo</surname>
-  <born>1911-12-13</born>
-  <died>1999-07-26</died>
-  <gender>male</gender>
-  <year>1989</year>
-  <category>economics</category>
-  <share>1</share>
-  <name>University of Oslo</name>
-  <city>Oslo</city>
-  <country>Norway</country>
-</laureate>
-````
-Will result in a data frame looking like this:
-
-| id | firstname | surname | born | died | gender | category | share | name | city | country |
-| -- | --------- | ------- | -----| ---- | ------ | -------- | ----- | ---- | ---- | ------- |
-| 703 | Trygve | Haavelmo | 1911-12-13 | 1999-07-26 | male | economics | 1 | University of Oslo | Oslo | Norway |
-
-Having nested XML like this:
-```XML
-<laureate>
-  <id>703</id>
-  <firstname>Trygve</firstname>
-  <surname>Haavelmo</surname>
-  <born>1911-12-13</born>
-  <died>1999-07-26</died>
-  <gender>male</gender>
-  <year>1989</year>
-  <category>economics</category>
-  <share>1</share>
-  <name>University of Oslo</name>
-  <city>Oslo</city>
-  <country>Norway</country>
-  <location>
-    <latitude>59.939959</latitude>
-    <longitude>10.72175</longitude>
-  </location>
-</laureate>
-````
-
-Will generate a data frame looking like this:
-
-| id | firstname | surname | born | died | gender | category | share | name | city | country | location |
-| -- | --------- | ------- | -----| ---- | ------ | -------- | ----- | ---- | ---- | ------- | -------- |
-| 703 | Trygve | Haavelmo | 1911-12-13 | 1999-07-26 | male | economics | 1 | University of Oslo | Oslo | Norway | 59.939959-10.72175|
 

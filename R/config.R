@@ -3,7 +3,7 @@
 #' The function installs search options and transformations/mdoules that is needed
 #' in order to use the package. You only needed to run it once for each database.
 #'
-#' The database needs to have a REST server and a module database.
+#' The database must have a REST server and a module database.
 #'
 #' The user that is used for the login must have the  rest-admin role,
 #' or the following privileges:
@@ -18,20 +18,20 @@
 #' @return The function will raise a error...
 #' @examples
 #' \dontrun{
-#' init_database("localhost", "8000", "admin", "admin")
+#' ml.init.database("localhost", "8000", "admin", "admin")
 #' }
-#' @export init_database
-init_database <- function(host = "localhost", port = "8000", adminuser = "admin", password = "admin") {
+#' @export
+ml.init.database <- function(host = "localhost", port = "8000", adminuser = "admin", password = "admin") {
   # general URL, used as basis for all
   mlHost <- paste("http://", host, ":", port, sep="")
 
   # install the needed search options
-  mlSearchOpName <- .insert.search.options(mlHost, adminuser, password)
-  message(paste("Installed ", mlSearchOpName, " in ", host, ":", port, sep=""))
+  if (.insert.search.transform(mlHost, adminuser, password)) {
+    message(paste("Transformation rfmlTransform is now installed on ", host, ":", port, sep=""))
+  }
 
-  # install transformations
-
-  # install modules
-
+  if (.insert.search.options(mlHost, adminuser, password)) {
+    message(paste("Options rfml is now installed on ", host, ":", port, sep=""))
+  }
   message(paste(host, ":", port, " is now ready for use with rfml",sep=""))
 }

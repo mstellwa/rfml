@@ -2,22 +2,34 @@
 % Please edit documentation in R/method-ml.data.frame.R
 \name{ml.data.frame}
 \alias{ml.data.frame}
-\title{Create a ml.data.frame object pointing to a ...}
+\title{Create a ml.data.frame object}
 \usage{
-ml.data.frame(query)
+ml.data.frame(query = "", collection = c(), directory = c())
 }
 \arguments{
-\item{password}{The password admin is default.}
+\item{query}{The query string used to define the result.}
+
+\item{collection}{A list of collection URI:s to filter on.}
+
+\item{directory}{A list of directory URI:s to filter on.}
 }
 \value{
-The function will raise a error...
+A ml.data.frame object.
 }
 \description{
-This function creates an object of ml.data.frame...
+This function creates an object of ml.data.frame, it is based on a search done using
+provided query. No data is loaded into R, everything is stored in the MarkLogic databse.
 }
 \examples{
 \dontrun{
-
+ library(rfml)
+ ml.connect("localhost", "8000", "admin", "admin")
+ # create a ml.data.frame based on a search
+ df <- ml.data.frame("försäkringskassan AND kalle")
+ # using search and collection filtering
+ df <- ml.data.frame("försäkringskassan AND kalle", collection=c("Analytics"))
+ # using collection filtering
+ df <- ml.data.frame("försäkringskassan AND kalle", collection=c("Analytics"))
 }
 }
 
