@@ -26,8 +26,12 @@ ml.init.database <- function(host = "localhost", port = "8000", adminuser = "adm
   mlHost <- paste("http://", host, ":", port, sep="")
 
   # install the needed search options
-  if (.insert.search.transform(mlHost, adminuser, password)) {
+  if (.insert.search.transform(mlHost, adminuser, password, "rfmlTransform")) {
     message(paste("Transformation rfmlTransform is now installed on ", host, ":", port, sep=""))
+  }
+
+  if (.insert.search.transform(mlHost, adminuser, password, "rfmlLm")) {
+    message(paste("Transformation rfmlLm is now installed on ", host, ":", port, sep=""))
   }
 
   if (.insert.search.options(mlHost, adminuser, password)) {

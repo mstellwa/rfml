@@ -57,17 +57,17 @@
 }
 
 # internal function to add rest interface used
-.insert.search.transform <- function(mlHost, username, password)  {
+.insert.search.transform <- function(mlHost, username, password, mlTransformName)  {
 
-  mlTransformName <- "rfmlTransform"
-  transform <- upload_file(system.file("transform", "rfmlTransform.sjs",package = "rfml"), "application/vnd.marklogic-javascript")
+  #mlTransformName <- "rfmlTransform"
+  mlTransformFile <- paste(mlTransformName, ".sjs", sep='')
+  file <- system.file("transform",mlTransformFile ,package = "rfml")
+  transform <- upload_file(file, "application/vnd.marklogic-javascript")
   mlURL <- paste(mlHost, "/LATEST/config/transforms/", mlTransformName, sep="")
 
   # add or replace search options to the database
   response <- PUT(mlURL, authenticate(username, password, type="digest"), body=transform)
-  # TODO:
-  # check the response
-  # if not 204 then raise a error
+
   if (response$status_code != 204) {
 
     rContent <- content(response)
@@ -87,7 +87,8 @@
   password <- rawToChar(PKI::PKI.decrypt(.rfmlEnv$conn$password, key))
   username <- .rfmlEnv$conn$username
   dframe <- mlDf@.name
-  query <- mlDf@.ctsQuery
+  #query <- mlDf@.ctsQuery
+  queryComArgs <- mlDf@.queryArgs
 
   mlHost <- paste("http://", .rfmlEnv$conn$host, ":", .rfmlEnv$conn$port, sep="")
   mlSearchURL <- paste(mlHost, "/LATEST/search", sep="")
@@ -99,9 +100,8 @@
     nPageLength <- mlDf@.nrows
   }
 
-  queryArgs <- list(structuredQuery=query, options=mlOptions, pageLength=nPageLength, start=nStart,
-                    format="json",transform="rfmlTransform", 'trans:dframe'=dframe,
-                    'trans:return'="data")
+  queryArgs <- c(queryComArgs, pageLength=nPageLength, transform="rfmlTransform",
+                 'trans:dframe'=dframe, 'trans:return'="data")
 
 
   # create

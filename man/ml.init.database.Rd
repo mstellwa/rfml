@@ -24,7 +24,7 @@ The function installs search options and transformations/mdoules that is needed
 in order to use the package. You only needed to run it once for each database.
 }
 \details{
-The database needs to have a REST server and a module database.
+The database must have a REST server and a module database.
 
 The user that is used for the login must have the  rest-admin role,
 or the following privileges:
@@ -34,7 +34,7 @@ or the following privileges:
 }
 \examples{
 \dontrun{
-init_database("localhost", "8000", "admin", "admin")
+ml.init.database("localhost", "8000", "admin", "admin")
 }
 }
 

@@ -18,7 +18,9 @@ A ml.data.frame object.
 }
 \description{
 This function creates an object of ml.data.frame, it is based on a search done using
-provided query. No data is loaded into R, everything is stored in the MarkLogic databse.
+provided query. The operations that can be applied onto this class of objects are very
+similar to those of data.frame. No real data is loaded into R. The data transfered
+between MarkLogic Server and R is minimized.
 }
 \examples{
 \dontrun{
@@ -28,8 +30,8 @@ provided query. No data is loaded into R, everything is stored in the MarkLogic 
  df <- ml.data.frame("försäkringskassan AND kalle")
  # using search and collection filtering
  df <- ml.data.frame("försäkringskassan AND kalle", collection=c("Analytics"))
- # using collection filtering
- df <- ml.data.frame("försäkringskassan AND kalle", collection=c("Analytics"))
+ # using only collection filtering
+ df <- ml.data.frame(collection=c("Analytics"))
 }
 }
 

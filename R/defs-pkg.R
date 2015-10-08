@@ -11,6 +11,7 @@ setClass("ml.data.frame",
            .name="character", # the name of the data frame result
            .qtext="character", # the search that defines the data frame
            .ctsQuery="json", #the cts query for the data frame.
+           .queryArgs="list", #parameters used to query ML
            .nrows="integer",  # the number of rows in the result
            .col.name="character", # column names
            .col.data_type = "character", # column types

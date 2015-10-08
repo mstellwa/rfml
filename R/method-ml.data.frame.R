@@ -42,45 +42,67 @@ ml.data.frame <- function (query="", collection = c(), directory = c())
   mlOptions <- "rfml"
   nStart=1
   nPageLength=20
-
-  queryArgs <- list(q=query, options=mlOptions, pageLength=nPageLength, start=nStart,
-                    format="json",transform="rfmlTransform", 'trans:dframe'=dframe,
-                    'trans:return'="meta")
+  # These are the arguments that are common to all calls to MarkLogic
+  queryComArgs <- list(q=query, options=mlOptions, start=nStart, format="json")
 
   # need to build a structuredQuery in order to get the collection/directory filtering
   # as part of the returned query.
-  if (length(collection) > 0 || length(directory) > 0) {
-    collQry <- ''
-    dirQry <- ''
-    structQry <- '{"query":{"queries":['
-    if (length(collection) > 0) {
-      collQry <- '{"collection-query":{"uri":['
-      for (i in 1:length(collection)) {
-        if (i>1) {
-          collQry <- paste(collQry,',' ,sep='')
-        }
-        collQry <- paste(collQry,'"',collection[i],'"' ,sep='')
+  if (length(collection) > 0) {
+    strColl <- ''
+    for (i in 1:length(collection)) {
+      if (i>1) {
+        strColl <- paste(strColl, ',', sep='')
       }
-      collQry <- paste(collQry,"]}}", sep='')
+      strColl <- paste(strColl, collection[i], sep='')
     }
-    if (length(directory) > 0) {
-      dirQry <- '{"directory-query": {"uri": ['
-      for (i in 1:length(directory)) {
-        if (i>1) {
-          dirQry <- paste(dirQry,',' ,sep='')
-        }
-        dirQry <- paste(dirQry,'"',directory[i],'"' ,sep='')
-      }
-      dirQry <- paste(dirQry,"]}}", sep='')
-    }
-    if (nchar(collQry) > 0 && nchar(dirQry) > 0){
-      structQry <- paste(structQry, '{"and-query":[', collQry, ',', dirQry,']}', sep='')
-    } else {
-      structQry <- paste(structQry,ifelse(nchar(collQry) > 0, collQry, dirQry), sep='')
-    }
-    structQry <- paste(structQry, ']}}', sep='')
-    queryArgs <- c(queryArgs, structuredQuery=structQry)
+    queryComArgs <- c(queryComArgs, collection=strColl)
   }
+  if (length(directory) > 0) {
+    strDir <- ''
+    for (i in 1:length(directory)) {
+      if (i>1) {
+        strDir <- paste(strDir, ',', sep='')
+      }
+      strDir <- paste(strDir, directory[i], sep='')
+    }
+    queryComArgs <- c(queryComArgs, directory=strDir)
+  }
+
+#   if (length(collection) > 0 || length(directory) > 0) {
+#     collQry <- ''
+#     dirQry <- ''
+#     structQry <- '{"query":{"queries":['
+#     if (length(collection) > 0) {
+#       collQry <- '{"collection-query":{"uri":['
+#       for (i in 1:length(collection)) {
+#         if (i>1) {
+#           collQry <- paste(collQry,',' ,sep='')
+#         }
+#         collQry <- paste(collQry,'"',collection[i],'"' ,sep='')
+#       }
+#       collQry <- paste(collQry,"]}}", sep='')
+#     }
+#     if (length(directory) > 0) {
+#       dirQry <- '{"directory-query": {"uri": ['
+#       for (i in 1:length(directory)) {
+#         if (i>1) {
+#           dirQry <- paste(dirQry,',' ,sep='')
+#         }
+#         dirQry <- paste(dirQry,'"',directory[i],'"' ,sep='')
+#       }
+#       dirQry <- paste(dirQry,"]}}", sep='')
+#     }
+#     if (nchar(collQry) > 0 && nchar(dirQry) > 0){
+#       structQry <- paste(structQry, '{"and-query":[', collQry, ',', dirQry,']}', sep='')
+#     } else {
+#       structQry <- paste(structQry,ifelse(nchar(collQry) > 0, collQry, dirQry), sep='')
+#     }
+#     structQry <- paste(structQry, ']}}', sep='')
+#     queryArgs <- c(queryArgs, structuredQuery=structQry)
+#   }
+
+  queryArgs <- c(queryComArgs, pageLength=nPageLength, transform="rfmlTransform", 'trans:dframe'=dframe,
+                 'trans:return'="meta")
   # do a search
   response <- GET(mlSearchURL, query = queryArgs, authenticate(username, password, type="digest"), accept_json())
 
@@ -102,6 +124,7 @@ ml.data.frame <- function (query="", collection = c(), directory = c())
   res@.name <- dframe
   res@.qtext <- query
   res@.ctsQuery <- toJSON(rContent$ctsQuery)
+  res@.queryArgs <- queryComArgs
   res@.nrows <- as.integer(rContent$nrows)
   fieldList <- rContent$dataFrameFields
   fieldNames <- c()

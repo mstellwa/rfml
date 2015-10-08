@@ -10,7 +10,7 @@
 #' \dontrun{
 #' library(rfml)
 #' ml.connect("localhost","8000", "admin", "admin")
-#'
+#'}
 #' @export
 ml.connect <- function(host = "localhost", port = "8000",
                        username = "admin", password = "admin") {

@@ -1,0 +1,68 @@
+#' Creates a linear model
+#'
+#' Returns a linear model that fits the given data set. It only supports one term in the formula,
+#' for example  y ~ x, as currently only simple linear regression model is supported.
+#'
+#' The function eliminates all pairs for which either the first field or the second field
+#' is empty. After the elimination, if the length of the input is less than 2, the function
+#' returns the empty sequence. After the elimination, if the standard deviation of the
+#' independent variable is 0, the function returns a linear model with
+#' intercept = the mean of the dependent variable, coefficients = NaN and r-squared = NaN.
+#' After the elimination, if the standard deviation of the dependent variable is 0,
+#' the function returns a linear model with r-squared = NaN.
+#'
+#' @param form an object of class "formula" (or one that can be coerced to that class): a symbolic description of the model to be fitted.
+#' @param mlDf an ml.data.frame object
+
+#' @export
+ml.lm <- function(form, mlDf) {
+
+  key <- .rfmlEnv$key
+  password <- rawToChar(PKI::PKI.decrypt(.rfmlEnv$conn$password, key))
+  username <- .rfmlEnv$conn$username
+  queryComArgs <- mlDf@.queryArgs
+
+  mlHost <- paste("http://", .rfmlEnv$conn$host, ":", .rfmlEnv$conn$port, sep="")
+  mlSearchURL <- paste(mlHost, "/LATEST/search", sep="")
+  nPageLength <- mlDf@.nrows
+  queryArgs <- c(queryComArgs, pageLength=nPageLength, transform="rfmlLm")
+
+  #
+  #addIntercept <- attr(terms(form, keep.order=T, data=data.frame(x=1)), "intercept")
+  isResponse <- attr(terms(form, keep.order=T, data=data.frame(x=1)), "response")
+  vars <- all.vars(form)
+  if (length(vars) != 2) {
+    stop("Can only use two variables!")
+  }
+  # below will return a tabel with all fields on the right to the  ~ as columnnames and
+  # all variables as rownames
+  tab1 <- attr(terms(form), "factors")
+  # our independent variable is in the columnname
+  independent <- colnames(tab1)
+  # dependent
+  dependent <- vars[isResponse]
+  # need to change so we check if they are in .col.name or in .col.defs, if col.def we need to get the def
+  fields <- "{"
+  fields <- paste(fields, '"',dependent , '":{"fieldDef":"',dependent ,'"},"', independent, '":{"fieldDef":"',independent ,'"}' ,sep='')
+  fields <- paste(fields, '}', sep='')
+  queryArgs <- c(queryArgs, 'trans:fields'=fields)
+
+  response <- GET(mlSearchURL, query = queryArgs, authenticate(username, password, type="digest"), accept_json())
+
+  rContent <- content(response) #, as = "text""
+  if(response$status_code != 200) {
+    errorMsg <- paste("statusCode: ",
+                      rContent, sep="")
+    stop(paste("Ops, something went wrong.", errorMsg))
+  }
+
+  res <- list(intercept=rContent$`linear-model`$intercept, coefficients=rContent$`linear-model`$coefficients, rsquared=rContent$`linear-model`$rsquared)
+  class(res) = c("mlLm")
+  res
+}
+#' @export
+print.mlLm <- function(x) {
+  cat("intercept: ", x$intercept)
+  cat("\ncoefficients: ", x$coefficients)
+  cat("\nr-squared :", x$rsquared, "\n")
+}
