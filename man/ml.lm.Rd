@@ -6,14 +6,17 @@
 \usage{
 ml.lm(form, mlDf)
 }
+\arguments{
+\item{form}{an object of class "formula" (or one that can be coerced to that class): a symbolic description of the model to be fitted.}
+
+\item{mlDf}{an ml.data.frame object}
+}
 \description{
-Returns a linear model that fits the given data set. The number of input variables should be 2,
-as currently only simple linear regression model is supported. The first element of the array
-should be the value of the dependent variable while the other element should be the value of
-the independent variable.
+Returns a linear model that fits the given data set. It only supports one term in the formula,
+for example  y ~ x, as currently only simple linear regression model is supported.
 }
 \details{
-The function eliminates all pairs for which either the first element or the second element
+The function eliminates all pairs for which either the first field or the second field
 is empty. After the elimination, if the length of the input is less than 2, the function
 returns the empty sequence. After the elimination, if the standard deviation of the
 independent variable is 0, the function returns a linear model with

@@ -1,3 +1,18 @@
+# Copyright (c) 2015 All rights reserved.
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+#
 #' Creates a linear model
 #'
 #' Returns a linear model that fits the given data set. It only supports one term in the formula,
@@ -41,10 +56,27 @@ ml.lm <- function(form, mlDf) {
   independent <- colnames(tab1)
   # dependent
   dependent <- vars[isResponse]
-  # need to change so we check if they are in .col.name or in .col.defs, if col.def we need to get the def
+  if (!(independent %in% mlDf@.col.name) && !(dependent %in% mlDf@.col.name)) {
+    stop("Both variables must be part of ml.data.frame")
+  }
+  # need to very that they are number fields...
+
   fields <- "{"
-  fields <- paste(fields, '"',dependent , '":{"fieldDef":"',dependent ,'"},"', independent, '":{"fieldDef":"',independent ,'"}' ,sep='')
+  # check if dependent or independent is existing fields
+  # or new, if new we ned to use the expersion
+  if (is.null(mlDf@.col.defs[[dependent]])) {
+    fieldDef <- dependent
+  } else {
+    fieldDef <- mlDf@.col.defs[[dependent]]
+  }
+  if (is.null(mlDf@.col.defs[[independent]])) {
+    fieldDef <- independent
+  } else {
+    fieldDef <- mlDf@.col.defs[[independent]]
+  }
+  fields <- paste(fields, '"',dependent , '":{"fieldDef":"',fieldDef ,'"},"', independent, '":{"fieldDef":"',fieldDef ,'"}' ,sep='')
   fields <- paste(fields, '}', sep='')
+  #message(fields)
   queryArgs <- c(queryArgs, 'trans:fields'=fields)
 
   response <- GET(mlSearchURL, query = queryArgs, authenticate(username, password, type="digest"), accept_json())

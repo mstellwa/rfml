@@ -86,9 +86,6 @@ function resultData(fields, result) {
   return flatResult;
 
 }
-
-
-
 function rfmlTransform(context, params, content)
 {
   //var rfmlUtilities = require('/ext/rfml/rfmlUtilities.sjs');

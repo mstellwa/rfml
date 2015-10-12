@@ -1,3 +1,19 @@
+# Copyright (c) 2015 All rights reserved.
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+#
+
 #' Create a ml.data.frame object
 #'
 #' This function creates an object of ml.data.frame, it is based on a search done using
@@ -221,9 +237,11 @@ setMethod("$", signature(x = "ml.data.frame"),
               stop("Column not found in ml.data.frame.")
             }
             if(is.null(x@.col.defs[[name]])) {
-              return(new(Class="ml.col.def",.expr=paste("rfmlResult.",name, sep=''),.parent=x,.type="field",.aggType="none"));
+              i <- which(x@.col.name %in% name)
+              dataType <- x@.col.data_type[i]
+              return(new(Class="ml.col.def",.expr=paste("rfmlResult.",name, sep=''),.name=name,.data_type=dataType, .parent=x,.type="field",.aggType="none"));
             } else {
-              return(new(Class="ml.col.def",.expr=x@.col.defs[[name]],.parent=x,.type="expr",.aggType="none"));
+              return(new(Class="ml.col.def",.expr=x@.col.defs[[name]],.name=name,.data_type=x@.col.defs[[name]]@.data_type,.parent=x,.type="expr",.aggType="none"));
             }
 
           }
@@ -235,7 +253,7 @@ setMethod("$<-", signature(x = "ml.data.frame"),
              if(is.null(value)) {
                #remove col def
                if(!is.null(x@.col.defs[[name]])) {
-                 x@.col.efs[[name]] <- NULL;
+                 x@.col.defs[[name]] <- NULL;
                }
                x@.col.name <- setdiff(x@.col.name,name)
              } else {
@@ -249,10 +267,10 @@ setMethod("$<-", signature(x = "ml.data.frame"),
                }
                # if we are refering an existing column ie x$field
                # then value is the defenition of that field.
-
                x@.col.defs[[name]]<-value@.expr;
                if(!(name %in% x@.col.name)) {
                  x@.col.name<-c(x@.col.name,name);
+                 x@.col.data_type<-c(x@.col.data_type, value@.data_type)
                }
               }
 
@@ -296,8 +314,8 @@ setMethod("head", signature(x="ml.data.frame"),
             if (n >= 0) {
               return(.get.ml.data(x,n))
             } else {
-              #nr <- nrow(x)
-              #n <- abs(n)
+              nr <- nrow(x)
+              n <- abs(n)
               #ans <- idaQuery(idadf.query(x), " FETCH FIRST ", format(nr - n, scientific = FALSE), " ROWS ONLY")
 
               #if ((nr-n) != 0) rownames(ans) <- 1:(nr-n);

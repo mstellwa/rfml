@@ -1,3 +1,19 @@
+# Copyright (c) 2015 All rights reserved.
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+#
+
 ############## General ######################
 #' @export
 setMethod("print", signature(x="ml.col.def"),
@@ -35,9 +51,28 @@ as.ml.col.def <- function(x) {
 }
 
 ################ Arithmetic operators ############################
+# + x
+# - x
+# x + y
+# x - y
+# x * y
+# x / y
+# x ^ y
+# x %% y
+# x %/% y
 #' @export
 setMethod("Arith", signature(e1="ml.col.def",e2="ml.col.def"), function(e1, e2) {
-  return(new(Class="ml.col.def",.expr=paste('(',as.ml.col.def(eval(e1)),.Generic,as.ml.col.def(eval(e2)),')',sep=''),.parent=e1@.parent,.type="expr",.aggType=aggType(e1,e2)));
+  if(e1@.parent@.name!=e2@.parent@.name) {
+    stop("Cannot combine two columns from different ml.data.frames.")
+  }
+  # need to check the data types of
+  if (e1@.data_type == e2@.data_type) {
+    dataType = e1@.data_type
+  } else {
+    # we only use string and number, so if they are not same we fall back to string
+    dataType = "string"
+  }
+  return(new(Class="ml.col.def",.expr=paste('(',as.ml.col.def(eval(e1)),.Generic,as.ml.col.def(eval(e2)),')',sep=''),.data_type=dataType,.parent=e1@.parent,.type="expr",.aggType=aggType(e1,e2)));
 })
 
 #' @export
@@ -51,6 +86,13 @@ setMethod("Arith", signature(e1="ANY", e2="ml.col.def"), function(e1, e2) {
 })
 
 ################ Scalar functions ############################
+# Math functions, the following is included in Math:
+# abs, sign, sqrt, floor, ceiling, trunc, round, signif,
+# exp, log, expm1, log1p,cos, sin, tan,cospi, sinpi, tanpi,
+# acos, asin, atan, cosh, sinh, tanh, acosh, asinh, atanh,
+# lgamma, gamma, digamma, trigamma, cumsum, cumprod, cummax, cummin,
+#
+# We only currently support part of these, se below.
 #' @export
 setMethod("Math",signature(x='ml.col.def'),function (x) {
 
@@ -74,24 +116,26 @@ setMethod("Math",signature(x='ml.col.def'),function (x) {
         stop(paste(.Generic, " not supported"))
   )
 
-  return(new(Class="ml.col.def",.expr=paste(func, '(', as.ml.col.def(eval(x)),')',sep=''),.parent=x@.parent,.type="expr",.aggType=aggType(x)));
+  return(new(Class="ml.col.def",.expr=paste(func, '(', as.ml.col.def(eval(x)),')',sep=''),.parent=x@.parent,.data_type="number",.type="expr",.aggType=aggType(x)));
 });
 
+#' @export
 ################ Casting operators ############################
 setMethod('as.numeric',signature(x="ml.col.def"),function (x) {
   #checkLogical(F,x);
-  return(new(Class="ml.col.def",.exor=paste('CAST(',as.ml.col.def(eval(x)),' AS DOUBLE)',sep=''),.parent=x@.parent,.type="expr",.aggType=aggType(x)));
+  return(new(Class="ml.col.def",.exor=paste('Number(',as.ml.col.def(eval(x)),')',sep=''),.parent=x@.parent,.data_type="number",.type="expr",.aggType=aggType(x)));
 })
 
 setMethod('as.character',signature(x="ml.col.def"),function (x) {
   #checkLogical(F,x);
-  return(new(Class="ml.col.def",.expr=paste('CAST(',as.ml.col.def(x),' AS VARCHAR(100))',sep=''),.parent=x@.parent,.type="expr",.aggType=aggType(x)));
+  return(new(Class="ml.col.def",.expr=paste('String(',as.ml.col.def(x),')',sep=''),.parent=x@.parent,.data_type="string",.type="expr",.aggType=aggType(x)));
 })
 
+#' @export
 setMethod('as.integer',signature(x="ml.col.def"),function (x) {
 
   #checkLogical(F,x);
-  return(new(Class="ml.col.def",.expr=paste('parseInt(',as.ml.col.def(eval(x)),' )',sep=''),.parent=x@.pranet,.type="expr",.aggType=aggType(x)));
+  return(new(Class="ml.col.def",.expr=paste('parseInt(',as.ml.col.def(eval(x)),' )',sep=''),.parent=x@.parent,.data_type="number",.type="expr",.aggType=aggType(x)));
 })
 
 ################ Utilities ############################
