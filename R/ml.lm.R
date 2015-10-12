@@ -13,16 +13,16 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-#' Creates a linear model
+#' Creates a simnple linear model
 #'
-#' Returns a linear model that fits the given data set. It only supports one term in the formula,
-#' for example  y ~ x, as currently only simple linear regression model is supported.
+#' Returns a simple linear regression model, a linear regression model with a single
+#' explanatory variable
 #'
 #' The function eliminates all pairs for which either the first field or the second field
 #' is empty. After the elimination, if the length of the input is less than 2, the function
 #' returns the empty sequence. After the elimination, if the standard deviation of the
-#' independent variable is 0, the function returns a linear model with
-#' intercept = the mean of the dependent variable, coefficients = NaN and r-squared = NaN.
+#' independent variable is 0, the function returns a linear model with intercept = the mean
+#' of the dependent variable, coefficients = NaN and r-squared = NaN.
 #' After the elimination, if the standard deviation of the dependent variable is 0,
 #' the function returns a linear model with r-squared = NaN.
 #'
@@ -65,16 +65,16 @@ ml.lm <- function(form, mlDf) {
   # check if dependent or independent is existing fields
   # or new, if new we ned to use the expersion
   if (is.null(mlDf@.col.defs[[dependent]])) {
-    fieldDef <- dependent
+    fieldDefDep <- dependent
   } else {
-    fieldDef <- mlDf@.col.defs[[dependent]]
+    fieldDefDep <- mlDf@.col.defs[[dependent]]
   }
   if (is.null(mlDf@.col.defs[[independent]])) {
-    fieldDef <- independent
+    fieldDefInd <- independent
   } else {
-    fieldDef <- mlDf@.col.defs[[independent]]
+    fieldDefInd <- mlDf@.col.defs[[independent]]
   }
-  fields <- paste(fields, '"',dependent , '":{"fieldDef":"',fieldDef ,'"},"', independent, '":{"fieldDef":"',fieldDef ,'"}' ,sep='')
+  fields <- paste(fields, '"',dependent , '":{"fieldDef":"',fieldDefDep ,'"},"', independent, '":{"fieldDef":"',fieldDefInd ,'"}' ,sep='')
   fields <- paste(fields, '}', sep='')
   #message(fields)
   queryArgs <- c(queryArgs, 'trans:fields'=fields)
