@@ -50,31 +50,27 @@ setMethod(f="cor", signature=c(x="ml.col.def",y="ml.col.def"),
             key <- .rfmlEnv$key
             password <- rawToChar(PKI::PKI.decrypt(.rfmlEnv$conn$password, key))
             username <- .rfmlEnv$conn$username
-            queryComArgs <- x@.queryArgs
+            queryComArgs <- x@.parent@.queryArgs
 
             mlHost <- paste("http://", .rfmlEnv$conn$host, ":", .rfmlEnv$conn$port, sep="")
             mlSearchURL <- paste(mlHost, "/LATEST/search", sep="")
-            nPageLength <- x@.nrows
-            queryArgs <- c(queryComArgs, pageLength=nPageLength, transform="rfmlStat")
+            nPageLength <- x@.parent@.nrows
+            queryArgs <- c(queryComArgs, pageLength=nPageLength, transform="rfmlStat", 'trans:statfunc'="math.correlation")
 
             fields <- "{"
-            # check if dependent or independent is existing fields
-            # or new, if new we ned to use the expersion
-#            if (is.null(x@.col.defs[[dependent]])) {
-#              fieldDefDep <- dependent
-#            } else {
-#              fieldDefDep <- y@.col.defs[[dependent]]
-#            }
-#            if (is.null(y@.col.defs[[independent]])) {
-#              fieldDefInd <- independent
-#            } else {
-#              fieldDefInd <- y@.col.defs[[independent]]
-#            }
-
-            #fields <- paste(fields, '"',dependent , '":{"fieldDef":"',fieldDefDep ,'"},"', independent, '":{"fieldDef":"',fieldDefInd ,'"}' ,sep='')
-            #fields <- paste(fields, '}', sep='')
-            #message(fields)
+            fields <- paste(fields, '"',x@.name , '":{"fieldDef":"',x@.expr ,'"},"', y@.name, '":{"fieldDef":"',y@.expr ,'"}' ,sep='')
+            fields <- paste(fields, '}', sep='')
+            message(fields)
             queryArgs <- c(queryArgs, 'trans:fields'=fields)
+            response <- GET(mlSearchURL, query = queryArgs, authenticate(username, password, type="digest"), accept_json())
+
+            rContent <- content(response) #, as = "text""
+            if(response$status_code != 200) {
+              errorMsg <- paste("statusCode: ",
+                                rContent, sep="")
+              stop(paste("Ops, something went wrong.", errorMsg))
+            }
+            rContent
         }
 )
 

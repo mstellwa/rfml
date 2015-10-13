@@ -49,9 +49,9 @@
 }
 
 # internal function to add default serach options
-.insert.search.options <- function(mlHost, username, password)  {
-  mlQueryOpName <- "rfml"
-  mlOptions <- upload_file(system.file("options", "rfml.json",package = "rfml"), "application/json")
+.insert.search.options <- function(mlHost, username, password, mlOption)  {
+  mlQueryOpName <- paste(mlOption, ".json", sep='')
+  mlOptions <- upload_file(system.file("options",mlQueryOpName,package = "rfml"), "application/json")
   mlURL <- paste(mlHost, "/v1/config/query/", mlQueryOpName, sep="")
 
   # add or replace search options to the database
@@ -92,6 +92,30 @@
                      ", message: ", rContent$errorResponse$message, sep="")
    stop(paste("Ops, something went wrong.", errorMsg))
   }
+  # return the name of the search options
+  return(TRUE)
+}
+
+# internal function to add rest interface used
+.insert.lib <- function(mlHost, username, password, mlLibName)  {
+
+  #mlTransformName <- "rfmlTransform"
+  mlLibFile <- paste(mlLibName, ".sjs", sep='')
+  file <- system.file("lib",mlLibFile ,package = "rfml")
+  lib <- upload_file(file, "application/vnd.marklogic-javascript")
+  mlURL <- paste(mlHost, "/LATEST/ext/rfml/", mlLibFile, sep="")
+  # add or replace search options to the database
+  response <- PUT(mlURL, authenticate(username, password, type="digest"), body=lib)
+
+  if (response$status_code != 204) {
+
+     rContent <- content(response)
+     errorMsg <- paste("statusCode: ",
+                       rContent$errorResponse$statusCode,
+                       ", status: ", rContent$errorResponse$status,
+                       ", message: ", rContent$errorResponse$message, sep="")
+     stop(paste("Ops, something went wrong.", errorMsg))
+   }
   # return the name of the search options
   return(TRUE)
 }

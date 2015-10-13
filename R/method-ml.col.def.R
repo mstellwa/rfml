@@ -77,12 +77,22 @@ setMethod("Arith", signature(e1="ml.col.def",e2="ml.col.def"), function(e1, e2) 
 
 #' @export
 setMethod("Arith", signature(e1="ml.col.def", e2="ANY"), function(e1, e2) {
-  return(new(Class="ml.col.def",.expr=paste('(', as.ml.col.def(eval(e1)),.Generic,as.ml.col.def(eval(e2)),')',sep=''),.parent=e1@.parent,.type="expr",.aggType=aggType(e1,e2)));
+  if (!(is.numeric(e2)) || e1@.data_type == "string") {
+    dataType <- "string"
+  } else {
+    dataType <- "number"
+  }
+  return(new(Class="ml.col.def",.expr=paste('(', as.ml.col.def(eval(e1)),.Generic,as.ml.col.def(eval(e2)),')',sep=''),.data_type=dataType,.parent=e1@.parent,.type="expr",.aggType=aggType(e1,e2)));
 })
 
 #' @export
 setMethod("Arith", signature(e1="ANY", e2="ml.col.def"), function(e1, e2) {
-  return(new(Class="ml.col.def",.expr=paste('(', as.ml.col.def(eval(e1)),.Generic,as.ml.col.def(eval(e2)),')',sep=''),.parent=e2@.parent,.type="expr",.aggType=aggType(e1,e2)));
+  if (!(is.numeric(e1)) || e2@.data_type == "string") {
+    dataType <- "string"
+  } else {
+    dataType <- "number"
+  }
+  return(new(Class="ml.col.def",.expr=paste('(', as.ml.col.def(eval(e1)),.Generic,as.ml.col.def(eval(e2)),')',sep=''),.data_type=dataType,.parent=e2@.parent,.type="expr",.aggType=aggType(e1,e2)));
 })
 
 ################ Scalar functions ############################

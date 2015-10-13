@@ -40,18 +40,22 @@
 ml.init.database <- function(host = "localhost", port = "8000", adminuser = "admin", password = "admin") {
   # general URL, used as basis for all
   mlHost <- paste("http://", host, ":", port, sep="")
+  mlTransforms <- c("rfmlTransform", "rfmlLm", "rfmlStat")
 
   # install the needed search options
-  if (.insert.search.transform(mlHost, adminuser, password, "rfmlTransform")) {
-    message(paste("Transformation rfmlTransform is now installed on ", host, ":", port, sep=""))
-  }
-
-  if (.insert.search.transform(mlHost, adminuser, password, "rfmlLm")) {
-    message(paste("Transformation rfmlLm is now installed on ", host, ":", port, sep=""))
-  }
-
-  if (.insert.search.options(mlHost, adminuser, password)) {
+  if (.insert.search.options(mlHost, adminuser, password, "rfml")) {
     message(paste("Options rfml is now installed on ", host, ":", port, sep=""))
   }
+  # install the needed module library
+  if (.insert.lib(mlHost, adminuser, password, "rfmlUtilities")) {
+    message(paste("Library rfmlUtilities is now installed on ", host, ":", port, sep=""))
+  }
+  # install needed transforms
+  for (i in 1:length(mlTransforms)) {
+    if (.insert.search.transform(mlHost, adminuser, password, mlTransforms[i])) {
+      message(paste("Transformation ",mlTransforms[i], " is now installed on ", host, ":", port, sep=""))
+    }
+  }
+
   message(paste(host, ":", port, " is now ready for use with rfml",sep=""))
 }

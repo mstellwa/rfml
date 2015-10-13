@@ -236,12 +236,14 @@ setMethod("$", signature(x = "ml.data.frame"),
             if(!(name %in% x@.col.name)) {
               stop("Column not found in ml.data.frame.")
             }
+            # pickup the data type
+            i <- which(x@.col.name %in% name)
+            dataType <- x@.col.data_type[i]
+            # check if the column are a added or already existing
             if(is.null(x@.col.defs[[name]])) {
-              i <- which(x@.col.name %in% name)
-              dataType <- x@.col.data_type[i]
               return(new(Class="ml.col.def",.expr=paste("rfmlResult.",name, sep=''),.name=name,.data_type=dataType, .parent=x,.type="field",.aggType="none"));
             } else {
-              return(new(Class="ml.col.def",.expr=x@.col.defs[[name]],.name=name,.data_type=x@.col.defs[[name]]@.data_type,.parent=x,.type="expr",.aggType="none"));
+              return(new(Class="ml.col.def",.expr=x@.col.defs[[name]],.name=name,.data_type=dataType,.parent=x,.type="expr",.aggType="none"));
             }
 
           }
