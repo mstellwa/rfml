@@ -57,7 +57,7 @@ ml.lm <- function(form, mlDf) {
   # dependent
   dependent <- vars[isResponse]
   if (!(independent %in% mlDf@.col.name) && !(dependent %in% mlDf@.col.name)) {
-    stop("Both variables must be part of ml.data.frame")
+    stop("Both variables must be part of a ml.data.frame")
   }
   # need to very that they are number fields...
 

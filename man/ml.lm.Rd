@@ -2,7 +2,7 @@
 % Please edit documentation in R/ml.lm.R
 \name{ml.lm}
 \alias{ml.lm}
-\title{Creates a linear model}
+\title{Creates a simnple linear model}
 \usage{
 ml.lm(form, mlDf)
 }
@@ -12,15 +12,15 @@ ml.lm(form, mlDf)
 \item{mlDf}{an ml.data.frame object}
 }
 \description{
-Returns a linear model that fits the given data set. It only supports one term in the formula,
-for example  y ~ x, as currently only simple linear regression model is supported.
+Returns a simple linear regression model, a linear regression model with a single
+explanatory variable
 }
 \details{
 The function eliminates all pairs for which either the first field or the second field
 is empty. After the elimination, if the length of the input is less than 2, the function
 returns the empty sequence. After the elimination, if the standard deviation of the
-independent variable is 0, the function returns a linear model with
-intercept = the mean of the dependent variable, coefficients = NaN and r-squared = NaN.
+independent variable is 0, the function returns a linear model with intercept = the mean
+of the dependent variable, coefficients = NaN and r-squared = NaN.
 After the elimination, if the standard deviation of the dependent variable is 0,
 the function returns a linear model with r-squared = NaN.
 }

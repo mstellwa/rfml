@@ -44,74 +44,38 @@ setMethod(f="cor", signature=c(x="ml.col.def",y="ml.col.def"),
                stop("Cannot combine two columns from different ml.data.frames.")
             }
             if(x@.data_type!="number" || y@.data_type != "number") {
-              stop("Can only columns of number type")
+              stop("Can only use columns of number type")
             }
-#             ####### Identifying Numeric Fields #########
-#             res <- idaTableDef(x,F)
-#             xCols <- as.vector(res[res$valType=='NUMERIC','name'])
-#
-#             # Check if any columns are left in the end
-#             if (!length(xCols))
-#               stop("nothing to calculate")
-#
-#             xMean<-idaMean(x,xCols)
-#             n<-NROW(x)
-#             queryList <- c();
-#
-#
-#             if (!missing(y) && !is.null(y)){
-#
-#               if (!is.ida.data.frame(y))
-#                 stop("cor is valid only for ida.data.frame objects")
-#
-#               if(idadf.from(x)!= idadf.from(y))
-#                 stop("x and y must be from the same database table")
-#
-#               ####### Identifying Numeric Fields #########
-#               res <- idaTableDef(y,F)
-#               yCols<- as.vector(res[res$valType=='NUMERIC','name'])
-#
-#
-#               # Check if any columns are left in the end
-#               if (!length(yCols))
-#                 stop("nothing to calculate")
-#
-#               yMean<-idaMean(y,yCols)
-#
-#               for(i in 1:length(xCols)) {
-#                 for(j in 1:length(yCols)) {
-#                   queryList <- c(queryList,paste("SUM((", paste("\"", xCols[i], "\"", collapse=",",sep=''),"-",xMean[i],")*(", paste("\"", yCols[j], "\"", collapse=",",sep=''),"-",yMean[j],"))/(SQRT(SUM((",paste("\"", xCols[i], "\"", collapse=",",sep=''),"-",xMean[i],")*(",paste("\"", xCols[i], "\"", collapse=",",sep=''),"-",xMean[i],")))*SQRT(SUM((",paste("\"", yCols[j], "\"", collapse=",",sep=''),"-",yMean[j],")*(",paste("\"", yCols[j], "\"", collapse=",",sep=''),"-",yMean[j],"))))",sep=''));
-#                 }
-#               }
-#             }
-#
-#
-#             else{
-#               for(i in 1:length(xCols)) {
-#                 for(j in i:length(xCols)) {
-#                   queryList <- c(queryList,paste("SUM((", paste("\"", xCols[i], "\"", collapse=",",sep=''),"-",xMean[i],")*(", paste("\"", xCols[j], "\"", collapse=",",sep=''),"-",xMean[j],"))/(SQRT(SUM((",paste("\"", xCols[i], "\"", collapse=",",sep=''),"-",xMean[i],")*(",paste("\"", xCols[i], "\"", collapse=",",sep=''),"-",xMean[i],")))*SQRT(SUM((",paste("\"", xCols[j], "\"", collapse=",",sep=''),"-",xMean[j],")*(",paste("\"", xCols[j], "\"", collapse=",",sep=''),"-",xMean[j],"))))",sep=''));
-#                 }
-#               }
-#               yCols<-xCols
-#             }
-#
-#             queryList<-paste("SELECT ", paste(queryList,sep=',',collapse=',')," FROM ",idadf.from(x)," ",ifelse(nchar(x@where),paste(" WHERE ",x@where,sep=''),''),sep='');
-#             cor<-idaQuery(queryList)
-#             mdat <- matrix(1:(length(xCols))*(length(yCols)),nrow=length(xCols),ncol=length(yCols),dimnames = list(c(xCols),c(yCols)),byrow=T)
-#
-#             # Arrange matrix values
-#             r <- 1;
-#             c <- 1;
-#             for(i in 1:ncol(cor)) {
-#               mdat[r,c] <- cor[[i]][1];
-#               if (is.null(y))
-#                 mdat[c,r] <- mdat[r,c];
-#               c <- c + 1;
-#               if(c>length(yCols)) {
-#                 r <- r+1;
-#                 c <- if (is.null(y)) r else 1
-#               }
-#             }
-#             mdat
+
+            key <- .rfmlEnv$key
+            password <- rawToChar(PKI::PKI.decrypt(.rfmlEnv$conn$password, key))
+            username <- .rfmlEnv$conn$username
+            queryComArgs <- x@.queryArgs
+
+            mlHost <- paste("http://", .rfmlEnv$conn$host, ":", .rfmlEnv$conn$port, sep="")
+            mlSearchURL <- paste(mlHost, "/LATEST/search", sep="")
+            nPageLength <- x@.nrows
+            queryArgs <- c(queryComArgs, pageLength=nPageLength, transform="rfmlStat")
+
+            fields <- "{"
+            # check if dependent or independent is existing fields
+            # or new, if new we ned to use the expersion
+#            if (is.null(x@.col.defs[[dependent]])) {
+#              fieldDefDep <- dependent
+#            } else {
+#              fieldDefDep <- y@.col.defs[[dependent]]
+#            }
+#            if (is.null(y@.col.defs[[independent]])) {
+#              fieldDefInd <- independent
+#            } else {
+#              fieldDefInd <- y@.col.defs[[independent]]
+#            }
+
+            #fields <- paste(fields, '"',dependent , '":{"fieldDef":"',fieldDefDep ,'"},"', independent, '":{"fieldDef":"',fieldDefInd ,'"}' ,sep='')
+            #fields <- paste(fields, '}', sep='')
+            #message(fields)
+            queryArgs <- c(queryArgs, 'trans:fields'=fields)
         }
 )
+
+
