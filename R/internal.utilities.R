@@ -174,26 +174,24 @@
   }
 
 }
-.parse.multiresponse <- function(content, content_type) {
-  # get all positions with ..
-  positions <- gregexpr("\r\nContent-Type: application/xml", content)
-  # the number of positions
-  y <- positions[[1]][1:length(positions[[1]])]
-  end <- length(y)
-  i <- 1
-  strXML <- ""
-  while (i <= end) {
-    startPos <- y[i]
-    if (i < end) {
-      endPos <- y[i+1]
-    } else {
-      endPos <- nchar(content)
-    }
-    part <- substr(content, startPos, endPos)
-    startXML <- regexpr("<", part)[1]
-    endXML  <- regexpr(">\r", part)[1]
-    strXML <- paste(strXML, substr(part, startXML,endXML), sep = "")
-    i <- i+1
+.ml.stat.func <- function(mlDf, fields, func) {
+  key <- .rfmlEnv$key
+  password <- rawToChar(PKI::PKI.decrypt(.rfmlEnv$conn$password, key))
+  username <- .rfmlEnv$conn$username
+  queryComArgs <- mlDf@.queryArgs
+
+  mlHost <- paste("http://", .rfmlEnv$conn$host, ":", .rfmlEnv$conn$port, sep="")
+  mlSearchURL <- paste(mlHost, "/LATEST/search", sep="")
+  nPageLength <- mlDf@.nrows
+  queryArgs <- c(queryComArgs, pageLength=nPageLength, transform="rfmlStat", 'trans:statfunc'=func,'trans:fields'=fields)
+
+  response <- GET(mlSearchURL, query = queryArgs, authenticate(username, password, type="digest"), accept_json())
+  rContent <- content(response) #, as = "text""
+  if(response$status_code != 200) {
+    errorMsg <- paste("statusCode: ",
+                      rContent, sep="")
+    stop(paste("Ops, something went wrong.", errorMsg))
   }
-  return(strXML)
+  return(rContent)
+
 }

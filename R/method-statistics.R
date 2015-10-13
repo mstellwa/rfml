@@ -47,31 +47,39 @@ setMethod(f="cor", signature=c(x="ml.col.def",y="ml.col.def"),
               stop("Can only use columns of number type")
             }
 
-            key <- .rfmlEnv$key
-            password <- rawToChar(PKI::PKI.decrypt(.rfmlEnv$conn$password, key))
-            username <- .rfmlEnv$conn$username
-            queryComArgs <- x@.parent@.queryArgs
+            fields <- "{"
+            fields <- paste(fields, '"',x@.name , '":{"fieldDef":"',x@.expr ,'"},"', y@.name, '":{"fieldDef":"',y@.expr ,'"}' ,sep='')
+            fields <- paste(fields, '}', sep='')
+            func <- "math.correlation"
+            return(.ml.stat.func(x@.parent, fields, func))
+        }
+)
 
-            mlHost <- paste("http://", .rfmlEnv$conn$host, ":", .rfmlEnv$conn$port, sep="")
-            mlSearchURL <- paste(mlHost, "/LATEST/search", sep="")
-            nPageLength <- x@.parent@.nrows
-            queryArgs <- c(queryComArgs, pageLength=nPageLength, transform="rfmlStat", 'trans:statfunc'="math.correlation")
+#' @export
+setMethod(f="cov", signature=c(x="ml.col.def",y="ml.col.def"),
+
+          function(x,y,use = NULL,method = NULL ) {
+
+            # use
+            if (!missing(use) && !is.null(use))
+              stop(simpleError("use option is not implemented yet"))
+
+            # method
+            if (!missing(method) && !is.null(method))
+              stop(simpleError("method option is not implemented yet"))
+
+            if(x@.parent@.name!=y@.parent@.name) {
+              stop("Cannot combine two columns from different ml.data.frames.")
+            }
+            if(x@.data_type!="number" || y@.data_type != "number") {
+              stop("Can only use columns of number type")
+            }
 
             fields <- "{"
             fields <- paste(fields, '"',x@.name , '":{"fieldDef":"',x@.expr ,'"},"', y@.name, '":{"fieldDef":"',y@.expr ,'"}' ,sep='')
             fields <- paste(fields, '}', sep='')
-            message(fields)
-            queryArgs <- c(queryArgs, 'trans:fields'=fields)
-            response <- GET(mlSearchURL, query = queryArgs, authenticate(username, password, type="digest"), accept_json())
-
-            rContent <- content(response) #, as = "text""
-            if(response$status_code != 200) {
-              errorMsg <- paste("statusCode: ",
-                                rContent, sep="")
-              stop(paste("Ops, something went wrong.", errorMsg))
-            }
-            rContent
-        }
+            func <- "math.covariance"
+            return(.ml.stat.func(x@.parent, fields, func))
+          }
 )
-
 
