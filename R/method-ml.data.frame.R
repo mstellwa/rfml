@@ -42,10 +42,6 @@ ml.data.frame <- function (query="", collection = c(), directory = c())
   if (length(.rfmlEnv$conn) != 4) {
     stop("Need create a connection object. Use rfml.connect first.")
   }
-  # Check if we are using query or collection
-
-  # fields?
-
   # get data from ML
   # we need to create a "unique" name for the frame that we use to save the resultset
   dframe <- format(Sys.time(),"%Y%m%d%H%M%S")
