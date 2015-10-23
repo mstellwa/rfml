@@ -1,19 +1,3 @@
-# Copyright (c) 2015 All rights reserved.
-#
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program. If not, see <http://www.gnu.org/licenses/>.
-#
-
 # Various statistics methods
 
 #' Correlation
@@ -66,7 +50,27 @@ setMethod(f="cor", signature=c(x="ml.col.def",y="ml.col.def"),
             return(.ml.stat.func(x@.parent, fields, func))
         }
 )
+# correlation matrix on all numeric columns in a ml.col.def
+setMethod(f="cor", signature=c(x="ml.col.def"),
 
+          function(x,y = NULL,use = NULL,method = NULL ) {
+
+            # use
+            if (!missing(use) && !is.null(use))
+              stop(simpleError("use option is not implemented yet"))
+
+            # method
+            if (!missing(method) && !is.null(method))
+              stop(simpleError("method option is not implemented yet"))
+
+
+            fields <- "{"
+            fields <- paste(fields, '"',x@.name , '":{"fieldDef":"',x@.expr ,'"},"', y@.name, '":{"fieldDef":"',y@.expr ,'"}' ,sep='')
+            fields <- paste(fields, '}', sep='')
+            func <- "math.correlation"
+            return(.ml.stat.func(x@.parent, fields, func))
+          }
+)
 #' Covariance
 #'
 #' Returns the sample covariance of a data set.

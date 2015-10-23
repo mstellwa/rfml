@@ -1,18 +1,3 @@
-# Copyright (c) 2015 All rights reserved.
-#
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program. If not, see <http://www.gnu.org/licenses/>.
-#
 
 ############## General ######################
 #' @export
@@ -27,7 +12,7 @@ setMethod("show", signature(object="ml.col.def"),
             cat(paste("Column definition: ", object@.expr, " parent: ",object@.parent@.name ," \n Use this to define new columns on a ml.data.frame using the $ operator. To select a subset of a table, use bldf[] notation. "),"\n")
           }
 )
-#' @export
+# Not used!
 setMethod("as.vector", signature(x="ml.col.def"),
           function (x,mode="any") {
             #res <- idaQuery("SELECT ", x@term , " FROM ",x@table@table,ifelse(nchar(x@table@where), paste(" WHERE ", x@table@where), ""))

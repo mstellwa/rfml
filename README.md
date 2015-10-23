@@ -2,7 +2,7 @@
 
 rfml is a R package for MarkLogic Server, enabling in-dabase analytics.
 
-It uses the REST interfaces to allow user using search syntax for creating a data.frame similar object, ml.data.frame. There is no data brought back to the client during the creation of the object.
+It uses the REST interfaces to allow user using search syntax for creating a data.frame similar object, ml.data.frame. There is no data brought back to the client during the creation of the object. [More information on the wiki](https://github.com/mstellwa/rfml/wiki/Introduction-to-the-rfml-package)
 
 In order to use rfml you need a REST server, with a module database, for the MarkLogic database.
 
