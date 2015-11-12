@@ -13,6 +13,8 @@
 #'
 #' @param x a ml.data.frame field.
 #' @param y a ml.data.frame field
+#' @param use not used currently
+#' @param method not used currently
 #' @return The correlation coefficient
 #' @examples
 #' \dontrun{
@@ -81,6 +83,8 @@ setMethod(f="cor", signature=c(x="ml.col.def"),
 #'
 #' @param x a ml.data.frame field.
 #' @param y a ml.data.frame field
+#' @param use not implemented
+#' @param method not implemented
 #' @return The sample covariance
 #' @examples
 #' \dontrun{
@@ -164,6 +168,7 @@ cov.pop <- function(x,y) {
 #' that x belongs to is less than 2.
 #'
 #' @param x a ml.data.frame field.
+#' @param na.rm not used currently
 #' @return The sample variance
 #' @examples
 #' \dontrun{
@@ -203,6 +208,7 @@ setMethod(f="var", signature=c(x="ml.col.def"),
 #' that x belongs to is less than 2.
 #'
 #' @param x a ml.data.frame field.
+#' @param na.rm not used currently
 #' @return The sample variance
 #' @examples
 #' \dontrun{
@@ -239,6 +245,7 @@ var.pop <- function(x,na.rm = FALSE ) {
 #' that x belongs to is less than 2.
 #'
 #' @param x a ml.data.frame field.
+#' @param na.rm not used currently
 #' @return The sample standard deviation
 #' @examples
 #' \dontrun{
@@ -306,7 +313,22 @@ sd.pop <- function(x) {
 
 }
 
-
+#' Median
+#'
+#' Returns the median of a sequence of a ml.data.frame field.
+#'
+#' @param x a ml.data.frame field.
+#' @param na.rm not currently used.
+#' @return The median
+#' @examples
+#' \dontrun{
+#'  library(rfml)
+#'  ml.connect("localhost", "8000", "admin", "admin")
+#'  # create a ml.data.frame based on a search
+#'  mlDf <- ml.data.frame("corvette NEAR/1 convertible", collection = c("Analytics"))
+#'  # return the median
+#'  median(mlDf$orderLines1quantityOrdered)
+#' }
 #' @export
 setMethod(f="median", signature=c(x="ml.col.def"),
 
@@ -325,5 +347,36 @@ setMethod(f="median", signature=c(x="ml.col.def"),
             fields <- paste(fields, '}', sep='')
             func <- "math.median"
             return(.ml.stat.func(x@.parent, fields, func))
+          }
+)
+# summary function
+setMethod(f="summary", signature=c("ml.data.frame"),
+          function (object,digits=max(3L, getOption("digits") -3L), maxsum = 7L, ...) {
+            bdf<-object
+
+            options(scipen=999)
+
+            ####### Identifying Categorical Fields #########
+            res <- idaTableDef(bdf,F)
+            numeric <- as.vector(res[res$valType=='NUMERIC','name'])
+            categorical <- as.vector(res[res$valType=='CATEGORICAL','name'])
+
+            ####### Calculating Summary Values #############
+            catRes<-idaCategorical(bdf,categorical,maxsum)
+            maxsum<-max(7,maxsum)
+            quantiles <- idaQuantiles(bdf,numeric,maxsum,digits)
+
+            final<-c(quantiles,catRes)
+            final<-final[intersect(bdf@cols,c(numeric,categorical))]
+            final<-unlist(final)
+            dim(final) <- c(maxsum, length(numeric)+length(categorical))
+
+            ####### Naming the summary columns ############
+            blanks <- paste(character(max(10, na.rm = TRUE) + 2L),collapse = " ")
+            pad <- floor(nchar(final[1,])/2 - nchar(intersect(bdf@cols,c(numeric,categorical)))/2)
+            names <- paste0(substring(blanks, 1, pad), intersect(bdf@cols,c(numeric,categorical)))
+            dimnames(final)<-list(rep.int("",maxsum),names)
+            attr(final, "class") <- c("table")
+            final
           }
 )

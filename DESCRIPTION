@@ -7,12 +7,15 @@ Author: Mats Stellwall [aut, cre]
 Authors@R: person("Mats", "Stellwall", email = "mats.stellwall@gmail.com",
                   role = c("aut", "cre"))
 Description: Functionality required to efficiently use R with MarkLogic Server.
-        Many basic and complex R operations are pushed down into the database, which removes
-        the main memory boundary of R and allows to make full use of MarkLogic server.
+    Many basic and complex R operations are pushed down into the database, which
+    removes the main memory boundary of R and allows to make full use of MarkLogic
+    server.
 License: GPL-3
 LazyData: TRUE
-Imports: methods,
+Imports:
+    methods,
     httr,
     PKI,
     XML,
     jsonlite
+RoxygenNote: 5.0.0

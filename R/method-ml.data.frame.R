@@ -35,7 +35,7 @@ ml.data.frame <- function (query="", collection = c(), directory = c())
 
   mlHost <- paste("http://", .rfmlEnv$conn$host, ":", .rfmlEnv$conn$port, sep="")
   mlSearchURL <- paste(mlHost, "/LATEST/search", sep="")
-  mlOptions <- "rfml"
+  mlOptions <- .rfmlEnv$mlDefaultOption
   nStart=1
   nPageLength=20
   # These are the arguments that are common to all calls to MarkLogic
@@ -149,6 +149,31 @@ setMethod("as.data.frame", signature(x="ml.data.frame"),
             result <- return(.get.ml.data(x,max.rows))
           }
 )
+#' Will upload a data.frame object data to MarkLogic.
+#'
+#' The function will upload the data within a data.frame object to MarkLogic. It will create a document
+#' for each row. The documents will belong to a collection named rfml-username-name, where username is the
+#' loged in user and name is the provided name in the function
+#'
+#' @param x a Data Frame object.
+#' @param name The name of the object.
+#' @return A ml.data.frame object.
+#' @examples
+#' \dontrun{
+#'  library(rfml)
+#'  ml.connect("localhost", "8000", "admin", "admin")
+#'  # create a ml.data.frame based on the iris data set
+#'  dmlIris <- as.ml.data.frame(iris, "iris")
+#' }
+#' @export
+as.ml.data.frame <- function (x, name) {
+
+  # should return a ml.data.frame object
+  # check that x is a data.frame
+  rfmlCollection <- .insert.ml.data(x, name)
+
+  return(ml.data.frame(collection=c(rfmlCollection)));
+}
 ################ Sub data frames ############################
 # Not used!
 setMethod("[", signature(x = "ml.data.frame"),

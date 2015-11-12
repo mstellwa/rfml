@@ -21,18 +21,15 @@ ml.connect <- function(host = "localhost", port = "8000",
   enc_pwd <- PKI::PKI.encrypt(charToRaw(password), RSAkey)
   mlHost <- paste("http://", host, ":", port, sep="")
 
-  # TODO:
   # Check that we have required search options and transformations/modules installed
   if (!.check.database(mlHost, username, password)) {
-    # TODO:Handle not finding the options compared with other http responses
     .rfmlEnv$dbOk <- FALSE
     stop(paste("The database on ",mlHost, " is not set up to work with rfml. ",
-               "Use init_database for setting up the database.", sep=""))
+               "Use ml.init.database for setting up the database.", sep=""))
   }
   # the database is ok to use
   .rfmlEnv$dbOk <- TRUE
   .rfmlEnv$conn <- list("host" = host, "port" = port, "username" = username,
                "password"= enc_pwd)
 
-  #return(rfml)
 }
