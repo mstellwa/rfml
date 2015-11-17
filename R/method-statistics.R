@@ -350,31 +350,38 @@ setMethod(f="median", signature=c(x="ml.col.def"),
           }
 )
 # summary function
+#' @export
 setMethod(f="summary", signature=c("ml.data.frame"),
           function (object,digits=max(3L, getOption("digits") -3L), maxsum = 7L, ...) {
-            bdf<-object
+            mlDf<-object
 
             options(scipen=999)
 
-            ####### Identifying Categorical Fields #########
-            res <- idaTableDef(bdf,F)
-            numeric <- as.vector(res[res$valType=='NUMERIC','name'])
-            categorical <- as.vector(res[res$valType=='CATEGORICAL','name'])
+            final <- list()
+            sumResult <- .ml.summary.func(mlDf)
+            labelNum<-c("Min.","1st Qu.","Median","Mean","3rd Qu.","Max.")
+            labelCat <- c("Length","Class","Mode")
+            for (i in 1:length(sumResult)) {
+              if (rContent[[i]]$valType == 'NUMERIC') {
+                values <- c(rContent[[i]]$min, rContent[[i]]$q1, rContent[[i]]$median,rContent[[i]]$mean, rContent[[i]]$q3, rContent[[i]]$max)
+                values <- paste0(format(labelNum), ":", format(values,digits=digits,nsmall=3), "  ")
+              } else {
+                values <- c(rContent[[i]]$length, "character", "character")
+                values <- paste0(format(labelCat), ":", format(values), "  ")
+              }
+              length(values) <- maxsum
+              final <- c(final,list(c(values)))
 
-            ####### Calculating Summary Values #############
-            catRes<-idaCategorical(bdf,categorical,maxsum)
-            maxsum<-max(7,maxsum)
-            quantiles <- idaQuantiles(bdf,numeric,maxsum,digits)
-
-            final<-c(quantiles,catRes)
-            final<-final[intersect(bdf@cols,c(numeric,categorical))]
+            }
+            names(final)<-names(sumResult)
+            final <- final[intersect(mlDf@.col.name, names(sumResult))]
             final<-unlist(final)
-            dim(final) <- c(maxsum, length(numeric)+length(categorical))
+            dim(final) <- c(maxsum, length(sumResult))
 
             ####### Naming the summary columns ############
             blanks <- paste(character(max(10, na.rm = TRUE) + 2L),collapse = " ")
-            pad <- floor(nchar(final[1,])/2 - nchar(intersect(bdf@cols,c(numeric,categorical)))/2)
-            names <- paste0(substring(blanks, 1, pad), intersect(bdf@cols,c(numeric,categorical)))
+            pad <- floor(nchar(final[1,])/2 - nchar(intersect(mlDf@.col.name,names(sumResult)))/2)
+            names <- paste0(substring(blanks, 1, pad), intersect(mlDf@.col.name,names(sumResult)))
             dimnames(final)<-list(rep.int("",maxsum),names)
             attr(final, "class") <- c("table")
             final

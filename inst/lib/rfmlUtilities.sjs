@@ -1,8 +1,21 @@
+/******************************************************************************
+ * Various helper functions used by rfml
+ * Author: Mats Stellwall
+ ******************************************************************************/
 
+ /************************************
+  * Check if a value is numeric
+  * returns true if and false if not.
+  ************************************/
 function isNumeric(n) {
   return !isNaN(parseFloat(n)) && isFinite(n);
 }
 
+/***********************************************************************
+ * Flatten a json object
+ * If fieldDef if true it will onnly return the fieldname and datatype,
+ * else it will return fieldname and value
+ ************************************************************************/
 function flattenJsonObject(obj, flatJson, prefix, fieldDef) {
   for (var key in obj) {
     if (Array.isArray(obj[key])) {
@@ -31,7 +44,11 @@ function flattenJsonObject(obj, flatJson, prefix, fieldDef) {
   };
   return(flatJson);
 }
-
+/***********************************************************************
+ * Flatten a json array
+ * If fieldDef if true it will onnly return the fieldname and datatype,
+ * else it will return fieldname and value
+ ************************************************************************/
 function flattenJsonArray(obj, flatJson, prefix, fieldDef) {
   var length = obj.length;
   for (var i = 0; i < length; i++) {
@@ -61,6 +78,10 @@ function flattenJsonArray(obj, flatJson, prefix, fieldDef) {
   }
   return(flatJson)
 }
+/***********************************************************************
+ * Flatten a json document into a array with the values of each field
+ * defined in the fields parameter.
+ ************************************************************************/
 function fields2array(fields, result) {
   var json = require("/MarkLogic/json/json.xqy");
   var flatResult = [];
@@ -76,7 +97,7 @@ function fields2array(fields, result) {
       var resultContent = results[i].content;
     };
     var flatDoc = {};
-    // add additional fields
+    /* add additional fields */
     flatDoc.docUri = results[i].uri;
     flatDoc.score = results[i].score;
     flatDoc.confidence = results[i].confidence;
@@ -100,7 +121,58 @@ function fields2array(fields, result) {
   return flatResult;
 
 }
+/***********************************************************************
+ * Creates a result set that can be used to create
+ * summary (descreptive statsitcs).
+ ************************************************************************/
+function summaryResult(addedFields, result) {
+  var json = require("/MarkLogic/json/json.xqy");
+  var flatResult = {};
+  var results = result.results;
+
+  for (var i = 0; i < results.length; i++) {
+    if (results[i].format == 'xml') {
+      /* This has not been tested fully */
+      var xmlContent = xdmp.unquote(results[i].content);
+      var config = json.config("custom");
+      var resultContent = json.transformToJson(xmlContent, config).toObject();
+    } else {
+      var resultContent = results[i].content;
+    };
+    var flatDoc = {};
+    /* add search fields */
+    flatDoc.docUri = results[i].uri;
+    flatDoc.score = results[i].score;
+    flatDoc.confidence = results[i].confidence;
+    flatDoc.fitness = results[i].fitness;
+    /*
+      Flatten the current result
+    */
+    flatDoc = flattenJsonObject(resultContent, flatDoc, "", false);
+    /* append added fields */
+    for (var field in addedFields) {
+      var fieldName = field;
+      var fieldDef = addedFields[field].fieldDef;
+      flatDoc[fieldName] = eval(fieldDef.replace(/rfmlResult/g, "flatDoc"));
+    };
+    for (var field in flatDoc) {
+      if (flatResult[field]) {
+        if (flatResult[field].fieldType == 'number' && !isNumeric(flatDoc[field])) {
+              flatResult[field].fieldType = 'string';
+        };
+        flatResult[field].values.push(isNumeric(flatDoc[field]) ? parseFloat(flatDoc[field]) : flatDoc[field])
+      } else {
+         flatResult[field] = {"fieldType":isNumeric(flatDoc[field]) ? 'number' : 'string',
+                              'values' : [isNumeric(flatDoc[field]) ? parseFloat(flatDoc[field]) : flatDoc[field]]};
+       }
+    }
+
+  };
+  return flatResult;
+
+}
 
 exports.flattenJsonArray = flattenJsonArray;
 exports.flattenJsonObject = flattenJsonObject;
 exports.fields2array = fields2array;
+exports.summaryResult = summaryResult;

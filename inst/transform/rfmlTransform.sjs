@@ -29,7 +29,7 @@ function resultMetadata(userName, dframe, result) {
   };
 
 
-  // create our session data.frame document
+  /* create our session data.frame document */
   var dfInfoDoc = {
     "rfmlUser": userName,
     "rfmlDataFrame": dframe,
@@ -66,7 +66,7 @@ function resultData(fields, result) {
       var resultContent = results[i].content;
     };
     var flatDoc = {};
-    // add additional fields
+    /* add additional search fields */
     flatDoc.docUri = results[i].uri;
     flatDoc.score = results[i].score;
     flatDoc.confidence = results[i].confidence;
@@ -86,9 +86,11 @@ function resultData(fields, result) {
   return flatResult;
 
 }
+/******************************************************************************
+ * Either returns a flatten json with data or a flatten json with metadata
+ ******************************************************************************/
 function rfmlTransform(context, params, content)
 {
-  //var rfmlUtilities = require('/ext/rfml/rfmlUtilities.sjs');
   var userName = xdmp.getRequestUsername();
   var result = content.toObject();
   var dframe = params.dframe;
