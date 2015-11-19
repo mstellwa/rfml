@@ -5,12 +5,12 @@
 # A package specific enviroment, used to store the RSA key and connection info
 .rfmlEnv <- new.env()
 # name of transformations used
-.rfmlEnv$mlTransforms <- c("rfmlTransform", "rfmlLm", "rfmlStat", "rfmlSummary")
+.rfmlEnv$mlTransforms <- c("rfmlTransform", "rfmlLm", "rfmlStat", "rfmlSummary", "rfmlCor")
 # name of options used
 .rfmlEnv$mlOptions <- c("rfml")
 .rfmlEnv$mlDefaultOption <- "rfml"
 # name of libs used
-.rfmlEnv$mlLibs <- c("rfmlUtilities")
+.rfmlEnv$mlLibs <- c("rfmlUtilities", "xml2json")
 
 
 setClass("ml.data.frame",

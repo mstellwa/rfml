@@ -3,7 +3,6 @@
 function rfmlStat(context, params, content)
 {
   var rfmlUtilities = require('/ext/rfml/rfmlUtilities.sjs');
-  var json = require("/MarkLogic/json/json.xqy");
   var result = content.toObject();
   var statFunc = params.statfunc;
 

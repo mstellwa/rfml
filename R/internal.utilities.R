@@ -100,7 +100,7 @@
       nbrFound <- nbrFound + 1
     }
   }
-  if (nbrFound != length(mlOptions)) {
+  if (nbrFound != length(mlLibs)) {
     return(FALSE)
   }
 
@@ -360,7 +360,7 @@
 
 }
 
-# executes a statistic function
+# Get data for the summary function
 .ml.summary.func <- function(mlDf) {
 
   key <- .rfmlEnv$key
@@ -387,6 +387,62 @@
 #  }
 
   queryArgs <- c(queryComArgs, pageLength=nPageLength, transform="rfmlSummary")
+
+
+  # create
+  if (length(mlDf@.col.defs) > 0) {
+    fields <- "{"
+    for (i in 1:length(mlDf@.col.defs)) {
+      if (nchar(fields) > 1) {
+        fields <- paste(fields, ',', sep='')
+      }
+      fields <- paste(fields, '"', names(mlDf@.col.defs[i]), '":{"fieldDef":"',mlDf@.col.defs[[i]] ,'"}',sep='')
+    }
+    fields <- paste(fields, '}', sep='')
+    queryArgs <- c(queryArgs, 'trans:fields'=fields)
+  }
+
+
+  # do a search
+  response <- GET(mlSearchURL, query = queryArgs, authenticate(username, password, type="digest"), accept_json())
+  # check that we get an 200
+  rContent <- content(response)
+  if(response$status_code != 200) {
+    errorMsg <- paste("statusCode: ",
+                      rContent, sep="")
+    stop(paste("Ops, something went wrong.", errorMsg))
+  }
+
+  return(rContent)
+}
+
+# Get data for the summary function
+.ml.correlation.matrix <- function(mlDf) {
+
+  key <- .rfmlEnv$key
+  password <- rawToChar(PKI::PKI.decrypt(.rfmlEnv$conn$password, key))
+  username <- .rfmlEnv$conn$username
+  dframe <- mlDf@.name
+  #query <- mlDf@.ctsQuery
+  queryComArgs <- mlDf@.queryArgs
+
+  mlHost <- paste("http://", .rfmlEnv$conn$host, ":", .rfmlEnv$conn$port, sep="")
+  mlSearchURL <- paste(mlHost, "/LATEST/search", sep="")
+  # if (is.null(searchOption)) {
+  mlOptions <- .rfmlEnv$mlDefaultOption
+  #  } else {
+  #    mlOptions <- searchOption
+  #  }
+
+
+  nStart=1
+  #  if (nrows>0) {
+  #    nPageLength <- nrows
+  #  } else {
+  nPageLength <- mlDf@.nrows
+  #  }
+
+  queryArgs <- c(queryComArgs, pageLength=nPageLength, transform="rfmlCor")
 
 
   # create

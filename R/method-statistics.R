@@ -52,8 +52,32 @@ setMethod(f="cor", signature=c(x="ml.col.def",y="ml.col.def"),
             return(.ml.stat.func(x@.parent, fields, func))
         }
 )
-# correlation matrix on all numeric columns in a ml.col.def
-setMethod(f="cor", signature=c(x="ml.col.def"),
+#' Correlation Matrix
+#'
+#' Returns the Pearson correlation coefficient matrix of a ml.data.frame
+#'
+#' The function eliminates all pairs for which either the first element or the second
+#' element is empty. After the elimination, if the length of the input is less than 2,
+#' the function returns the empty sequence. After the elimination, if the standard
+#' deviation of the first column or the standard deviation of the second column is 0,
+#' the function returns the empty sequence.
+#'
+#' @param x a ml.data.frame
+#' @param y not used currently
+#' @param use not used currently
+#' @param method not used currently
+#' @return The correlation coefficient matrix
+#' @examples
+#' \dontrun{
+#'  library(rfml)
+#'  ml.connect("localhost", "8000", "admin", "admin")
+#'  # create a ml.data.frame based on a search
+#'  mlDf <- ml.data.frame("corvette NEAR/1 convertible", collection = c("Analytics"))
+#'  # return the correlation
+#'  cor(mlDf)
+#' }
+#' @export
+setMethod(f="cor", signature=c(x="ml.data.frame"),
 
           function(x,y = NULL,use = NULL,method = NULL ) {
 
@@ -64,13 +88,20 @@ setMethod(f="cor", signature=c(x="ml.col.def"),
             # method
             if (!missing(method) && !is.null(method))
               stop(simpleError("method option is not implemented yet"))
-
-
-            fields <- "{"
-            fields <- paste(fields, '"',x@.name , '":{"fieldDef":"',x@.expr ,'"},"', y@.name, '":{"fieldDef":"',y@.expr ,'"}' ,sep='')
-            fields <- paste(fields, '}', sep='')
-            func <- "math.correlation"
-            return(.ml.stat.func(x@.parent, fields, func))
+            # get correlation matrix data
+            corMatResult <- .ml.correlation.matrix(x)
+            # create the matrix
+            corMat <- matrix(1:(length(corMatResult)),nrow=length(corMatResult),ncol=length(corMatResult),dimnames = list(names(corMatResult),names(corMatResult)),byrow=T)
+            for(i in 1:length(corMatResult)) {
+              for(j in 1:length(corMatResult[[i]])) {
+                if (is.null(corMatResult[[i]][[j]])) {
+                  corMat[i,j] <- NA
+                } else {
+                  corMat[i,j] <- corMatResult[[i]][[j]]
+                }
+              }
+            }
+            corMat
           }
 )
 #' Covariance
@@ -357,33 +388,43 @@ setMethod(f="summary", signature=c("ml.data.frame"),
 
             options(scipen=999)
 
-            final <- list()
-            sumResult <- .ml.summary.func(mlDf)
+            summaryTbl <- list()
             labelNum<-c("Min.","1st Qu.","Median","Mean","3rd Qu.","Max.")
             labelCat <- c("Length","Class","Mode")
-            for (i in 1:length(sumResult)) {
-              if (rContent[[i]]$valType == 'NUMERIC') {
-                values <- c(rContent[[i]]$min, rContent[[i]]$q1, rContent[[i]]$median,rContent[[i]]$mean, rContent[[i]]$q3, rContent[[i]]$max)
+            # Get statsitics per field
+            sumResult <- .ml.summary.func(mlDf)
+            # since the result is a list with lists (one for each field) we need to transform it to
+            # a list with one value, all the statistics, for each field.
+             for (i in 1:length(sumResult)) {
+              if (sumResult[[i]]$valType == 'NUMERIC') {
+                values <- c(sumResult[[i]]$min, sumResult[[i]]$q1, sumResult[[i]]$median,sumResult[[i]]$mean, sumResult[[i]]$q3, sumResult[[i]]$max)
                 values <- paste0(format(labelNum), ":", format(values,digits=digits,nsmall=3), "  ")
               } else {
-                values <- c(rContent[[i]]$length, "character", "character")
+                values <- c(sumResult[[i]]$length, "character", "character")
                 values <- paste0(format(labelCat), ":", format(values), "  ")
               }
+              # make sure that the length is same for all values
               length(values) <- maxsum
-              final <- c(final,list(c(values)))
+              summaryTbl <- c(summaryTbl,list(c(values)))
 
             }
-            names(final)<-names(sumResult)
-            final <- final[intersect(mlDf@.col.name, names(sumResult))]
-            final<-unlist(final)
-            dim(final) <- c(maxsum, length(sumResult))
+            # we need to add names on summaryTbl so we can do the intersect later
+            names(summaryTbl)<-names(sumResult)
+            # We are only intrested in keeping the fields that exists in our ml.data.frame
+            summaryTbl <- summaryTbl[intersect(mlDf@.col.name, names(sumResult))]
 
-            ####### Naming the summary columns ############
+            summaryTbl<-unlist(summaryTbl)
+
+            # Since there is a possibility that our summary result has more fields than our
+            # ml.data.frame we need to use the number of fields in mlDf
+            dim(summaryTbl) <- c(maxsum, length(mlDf@.col.name))
+
+            # adjusting the output, so field names are aligned with the statistic information
             blanks <- paste(character(max(10, na.rm = TRUE) + 2L),collapse = " ")
-            pad <- floor(nchar(final[1,])/2 - nchar(intersect(mlDf@.col.name,names(sumResult)))/2)
+            pad <- floor(nchar(summaryTbl[1,])/2 - nchar(intersect(mlDf@.col.name,names(sumResult)))/2)
             names <- paste0(substring(blanks, 1, pad), intersect(mlDf@.col.name,names(sumResult)))
-            dimnames(final)<-list(rep.int("",maxsum),names)
-            attr(final, "class") <- c("table")
-            final
+            dimnames(summaryTbl)<-list(rep.int("",maxsum),names)
+            attr(summaryTbl, "class") <- c("table")
+            summaryTbl
           }
 )

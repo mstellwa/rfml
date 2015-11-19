@@ -138,7 +138,7 @@ ml.data.frame <- function (query="", collection = c(), directory = c())
 
 ################ Generic methods for upload and download of data ############################
 
-# ---------------------------------------------------------------------
+################ as.data.frame ############################
 # Will pull the data from MarkLogic and return it as a data.frame
 #' @export
 setMethod("as.data.frame", signature(x="ml.data.frame"),
@@ -174,7 +174,7 @@ as.ml.data.frame <- function (x, name) {
 
   return(ml.data.frame(collection=c(rfmlCollection)));
 }
-################ Sub data frames ############################
+################ [ ############################
 # Not used!
 setMethod("[", signature(x = "ml.data.frame"),
           function (x, i=NULL, j=NULL, ..., drop=NA)
@@ -234,7 +234,7 @@ setMethod("[", signature(x = "ml.data.frame"),
           }
 )
 
-# ---------------------------------------------------------------------
+################ $ ############################
 #' @export
 setMethod("$", signature(x = "ml.data.frame"),
           function(x, name) {
@@ -253,7 +253,7 @@ setMethod("$", signature(x = "ml.data.frame"),
 
           }
 )
-
+################ $<- ############################
 #' @export
 setMethod("$<-", signature(x = "ml.data.frame"),
           function(x, name,value) {
@@ -300,18 +300,19 @@ is.ml.data.frame <-
   function(x) {
     return(inherits(x, "ml.data.frame"))
   }
-
+################ dim ############################
 #' @export
 setMethod("dim", signature(x="ml.data.frame"),
           function(x) {
               return(c(x@.nrows, length(x@.col.name)))
           }
 )
-
+################ colnames ############################
 #' @export
 setMethod("colnames", signature(x="ml.data.frame"),
           function(x) { x@.col.name }
 )
+################ head ############################
 #' @export
 setMethod("head", signature(x="ml.data.frame"),
           function(x, n = 6, ...) {
@@ -332,12 +333,14 @@ setMethod("head", signature(x="ml.data.frame"),
 )
 
 ################ Basic ml.data.frame functions and methods ############################
+################ print ############################
 #' @export
 setMethod("print", signature(x="ml.data.frame"),
           function (x) {
             cat(object@.ctsQuery,"\n")
           }
 )
+################ show ############################
 #' @export
 setMethod("show", signature(object="ml.data.frame"),
           function (object) {
@@ -345,7 +348,7 @@ setMethod("show", signature(object="ml.data.frame"),
           }
 )
 
-# ---------------------------------------------------------------------
+################ names ############################
 #' @export
 setMethod("names", signature(x="ml.data.frame"),
           function(x) { return(x@.col.name) }

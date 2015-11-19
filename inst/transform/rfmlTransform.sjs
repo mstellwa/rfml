@@ -1,8 +1,8 @@
 
 
 function resultMetadata(userName, dframe, result) {
-  var json = require("/MarkLogic/json/json.xqy");
   var rfmlUtilities = require('/ext/rfml/rfmlUtilities.sjs');
+  var xml2json = require('/ext/rfml/xml2json.sjs');
   var docFields = {};
 
   var qText = result.qtext;
@@ -13,11 +13,9 @@ function resultMetadata(userName, dframe, result) {
 
   for (var i = 0; i < results.length; i++) {
     if (results[i].format == 'xml') {
-      /* This has not been tested fully */
-
-      var xmlContent = xdmp.unquote(results[i].content);
-      var config = json.config("custom");
-      var resultContent = json.transformToJson(xmlContent, config).toObject();
+      var xmlContent = xdmp.unquote(results[i].content).next().value;
+      var x2js = new xml2json.X2JS();
+      var resultContent = x2js.xml2json( xmlContent );
     } else {
       var resultContent = results[i].content;
     };
@@ -28,8 +26,7 @@ function resultMetadata(userName, dframe, result) {
     docFields = rfmlUtilities.flattenJsonObject(resultContent, docFields, "", true);
   };
 
-
-  /* create our session data.frame document */
+  // create our session data.frame document
   var dfInfoDoc = {
     "rfmlUser": userName,
     "rfmlDataFrame": dframe,
@@ -44,8 +41,8 @@ function resultMetadata(userName, dframe, result) {
 }
 
 function resultData(fields, result) {
-  var json = require("/MarkLogic/json/json.xqy");
   var rfmlUtilities = require('/ext/rfml/rfmlUtilities.sjs');
+  var xml2json = require('/ext/rfml/xml2json.sjs');
   var flatResult = [];
 
   var qText = result.qtext;
@@ -56,17 +53,15 @@ function resultData(fields, result) {
 
   for (var i = 0; i < results.length; i++) {
     if (results[i].format == 'xml') {
-      /* This has not been tested fully */
-
-      var xmlContent = xdmp.unquote(results[i].content);
-      var config = json.config("custom");
-      var resultContent = json.transformToJson(xmlContent, config).toObject();
+      var xmlContent = xdmp.unquote(results[i].content).next().value;
+      var x2js = new xml2json.X2JS();
+      var resultContent = x2js.xml2json( xmlContent );
     } else {
 
       var resultContent = results[i].content;
     };
     var flatDoc = {};
-    /* add additional search fields */
+    // add additional fields
     flatDoc.docUri = results[i].uri;
     flatDoc.score = results[i].score;
     flatDoc.confidence = results[i].confidence;

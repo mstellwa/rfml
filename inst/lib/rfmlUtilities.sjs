@@ -37,7 +37,8 @@ function flattenJsonObject(obj, flatJson, prefix, fieldDef) {
             flatJson[prefix + key] = {"fieldType":isNumeric(obj[key]) ? 'number' : 'string', "fieldDef":prefix + key};
           };
         } else {
-          flatJson[prefix + key] = obj[key];
+          flatJson[prefix + key] = isNumeric(obj[key]) ?  parseFloat(obj[key]) : obj[key];
+
         };
       };
     };
@@ -71,28 +72,29 @@ function flattenJsonArray(obj, flatJson, prefix, fieldDef) {
             flatJson[prefix + i] = {"fieldType":isNumeric(obj[i]) ? 'number' : 'string', "fieldDef":prefix + i};
           };
         } else {
-          flatJson[prefix + i] = obj[i]
+          flatJson[prefix + i] = isNumeric(obj[i]) ?  parseFloat(obj[i]) : obj[i]
         };
       };
     }
   }
   return(flatJson)
 }
+
 /***********************************************************************
  * Flatten a json document into a array with the values of each field
  * defined in the fields parameter.
  ************************************************************************/
 function fields2array(fields, result) {
-  var json = require("/MarkLogic/json/json.xqy");
+  var xml2json = require('/ext/rfml/xml2json.sjs');
   var flatResult = [];
   var results = result.results;
 
   for (var i = 0; i < results.length; i++) {
     if (results[i].format == 'xml') {
       /* This has not been tested fully */
-      var xmlContent = xdmp.unquote(results[i].content);
-      var config = json.config("custom");
-      var resultContent = json.transformToJson(xmlContent, config).toObject();
+      var xmlContent = xdmp.unquote(results[i].content).next().value;
+      var x2js = new xml2json.X2JS();
+      var resultContent = x2js.xml2json( xmlContent );
     } else {
       var resultContent = results[i].content;
     };
@@ -126,16 +128,16 @@ function fields2array(fields, result) {
  * summary (descreptive statsitcs).
  ************************************************************************/
 function summaryResult(addedFields, result) {
-  var json = require("/MarkLogic/json/json.xqy");
+  var xml2json = require('/ext/rfml/xml2json.sjs');
   var flatResult = {};
   var results = result.results;
 
   for (var i = 0; i < results.length; i++) {
     if (results[i].format == 'xml') {
       /* This has not been tested fully */
-      var xmlContent = xdmp.unquote(results[i].content);
-      var config = json.config("custom");
-      var resultContent = json.transformToJson(xmlContent, config).toObject();
+      var xmlContent = xdmp.unquote(results[i].content).next().value;
+      var x2js = new xml2json.X2JS();
+      var resultContent = x2js.xml2json( xmlContent );
     } else {
       var resultContent = results[i].content;
     };
