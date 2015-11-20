@@ -54,9 +54,9 @@ setMethod(f="cor", signature=c(x="ml.col.def",y="ml.col.def"),
 )
 #' Correlation Matrix
 #'
-#' Returns the Pearson correlation coefficient matrix of a ml.data.frame
+#' Returns the Pearson correlation coefficient matrix of all numeric fields in a ml.data.frame
 #'
-#' The function eliminates all pairs for which either the first element or the second
+#' The function eliminates all fields pairs for which either the first element or the second
 #' element is empty. After the elimination, if the length of the input is less than 2,
 #' the function returns the empty sequence. After the elimination, if the standard
 #' deviation of the first column or the standard deviation of the second column is 0,

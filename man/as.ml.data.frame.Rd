@@ -2,22 +2,25 @@
 % Please edit documentation in R/method-ml.data.frame.R
 \name{as.ml.data.frame}
 \alias{as.ml.data.frame}
-\title{Will upload a data.frame object data to MarkLogic.}
+\title{Upload a data.frame object data to MarkLogic.}
 \usage{
-as.ml.data.frame(x, name)
+as.ml.data.frame(x, name, format = "json", directory = "")
 }
 \arguments{
 \item{x}{a Data Frame object.}
 
 \item{name}{The name of the object.}
+
+\item{format}{The format od the documents that is created, json or XML. Default is json}
+
+\item{directory}{The directory to save the documents, needs to start and end with a /. Default saved to /rfml/[username]/[name]/}
 }
 \value{
 A ml.data.frame object.
 }
 \description{
 The function will upload the data within a data.frame object to MarkLogic. It will create a document
-for each row. The documents will belong to a collection named rfml-username-name, where username is the
-loged in user and name is the provided name in the function
+for each row. The documents will belong to a collection named "name".
 }
 \examples{
 \dontrun{

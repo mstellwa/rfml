@@ -139,7 +139,7 @@ ml.data.frame <- function (query="", collection = c(), directory = c())
 ################ Generic methods for upload and download of data ############################
 
 ################ as.data.frame ############################
-# Will pull the data from MarkLogic and return it as a data.frame
+# Pull data from MarkLogic and return it as a data.frame
 #' @export
 setMethod("as.data.frame", signature(x="ml.data.frame"),
           function (x, max.rows=NULL, ...) {
@@ -149,14 +149,15 @@ setMethod("as.data.frame", signature(x="ml.data.frame"),
             result <- return(.get.ml.data(x,max.rows))
           }
 )
-#' Will upload a data.frame object data to MarkLogic.
+#' Upload a data.frame object data to MarkLogic.
 #'
 #' The function will upload the data within a data.frame object to MarkLogic. It will create a document
-#' for each row. The documents will belong to a collection named rfml-username-name, where username is the
-#' loged in user and name is the provided name in the function
+#' for each row. The documents will belong to a collection named "name".
 #'
 #' @param x a Data Frame object.
 #' @param name The name of the object.
+#' @param format The format od the documents that is created, json or XML. Default is json
+#' @param directory The directory to save the documents, needs to start and end with a /. Default saved to /rfml/[username]/[name]/
 #' @return A ml.data.frame object.
 #' @examples
 #' \dontrun{
@@ -166,11 +167,11 @@ setMethod("as.data.frame", signature(x="ml.data.frame"),
 #'  dmlIris <- as.ml.data.frame(iris, "iris")
 #' }
 #' @export
-as.ml.data.frame <- function (x, name) {
+as.ml.data.frame <- function (x, name, format = "json", directory = "") {
 
   # should return a ml.data.frame object
   # check that x is a data.frame
-  rfmlCollection <- .insert.ml.data(x, name)
+  rfmlCollection <- .insert.ml.data(x, name, format, directory)
 
   return(ml.data.frame(collection=c(rfmlCollection)));
 }

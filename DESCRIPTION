@@ -18,4 +18,4 @@ Imports:
     PKI,
     XML,
     jsonlite
-RoxygenNote: 5.0.0
+RoxygenNote: 5.0.1

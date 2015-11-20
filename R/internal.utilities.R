@@ -1,6 +1,7 @@
 ###############################################################################
 # Internal functions used in the package
 ###############################################################################
+
 # verify that the database has everything neccessary in order to use the package
 # if it exists it returns TRUE if not FALSE and if any other status_code than 404
 # it will add a warning
@@ -300,9 +301,8 @@
 
 }
 # Internal used function that inserts data.frame data into MarkLogic.
-# Each line is added as a document, put in a collection based on the name,
-# username and rfml.
-.insert.ml.data <- function(myData, myCollection) {
+# Each line is added as a document, put in a collection based on the name
+.insert.ml.data <- function(myData, myCollection, format, directory) {
 
   # get connection imformation
   key <- .rfmlEnv$key
@@ -312,26 +312,28 @@
 
   mlPutURL <- paste(mlHost, "/v1/documents", sep="")
 
-  # add a prefix to the collection so it is keept seperated and generate the directory URI
-  rfmlCollection <- paste("rfml-", username, "-", myCollection, sep="")
-  rfmlDirectory <- paste("/rfml/", username, "/", myCollection, "/", sep="")
 
-  # this needs to be optimized.
-  for (i in 1:nrow(myData)) {
-    myJsonData <- toJSON(myData[i,])
-    # need to remove the [ ] in the doc, before sending it
-    myJsonData <- gsub("\\]", "", gsub("\\[", "", myJsonData))
-    docURI <- paste(rfmlDirectory, i, ".json", sep="")
-    putArgs <- list(uri=docURI, collection=rfmlCollection)
-    response <- PUT(mlPutURL, query = putArgs, body = myJsonData, authenticate(username, password, type="digest"), content_type_json())
-    # check that we get an 201 (Created) or 204 (Updated).
-    if(response$status_code != 201 && response$status_code != 204) {
-      rContent <- content(response, as = "text")
-      errorMsg <- paste("statusCode: ",
-                        rContent, sep="")
-      stop(paste("Ops, something went wrong.", errorMsg))
-    }
+  rfmlCollection <- myCollection
+  # generate the directory URI
+  if (directory == "") {
+    rfmlDirectory <- paste("/rfml/", username, "/", myCollection, "/", sep="")
+  } else {
+    rfmlDirectory <- directory
+  }
 
+  if (format == "XML") {
+    bodyFile <- .generate.xml.body(myData, myCollection, rfmlDirectory)
+  } else if (format == "json") {
+    bodyFile <- .generate.json.body(myData, myCollection, rfmlDirectory)
+  } else {
+    stop("Unkown format")
+  }
+  response <- POST(mlPutURL,  body = upload_file(bodyFile, type = "multipart/mixed; boundary=BOUNDARY"), authenticate(username, password, type="digest"), encode = "multipart")
+  unlink(bodyFile)
+  if(response$status_code != 200) {
+  rContent <- content(response, as = "text")
+    errorMsg <- paste("statusCode: ",rContent, sep="")
+    stop(paste("Ops, something went wrong.", errorMsg))
   }
 
   return(rfmlCollection)
@@ -470,4 +472,77 @@
   }
 
   return(rContent)
+}
+
+
+.generate.xml.body <- function(data, name, directory) {
+
+  boundary <- "--BOUNDARY"
+  contentType <- "Content-Type: application/xml"
+  bodyText <- c(boundary,contentType)
+
+  # add metadata
+  bodyText <- c(bodyText, "Content-Disposition: inline; category=metadata")
+  bodyText <- c(bodyText, "")
+  bodyText <- c(bodyText, '<?xml version="1.0" encoding="UTF-8"?>')
+  bodyText <- c(bodyText, '<rapi:metadata xmlns:rapi="http://marklogic.com/rest-api">')
+  bodyText <- c(bodyText, paste('<rapi:collections><rapi:collection>', name, '</rapi:collection></rapi:collections>', sep=""))
+  bodyText <- c(bodyText, '</rapi:metadata>')
+
+  # start loop
+  for (i in 1:nrow(data)) {
+    bodyText <- c(bodyText,boundary,contentType, paste("Content-Disposition: inline;extension=xml;directory=", directory,sep=""), "")
+    myXml <- xmlTree()
+    myXml$addTag(name, close=FALSE)
+    for (j in names(data)) {
+      myXml$addTag(j, data[i, j])
+    }
+    myXml$closeTag()
+    bodyText <- c(bodyText, saveXML(myXml,indent = FALSE,prefix = '<?xml version="1.0"?>'))
+    #bodyText <- c(bodyText, saveXML(myXml,indent = FALSE, prefix = ''))
+  }
+  bodyText <- c(bodyText, "--BOUNDARY--", "")
+  # add it
+  multipartBody <- tempfile()
+  writeLines(bodyText, multipartBody, sep='\r\n')
+  # remove the file after upload
+  #unlink(multipartBody)
+  return(multipartBody)
+  # start loop
+
+
+}
+
+.generate.json.body <- function(data, name, directory) {
+
+  boundary <- "--BOUNDARY"
+  #contentTypeXML <- "Content-Type: application/xml"
+  contentType <- "Content-Type: application/json"
+  bodyText <- c(boundary,contentType)
+
+  # add metadata
+  bodyText <- c(bodyText, "Content-Disposition: inline; category=metadata")
+  bodyText <- c(bodyText, "")
+  bodyText <- c(bodyText, paste('{"collections" : ["', name, '"] }', sep=""))
+
+
+  # start loop
+  for (i in 1:nrow(data)) {
+    bodyText <- c(bodyText,boundary,contentType, paste("Content-Disposition: inline;extension=json;directory=", directory,sep=""), "")
+    jsonData <- toJSON(data[i,])
+    # need to remove the [ ] in the doc, before sending it
+    jsonData <- gsub("\\]", "", gsub("\\[", "", jsonData))
+
+    bodyText <- c(bodyText, jsonData)
+  }
+  bodyText <- c(bodyText, "--BOUNDARY--", "")
+  # add it
+  multipartBody <- tempfile()
+  writeLines(bodyText, multipartBody, sep='\r\n')
+  # remove the file after upload
+  #unlink(multipartBody)
+  return(multipartBody)
+  # start loop
+
+
 }
