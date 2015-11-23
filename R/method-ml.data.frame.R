@@ -8,6 +8,8 @@
 #' @param query The query string used to define the result.
 #' @param collection A list of collection URI:s to filter on.
 #' @param directory A list of directory URI:s to filter on.
+#' @param relevanceScores TRUE/FALSE. If the result attributes score, confidence and fitness should be included. Default is TRUE
+#' @param docUri TRUE/FALSE. If the uri of the documents in the results should be included. Default is TRUE.
 #' @return A ml.data.frame object.
 #' @examples
 #' \dontrun{
@@ -21,10 +23,10 @@
 #'  df <- ml.data.frame(collection=c("Analytics"))
 #' }
 #' @export
-ml.data.frame <- function (query="", collection = c(), directory = c())
+ml.data.frame <- function (query="", collection = c(), directory = c(), relevanceScores = TRUE, docUri = TRUE)
 {
   if (length(.rfmlEnv$conn) != 4) {
-    stop("Need create a connection object. Use rfml.connect first.")
+    stop("Need create a connection object. Use ml.connect first.")
   }
   # get data from ML
   # we need to create a "unique" name for the frame that we use to save the resultset
@@ -34,12 +36,12 @@ ml.data.frame <- function (query="", collection = c(), directory = c())
   username <- .rfmlEnv$conn$username
 
   mlHost <- paste("http://", .rfmlEnv$conn$host, ":", .rfmlEnv$conn$port, sep="")
-  mlSearchURL <- paste(mlHost, "/LATEST/search", sep="")
+  mlSearchURL <- paste(mlHost, "/v1/search", sep="")
   mlOptions <- .rfmlEnv$mlDefaultOption
   nStart=1
   nPageLength=20
   # These are the arguments that are common to all calls to MarkLogic
-  queryComArgs <- list(q=query, options=mlOptions, start=nStart, format="json")
+  queryComArgs <- list(q=query, options=mlOptions, start=nStart, format="json", 'trans:relevanceScores'=relevanceScores, 'trans:docUri' = docUri)
 
   # need to build a structuredQuery in order to get the collection/directory filtering
   # as part of the returned query.

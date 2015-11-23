@@ -5,13 +5,14 @@ function rfmlCor(context, params, content)
 {
   var rfmlUtilities = require('/ext/rfml/rfmlUtilities.sjs');
   var result = content.toObject();
-
+  var relevanceScores = params.relevanceScores == "TRUE" ? true : false;
+  var docUri = params.docUri == "TRUE" ? true : false;
   var fields = {};
   if (params.fields) {
     fields = JSON.parse(params.fields);
   }
 
-  var flatResult = rfmlUtilities.summaryResult(fields, result);
+  var flatResult = rfmlUtilities.summaryResult(fields, result, relevanceScores, docUri);
   var corResult = {};
 
   for (var field in flatResult) {

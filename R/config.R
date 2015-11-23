@@ -53,7 +53,7 @@ ml.init.database <- function(host = "localhost", port = "8000", adminuser = "adm
       message(paste("Transformation ",mlTransforms[i], " is now installed on ", host, ":", port, sep=""))
     }
   }
-
+  closeAllConnections()
   message(paste(host, ":", port, " is now ready for use with rfml",sep=""))
 }
 

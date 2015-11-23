@@ -127,7 +127,7 @@ function fields2array(fields, result) {
  * Creates a result set that can be used to create
  * summary (descreptive statsitcs).
  ************************************************************************/
-function summaryResult(addedFields, result) {
+function summaryResult(addedFields, result, relevanceScores, docUri) {
   var xml2json = require('/ext/rfml/xml2json.sjs');
   var flatResult = {};
   var results = result.results;
@@ -143,10 +143,14 @@ function summaryResult(addedFields, result) {
     };
     var flatDoc = {};
     /* add search fields */
-    flatDoc.docUri = results[i].uri;
-    flatDoc.score = results[i].score;
-    flatDoc.confidence = results[i].confidence;
-    flatDoc.fitness = results[i].fitness;
+    if (docUri) {
+      flatDoc.docUri = results[i].uri;
+    }
+    if (relevanceScores) {
+      flatDoc.score = results[i].score;
+      flatDoc.confidence = results[i].confidence;
+      flatDoc.fitness = results[i].fitness;
+    }
     /*
       Flatten the current result
     */

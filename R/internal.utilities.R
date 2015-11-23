@@ -310,8 +310,7 @@
   username <- .rfmlEnv$conn$username
   mlHost <- paste("http://", .rfmlEnv$conn$host, ":", .rfmlEnv$conn$port, sep="")
 
-  mlPutURL <- paste(mlHost, "/v1/documents", sep="")
-
+  mlPostURL <- paste(mlHost, "/v1/documents", sep="")
 
   rfmlCollection <- myCollection
   # generate the directory URI
@@ -328,10 +327,10 @@
   } else {
     stop("Unkown format")
   }
-  response <- POST(mlPutURL,  body = upload_file(bodyFile, type = "multipart/mixed; boundary=BOUNDARY"), authenticate(username, password, type="digest"), encode = "multipart")
+  response <- POST(mlPostURL,  body = upload_file(bodyFile, type = "multipart/mixed; boundary=BOUNDARY"), authenticate(username, password, type="digest"), encode = "multipart")
   unlink(bodyFile)
   if(response$status_code != 200) {
-  rContent <- content(response, as = "text")
+    rContent <- content(response, as = "text")
     errorMsg <- paste("statusCode: ",rContent, sep="")
     stop(paste("Ops, something went wrong.", errorMsg))
   }
@@ -539,10 +538,5 @@
   # add it
   multipartBody <- tempfile()
   writeLines(bodyText, multipartBody, sep='\r\n')
-  # remove the file after upload
-  #unlink(multipartBody)
   return(multipartBody)
-  # start loop
-
-
 }

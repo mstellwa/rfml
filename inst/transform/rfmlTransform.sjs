@@ -1,6 +1,8 @@
-
-
-function resultMetadata(userName, dframe, result) {
+/******************************************************************************
+ * Generates a flatten json with metadata
+ ******************************************************************************/
+function resultMetadata(userName, dframe, result, relevanceScores, docUri) {
+  var json = require("/MarkLogic/json/json.xqy");
   var rfmlUtilities = require('/ext/rfml/rfmlUtilities.sjs');
   var xml2json = require('/ext/rfml/xml2json.sjs');
   var docFields = {};
@@ -19,14 +21,19 @@ function resultMetadata(userName, dframe, result) {
     } else {
       var resultContent = results[i].content;
     };
-    docFields.docUri = {"fieldType":'string', "fieldDef":'docUri'};
-    docFields.score = {"fieldType":'number', "fieldDef":'score'};
-    docFields.confidence = {"fieldType":'number', "fieldDef":'confidence'};
-    docFields.fitness = {"fieldType":'number', "fieldDef":'fitness'};
+    if (docUri) {
+      docFields.docUri = {"fieldType":'string', "fieldDef":'docUri'};
+    }
+    if (relevanceScores) {
+      docFields.score = {"fieldType":'number', "fieldDef":'score'};
+      docFields.confidence = {"fieldType":'number', "fieldDef":'confidence'};
+      docFields.fitness = {"fieldType":'number', "fieldDef":'fitness'};
+    }
     docFields = rfmlUtilities.flattenJsonObject(resultContent, docFields, "", true);
   };
 
-  // create our session data.frame document
+
+  /* create our session data.frame document */
   var dfInfoDoc = {
     "rfmlUser": userName,
     "rfmlDataFrame": dframe,
@@ -39,8 +46,11 @@ function resultMetadata(userName, dframe, result) {
 
   return dfInfoDoc;
 }
-
-function resultData(fields, result) {
+/******************************************************************************
+ * Either returns a flatten json with data
+ ******************************************************************************/
+function resultData(fields, result, relevanceScores, docUri) {
+  var json = require("/MarkLogic/json/json.xqy");
   var rfmlUtilities = require('/ext/rfml/rfmlUtilities.sjs');
   var xml2json = require('/ext/rfml/xml2json.sjs');
   var flatResult = [];
@@ -61,12 +71,15 @@ function resultData(fields, result) {
       var resultContent = results[i].content;
     };
     var flatDoc = {};
-    // add additional fields
-    flatDoc.docUri = results[i].uri;
-    flatDoc.score = results[i].score;
-    flatDoc.confidence = results[i].confidence;
-    flatDoc.fitness = results[i].fitness;
-
+    /* add additional fields */
+    if (docUri) {
+      flatDoc.docUri = results[i].uri;
+    }
+    if (relevanceScores) {
+      flatDoc.score = results[i].score;
+      flatDoc.confidence = results[i].confidence;
+      flatDoc.fitness = results[i].fitness;
+    }
     flatDoc = rfmlUtilities.flattenJsonObject(resultContent, flatDoc, "", false);
 
     for (var field in fields) {
@@ -89,15 +102,17 @@ function rfmlTransform(context, params, content)
   var userName = xdmp.getRequestUsername();
   var result = content.toObject();
   var dframe = params.dframe;
+  var relevanceScores = params.relevanceScores == "TRUE" ? true : false;
+  var docUri = params.docUri == "TRUE" ? true : false;
 
   if (params.return == 'data') {
     var fields = {};
     if (params.fields) {
       fields = JSON.parse(params.fields);
     }
-    var returnDoc = resultData(fields, result);
+    var returnDoc = resultData(fields, result, relevanceScores, docUri);
   } else {
-    var returnDoc = resultMetadata(userName, dframe, result);
+    var returnDoc = resultMetadata(userName, dframe, result, relevanceScores, docUri);
   };
  return xdmp.toJsonString(returnDoc);
 };
