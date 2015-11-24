@@ -27,7 +27,7 @@ for each row. The documents will belong to a collection named "name".
  library(rfml)
  ml.connect("localhost", "8000", "admin", "admin")
  # create a ml.data.frame based on the iris data set
- dmlIris <- as.ml.data.frame(iris, "iris")
+ mlIris <- as.ml.data.frame(iris, "iris")
 }
 }
 

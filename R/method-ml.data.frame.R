@@ -166,7 +166,7 @@ setMethod("as.data.frame", signature(x="ml.data.frame"),
 #'  library(rfml)
 #'  ml.connect("localhost", "8000", "admin", "admin")
 #'  # create a ml.data.frame based on the iris data set
-#'  dmlIris <- as.ml.data.frame(iris, "iris")
+#'  mlIris <- as.ml.data.frame(iris, "iris")
 #' }
 #' @export
 as.ml.data.frame <- function (x, name, format = "json", directory = "") {
@@ -249,7 +249,7 @@ setMethod("$", signature(x = "ml.data.frame"),
             dataType <- x@.col.data_type[i]
             # check if the column are a added or already existing
             if(is.null(x@.col.defs[[name]])) {
-              return(new(Class="ml.col.def",.expr=paste("rfmlResult.",name, sep=''),.name=name,.data_type=dataType, .parent=x,.type="field",.aggType="none"));
+              return(new(Class="ml.col.def",.expr=paste("rfmlResult[\'",name, "\']", sep=''),.name=name,.data_type=dataType, .parent=x,.type="field",.aggType="none"));
             } else {
               return(new(Class="ml.col.def",.expr=x@.col.defs[[name]],.name=name,.data_type=dataType,.parent=x,.type="expr",.aggType="none"));
             }

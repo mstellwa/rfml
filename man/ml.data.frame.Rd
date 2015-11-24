@@ -4,7 +4,8 @@
 \alias{ml.data.frame}
 \title{Create a ml.data.frame object}
 \usage{
-ml.data.frame(query = "", collection = c(), directory = c())
+ml.data.frame(query = "", collection = c(), directory = c(),
+  relevanceScores = TRUE, docUri = TRUE)
 }
 \arguments{
 \item{query}{The query string used to define the result.}
@@ -12,6 +13,10 @@ ml.data.frame(query = "", collection = c(), directory = c())
 \item{collection}{A list of collection URI:s to filter on.}
 
 \item{directory}{A list of directory URI:s to filter on.}
+
+\item{relevanceScores}{TRUE/FALSE. If the result attributes score, confidence and fitness should be included. Default is TRUE}
+
+\item{docUri}{TRUE/FALSE. If the uri of the documents in the results should be included. Default is TRUE.}
 }
 \value{
 A ml.data.frame object.

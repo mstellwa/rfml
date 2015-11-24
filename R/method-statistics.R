@@ -380,6 +380,152 @@ setMethod(f="median", signature=c(x="ml.col.def"),
             return(.ml.stat.func(x@.parent, fields, func))
           }
 )
+#' Mean
+#'
+#' Returns the mean of a sequence of a ml.data.frame field.
+#'
+#' @param x a ml.data.frame field.
+#' @param na.rm not currently used.
+#' @return The meamn
+#' @examples
+#' \dontrun{
+#'  library(rfml)
+#'  ml.connect("localhost", "8000", "admin", "admin")
+#'  # create a ml.data.frame based on a search
+#'  mlDf <- ml.data.frame("corvette NEAR/1 convertible", collection = c("Analytics"))
+#'  # return the median
+#'  mean(mlDf$orderLines1quantityOrdered)
+#' }
+#' @export
+setMethod(f="mean", signature=c(x="ml.col.def"),
+
+          function(x, na.rm = FALSE) {
+
+            # use
+            if (na.rm)
+              warning(simpleError("na.rm option is not implemented yet"))
+
+            if(x@.data_type!="number") {
+              stop("Can only use columns of number type")
+            }
+
+            fields <- "{"
+            fields <- paste(fields, '"',x@.name , '":{"fieldDef":"',x@.expr ,'"}', sep='')
+            fields <- paste(fields, '}', sep='')
+            func <- "fn.avg"
+            return(.ml.stat.func(x@.parent, fields, func))
+          }
+)
+#' Sum
+#'
+#' Returns the sum of a sequence of a ml.data.frame field.
+#'
+#' @param x a ml.data.frame field.
+#' @param na.rm not currently used.
+#' @return The sum
+#' @examples
+#' \dontrun{
+#'  library(rfml)
+#'  ml.connect("localhost", "8000", "admin", "admin")
+#'  # create a ml.data.frame based on a search
+#'  mlDf <- ml.data.frame("corvette NEAR/1 convertible", collection = c("Analytics"))
+#'  # return the median
+#'  sum(mlDf$orderLines1quantityOrdered)
+#' }
+#' @export
+setMethod(f="sum", signature=c(x="ml.col.def"),
+
+          function(x, na.rm = FALSE) {
+
+            # use
+            if (na.rm)
+              warning(simpleError("na.rm option is not implemented yet"))
+
+            if(x@.data_type!="number") {
+              stop("Can only use columns of number type")
+            }
+
+            fields <- "{"
+            fields <- paste(fields, '"',x@.name , '":{"fieldDef":"',x@.expr ,'"}', sep='')
+            fields <- paste(fields, '}', sep='')
+            func <- "fn.sum"
+            return(.ml.stat.func(x@.parent, fields, func))
+          }
+)
+#' Max
+#'
+#' Returns the maximum value of a sequence of a ml.data.frame field.
+#'
+#' @param x a ml.data.frame field.
+#' @param na.rm not currently used.
+#' @return The maximum value
+#' @examples
+#' \dontrun{
+#'  library(rfml)
+#'  ml.connect("localhost", "8000", "admin", "admin")
+#'  # create a ml.data.frame based on a search
+#'  mlDf <- ml.data.frame("corvette NEAR/1 convertible", collection = c("Analytics"))
+#'  # return the median
+#'  max(mlDf$orderLines1quantityOrdered)
+#' }
+#' @export
+setMethod(f="max", signature=c(x="ml.col.def"),
+
+          function(x, na.rm = FALSE) {
+
+            # use
+            if (na.rm)
+              warning(simpleError("na.rm option is not implemented yet"))
+
+            if(x@.data_type!="number") {
+              stop("Can only use columns of number type")
+            }
+
+            fields <- "{"
+            fields <- paste(fields, '"',x@.name , '":{"fieldDef":"',x@.expr ,'"}', sep='')
+            fields <- paste(fields, '}', sep='')
+            func <- "fn.max"
+            return(.ml.stat.func(x@.parent, fields, func))
+          }
+)
+
+#' Min
+#'
+#' Returns the minimum value of a sequence of a ml.data.frame field.
+#'
+#' @param x a ml.data.frame field.
+#' @param na.rm not currently used.
+#' @return The minimum value
+#' @examples
+#' \dontrun{
+#'  library(rfml)
+#'  ml.connect("localhost", "8000", "admin", "admin")
+#'  # create a ml.data.frame based on a search
+#'  mlDf <- ml.data.frame("corvette NEAR/1 convertible", collection = c("Analytics"))
+#'  # return the median
+#'  min(mlDf$orderLines1quantityOrdered)
+#' }
+#' @export
+setMethod(f="min", signature=c(x="ml.col.def"),
+
+          function(x, na.rm = FALSE) {
+
+            # use
+            if (na.rm)
+              warning(simpleError("na.rm option is not implemented yet"))
+
+            if(x@.data_type!="number") {
+              stop("Can only use columns of number type")
+            }
+
+            fields <- "{"
+            fields <- paste(fields, '"',x@.name , '":{"fieldDef":"',x@.expr ,'"}', sep='')
+            fields <- paste(fields, '}', sep='')
+            func <- "fn.min"
+            return(.ml.stat.func(x@.parent, fields, func))
+          }
+)
+
 # summary function
 #' @export
 setMethod(f="summary", signature=c("ml.data.frame"),

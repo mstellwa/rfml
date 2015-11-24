@@ -23,7 +23,7 @@ setMethod("as.vector", signature(x="ml.col.def"),
 
 as.ml.col.def <- function(x) {
   if(inherits(x,"ml.data.frame")) {
-    return(paste('"rfmlResult.',x@.col.name[1],'"',sep=''))
+    return(paste('"rfmlResult[\'',x@.col.name[1],'\']"',sep=''))
   } else if(inherits(x,"ml.col.def")) {
     return(x@.expr)
   } else {
