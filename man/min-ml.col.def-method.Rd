@@ -16,7 +16,7 @@
 The minimum value
 }
 \description{
-Returns the minimum value of a sequence of a ml.data.frame field.
+Returns the minimum value of a ml.data.frame field.
 }
 \examples{
 \dontrun{

@@ -16,7 +16,7 @@
 The meamn
 }
 \description{
-Returns the mean of a sequence of a ml.data.frame field.
+Returns the mean of a ml.data.frame field.
 }
 \examples{
 \dontrun{

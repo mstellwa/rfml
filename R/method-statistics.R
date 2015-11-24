@@ -2,8 +2,7 @@
 
 #' Correlation
 #'
-#' Returns the Pearson correlation coefficient of a data set. The size of the input
-#' should be 2.
+#' Returns the Pearson correlation coefficient of two variables, ml.data.frame fields.
 #'
 #' The function eliminates all pairs for which either the first element or the second
 #' element is empty. After the elimination, if the length of the input is less than 2,
@@ -106,7 +105,7 @@ setMethod(f="cor", signature=c(x="ml.data.frame"),
 )
 #' Covariance
 #'
-#' Returns the sample covariance of a data set.
+#' Returns the sample covariance of two variables, ml.data.frame fields.
 #'
 #'The function eliminates all pairs for which either the first element or the second
 #'element is empty. After the elimination, if the length of the input is less than 2,
@@ -156,7 +155,7 @@ setMethod(f="cov", signature=c(x="ml.col.def",y="ml.col.def"),
 
 #' Population Covariance
 #'
-#' Returns the population covariance of a data set.
+#' Returns the population covariance of two variables, ml.data.frame fields.
 #'
 #' The function eliminates all pairs for which either the first element or the
 #' second element is empty. After the elimination, if the length of the input is 0,
@@ -193,7 +192,7 @@ cov.pop <- function(x,y) {
 
 #' Variance
 #'
-#' Returns the sample variance of a sequence of values.
+#' Returns the sample variance of two variables, ml.data.frame fields.
 #'
 #' The function returns a empty value if the number of rows of the ml.data.frame
 #' that x belongs to is less than 2.
@@ -233,7 +232,7 @@ setMethod(f="var", signature=c(x="ml.col.def"),
 
 #' Population variance
 #'
-#' Returns the population variance of a sequence of values.
+#' Returns the population variance of two variables, ml.data.frame fields.
 #'
 #' The function returns a empty value if the number of rows of the ml.data.frame
 #' that x belongs to is less than 2.
@@ -270,7 +269,7 @@ var.pop <- function(x,na.rm = FALSE ) {
 
 #' Standard Deviation
 #'
-#' Returns the sample standard deviation of a sequence of numeric values.
+#' Returns the sample standard deviation of two variables, ml.data.frame fields.
 #'
 #' The function returns a empty value if the number of rows of the ml.data.frame
 #' that x belongs to is less than 2.
@@ -346,7 +345,7 @@ sd.pop <- function(x) {
 
 #' Median
 #'
-#' Returns the median of a sequence of a ml.data.frame field.
+#' Returns the median of a ml.data.frame field.
 #'
 #' @param x a ml.data.frame field.
 #' @param na.rm not currently used.
@@ -382,7 +381,7 @@ setMethod(f="median", signature=c(x="ml.col.def"),
 )
 #' Mean
 #'
-#' Returns the mean of a sequence of a ml.data.frame field.
+#' Returns the mean of a ml.data.frame field.
 #'
 #' @param x a ml.data.frame field.
 #' @param na.rm not currently used.
@@ -418,7 +417,7 @@ setMethod(f="mean", signature=c(x="ml.col.def"),
 )
 #' Sum
 #'
-#' Returns the sum of a sequence of a ml.data.frame field.
+#' Returns the sum of a ml.data.frame field.
 #'
 #' @param x a ml.data.frame field.
 #' @param na.rm not currently used.
@@ -454,7 +453,7 @@ setMethod(f="sum", signature=c(x="ml.col.def"),
 )
 #' Max
 #'
-#' Returns the maximum value of a sequence of a ml.data.frame field.
+#' Returns the maximum value of a ml.data.frame field.
 #'
 #' @param x a ml.data.frame field.
 #' @param na.rm not currently used.
@@ -491,7 +490,7 @@ setMethod(f="max", signature=c(x="ml.col.def"),
 
 #' Min
 #'
-#' Returns the minimum value of a sequence of a ml.data.frame field.
+#' Returns the minimum value of a ml.data.frame field.
 #'
 #' @param x a ml.data.frame field.
 #' @param na.rm not currently used.

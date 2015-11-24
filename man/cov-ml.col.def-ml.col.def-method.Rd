@@ -21,7 +21,7 @@
 The sample covariance
 }
 \description{
-Returns the sample covariance of a data set.
+Returns the sample covariance of two variables, ml.data.frame fields.
 }
 \details{
 The function eliminates all pairs for which either the first element or the second

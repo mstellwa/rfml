@@ -16,7 +16,7 @@
 The maximum value
 }
 \description{
-Returns the maximum value of a sequence of a ml.data.frame field.
+Returns the maximum value of a ml.data.frame field.
 }
 \examples{
 \dontrun{

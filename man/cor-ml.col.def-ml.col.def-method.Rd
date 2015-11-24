@@ -21,8 +21,7 @@
 The correlation coefficient
 }
 \description{
-Returns the Pearson correlation coefficient of a data set. The size of the input
-should be 2.
+Returns the Pearson correlation coefficient of two variables, ml.data.frame fields.
 }
 \details{
 The function eliminates all pairs for which either the first element or the second

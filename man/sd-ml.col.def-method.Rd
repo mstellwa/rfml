@@ -16,7 +16,7 @@
 The sample standard deviation
 }
 \description{
-Returns the sample standard deviation of a sequence of numeric values.
+Returns the sample standard deviation of two variables, ml.data.frame fields.
 }
 \details{
 The function returns a empty value if the number of rows of the ml.data.frame

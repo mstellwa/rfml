@@ -15,7 +15,7 @@ cov.pop(x, y)
 The population covariance
 }
 \description{
-Returns the population covariance of a data set.
+Returns the population covariance of two variables, ml.data.frame fields.
 }
 \details{
 The function eliminates all pairs for which either the first element or the

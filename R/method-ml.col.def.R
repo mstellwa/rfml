@@ -94,7 +94,7 @@ setMethod("Math",signature(x='ml.col.def'),function (x) {
   func <- switch(.Generic,
          abs='fn.abs',
          acos='math.acos',
-         asin='Math.asin',
+         asin='math.asin',
          atan='math.atan',
          ceiling='math.ceil',
          cos='math.cos',

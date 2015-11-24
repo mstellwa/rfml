@@ -16,7 +16,7 @@
 The sample variance
 }
 \description{
-Returns the sample variance of a sequence of values.
+Returns the sample variance of two variables, ml.data.frame fields.
 }
 \details{
 The function returns a empty value if the number of rows of the ml.data.frame

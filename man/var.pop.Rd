@@ -15,7 +15,7 @@ var.pop(x, na.rm = FALSE)
 The sample variance
 }
 \description{
-Returns the population variance of a sequence of values.
+Returns the population variance of two variables, ml.data.frame fields.
 }
 \details{
 The function returns a empty value if the number of rows of the ml.data.frame

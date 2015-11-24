@@ -16,7 +16,7 @@
 The median
 }
 \description{
-Returns the median of a sequence of a ml.data.frame field.
+Returns the median of a ml.data.frame field.
 }
 \examples{
 \dontrun{
