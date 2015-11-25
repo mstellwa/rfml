@@ -140,5 +140,10 @@ ml.add.option <- function(searchOpt, format = "json", host = "localhost", port =
       message(paste("Options ", searchOpt ,"  is now installed on ", host, ":", port, sep=""))
   }
 }
+#' @export
+ml.default.option <- function(searchOpt) {
+  # should it be a control if the option exists in the target database?
+  .rfmlEnv$mlDefaultOption <- searchOpt
+  message(paste(searchOpt, " is now the deafult search option", sep=""))
 
-
+}

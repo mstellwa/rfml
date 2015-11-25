@@ -8,8 +8,8 @@
 #' @param query The query string used to define the result.
 #' @param collection A list of collection URI:s to filter on.
 #' @param directory A list of directory URI:s to filter on.
-#' @param relevanceScores TRUE/FALSE. If the result attributes score, confidence and fitness should be included. Default is TRUE
-#' @param docUri TRUE/FALSE. If the uri of the documents in the results should be included. Default is TRUE.
+#' @param relevanceScores TRUE/FALSE. If the result attributes score, confidence and fitness should be included. Default is FALSE
+#' @param docUri TRUE/FALSE. If the uri of the documents in the results should be included. Default is FALSE.
 #' @return A ml.data.frame object.
 #' @examples
 #' \dontrun{
@@ -23,7 +23,7 @@
 #'  df <- ml.data.frame(collection=c("Analytics"))
 #' }
 #' @export
-ml.data.frame <- function (query="", collection = c(), directory = c(), relevanceScores = TRUE, docUri = TRUE)
+ml.data.frame <- function (query="", collection = c(), directory = c(), relevanceScores = FALSE, docUri = FALSE)
 {
   if (length(.rfmlEnv$conn) != 4) {
     stop("Need create a connection object. Use ml.connect first.")
