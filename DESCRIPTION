@@ -12,10 +12,11 @@ Description: Functionality required to efficiently use R with MarkLogic Server.
     server.
 License: GPL-3
 LazyData: TRUE
-Imports:
+Imports: 
     methods,
     httr,
     PKI,
     XML,
     jsonlite
 RoxygenNote: 5.0.1
+Suggests: testthat

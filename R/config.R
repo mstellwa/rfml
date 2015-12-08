@@ -31,16 +31,17 @@ ml.init.database <- function(host = "localhost", port = "8000", adminuser = "adm
   mlOptions <-.rfmlEnv$mlOptions
   # name of libs used
   mlLibs <- .rfmlEnv$mlLibs
-
+  #
+  mlExts <- .rfmlEnv$mlExts
 
   # install the needed search options
- for (i in 1:length(mlOptions)) {
-   mlQueryOpFile <- paste(mlOptions[i], ".json", sep='')
-   mlOptionsFilePath <- system.file("options", mlQueryOpFile, package = "rfml")
-   if (.insert.search.options(mlHost, adminuser, password, mlOptions[i],mlOptionsFilePath, "application/json")) {
-      message(paste("Option ", mlOptions[i]," is now installed on ", host, ":", port, sep=""))
-    }
- }
+#  for (i in 1:length(mlOptions)) {
+#    mlQueryOpFile <- paste(mlOptions[i], ".json", sep='')
+#    mlOptionsFilePath <- system.file("options", mlQueryOpFile, package = "rfml")
+#    if (.insert.search.options(mlHost, adminuser, password, mlOptions[i],mlOptionsFilePath, "application/json")) {
+#       message(paste("Option ", mlOptions[i]," is now installed on ", host, ":", port, sep=""))
+#     }
+#  }
  for (i in 1:length(mlLibs)) {
   # install the needed module library
     if (.insert.lib(mlHost, adminuser, password, mlLibs[i])) {
@@ -48,9 +49,15 @@ ml.init.database <- function(host = "localhost", port = "8000", adminuser = "adm
     }
   }
   # install needed transforms
-  for (i in 1:length(mlTransforms)) {
-    if (.insert.search.transform(mlHost, adminuser, password, mlTransforms[i])) {
-      message(paste("Transformation ",mlTransforms[i], " is now installed on ", host, ":", port, sep=""))
+#   for (i in 1:length(mlTransforms)) {
+#     if (.insert.search.transform(mlHost, adminuser, password, mlTransforms[i])) {
+#       message(paste("Transformation ",mlTransforms[i], " is now installed on ", host, ":", port, sep=""))
+#     }
+#   }
+
+  for (i in 1:length(mlExts)) {
+    if (.insert.ext(mlHost, adminuser, password, mlExts[i])) {
+      message(paste("REST extension ",mlExts[i], " is now installed on ", host, ":", port, sep=""))
     }
   }
   closeAllConnections()
@@ -90,28 +97,37 @@ ml.clear.database <- function(host = "localhost", port = "8000", adminuser = "ad
   mlOptions <-.rfmlEnv$mlOptions
   # name of libs used
   mlLibs <- .rfmlEnv$mlLibs
+  # name of exts used
+  mlExts <- .rfmlEnv$mlExts
 
 
   # install the needed search options
-  for (i in 1:length(mlOptions)) {
-    #mlQueryOpName <- paste(mlOptions[i], ".json", sep='')
-    #mlOptions <- system.file("options",mlQueryOpName,package = "rfml")
-    if (.remove.search.options(mlHost, adminuser, password, mlOptions[i])) {
-      message(paste("Option ", mlOptions[i]," is now removed from ", host, ":", port, sep=""))
-    }
-  }
+#   for (i in 1:length(mlOptions)) {
+#     #mlQueryOpName <- paste(mlOptions[i], ".json", sep='')
+#     #mlOptions <- system.file("options",mlQueryOpName,package = "rfml")
+#     if (.remove.search.options(mlHost, adminuser, password, mlOptions[i])) {
+#       message(paste("Option ", mlOptions[i]," is now removed from ", host, ":", port, sep=""))
+#     }
+#   }
   for (i in 1:length(mlLibs)) {
     # install the needed module library
     if (.remove.lib(mlHost, adminuser, password, mlLibs[i])) {
-      message(paste("Library ",  mlLibs[i]," is removed installed from ", host, ":", port, sep=""))
+      message(paste("Library ",  mlLibs[i]," is removed from ", host, ":", port, sep=""))
+    }
+  }
+
+  for (i in 1:length(mlExts)) {
+    # install the needed module library
+    if (.remove.ext(mlHost, adminuser, password, mlExts[i])) {
+      message(paste("REST extension ",  mlExts[i]," is removed from ", host, ":", port, sep=""))
     }
   }
   # install needed transforms
-  for (i in 1:length(mlTransforms)) {
-    if (.remove.search.transform(mlHost, adminuser, password, mlTransforms[i])) {
-      message(paste("Transformation ",mlTransforms[i], " is now removed from ", host, ":", port, sep=""))
-    }
-  }
+#   for (i in 1:length(mlTransforms)) {
+#     if (.remove.search.transform(mlHost, adminuser, password, mlTransforms[i])) {
+#       message(paste("Transformation ",mlTransforms[i], " is now removed from ", host, ":", port, sep=""))
+#     }
+#   }
 
   message(paste(host, ":", port, " cleard of rfml specific files",sep=""))
 }

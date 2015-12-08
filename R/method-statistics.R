@@ -43,11 +43,10 @@ setMethod(f="cor", signature=c(x="ml.col.def",y="ml.col.def"),
             if(x@.data_type!="number" || y@.data_type != "number") {
               stop("Can only use columns of number type")
             }
-
             fields <- "{"
-            fields <- paste(fields, '"',x@.name , '":{"fieldDef":"',x@.expr ,'"},"', y@.name, '":{"fieldDef":"',y@.expr ,'"}' ,sep='')
+            fields <- paste(fields, '"',x@.name , '":{"fieldDef":"',x@.expr ,'","orgField":"', x@.org_name, '","orgFormat":"', x@.format , '"},"', y@.name, '":{"fieldDef":"',y@.expr, '","orgField":"', y@.org_name, '","orgFormat":"', y@.format ,'"}' ,sep='')
             fields <- paste(fields, '}', sep='')
-            func <- "math.correlation"
+            func <- '{"index":"cts.correlation", "noindex": "math.correlation"}'
             return(.ml.stat.func(x@.parent, fields, func))
         }
 )
@@ -88,7 +87,7 @@ setMethod(f="cor", signature=c(x="ml.data.frame"),
             if (!missing(method) && !is.null(method))
               stop(simpleError("method option is not implemented yet"))
             # get correlation matrix data
-            corMatResult <- .ml.correlation.matrix(x)
+            corMatResult <- .ml.matrix(x, "correlation")
             # create the matrix
             corMat <- matrix(1:(length(corMatResult)),nrow=length(corMatResult),ncol=length(corMatResult),dimnames = list(names(corMatResult),names(corMatResult)),byrow=T)
             for(i in 1:length(corMatResult)) {
@@ -146,9 +145,9 @@ setMethod(f="cov", signature=c(x="ml.col.def",y="ml.col.def"),
             }
 
             fields <- "{"
-            fields <- paste(fields, '"',x@.name , '":{"fieldDef":"',x@.expr ,'"},"', y@.name, '":{"fieldDef":"',y@.expr ,'"}' ,sep='')
+            fields <- paste(fields, '"',x@.name , '":{"fieldDef":"',x@.expr ,'","orgField":"', x@.org_name, '","orgFormat":"', x@.format , '"},"', y@.name, '":{"fieldDef":"',y@.expr, '","orgField":"', y@.org_name, '","orgFormat":"', y@.format ,'"}' ,sep='')
             fields <- paste(fields, '}', sep='')
-            func <- "math.covariance"
+            func <- '{"index":"cts.covariance", "noindex": "math.covariance"}'
             return(.ml.stat.func(x@.parent, fields, func))
           }
 )
@@ -184,9 +183,10 @@ cov.pop <- function(x,y) {
   }
 
   fields <- "{"
-  fields <- paste(fields, '"',x@.name , '":{"fieldDef":"',x@.expr ,'"},"', y@.name, '":{"fieldDef":"',y@.expr ,'"}' ,sep='')
+  fields <- paste(fields, '"',x@.name , '":{"fieldDef":"',x@.expr ,'","orgField":"', x@.org_name, '","orgFormat":"', x@.format , '"},"', y@.name, '":{"fieldDef":"',y@.expr, '","orgField":"', y@.org_name, '","orgFormat":"', y@.format ,'"}' ,sep='')
   fields <- paste(fields, '}', sep='')
-  func <- "math.covarianceP"
+  func <- '{"index":"cts.covarianceP", "noindex": "math.covarianceP"}'
+
   return(.ml.stat.func(x@.parent, fields, func))
 }
 
@@ -223,9 +223,10 @@ setMethod(f="var", signature=c(x="ml.col.def"),
             }
 
             fields <- "{"
-            fields <- paste(fields, '"',x@.name , '":{"fieldDef":"',x@.expr ,'"}' ,sep='')
+            fields <- paste(fields, '"',x@.name , '":{"fieldDef":"',x@.expr ,'","orgField":"', x@.org_name, '","orgFormat":"', x@.format ,'"}' ,sep='')
             fields <- paste(fields, '}', sep='')
-            func <- "math.variance"
+            func <- '{"index":"cts.variance", "noindex": "math.variance"}'
+
             return(.ml.stat.func(x@.parent, fields, func))
           }
 )
@@ -261,9 +262,9 @@ var.pop <- function(x,na.rm = FALSE ) {
   }
 
   fields <- "{"
-  fields <- paste(fields, '"',x@.name , '":{"fieldDef":"',x@.expr ,'"}' ,sep='')
+  fields <- paste(fields, '"',x@.name , '":{"fieldDef":"',x@.expr ,'","orgField":"', x@.org_name, '","orgFormat":"', x@.format ,'"}' ,sep='')
   fields <- paste(fields, '}', sep='')
-  func <- "math.varianceP"
+  func <- '{"index":"cts.varianceP", "noindex": "math.varianceP"}'
   return(.ml.stat.func(x@.parent, fields, func))
 }
 
@@ -302,9 +303,10 @@ setMethod(f="sd", signature=c(x="ml.col.def"),
             }
 
             fields <- "{"
-            fields <- paste(fields, '"',x@.name , '":{"fieldDef":"',x@.expr ,'"}', sep='')
+            fields <- paste(fields, '"',x@.name , '":{"fieldDef":"',x@.expr ,'","orgField":"', x@.org_name, '","orgFormat":"', x@.format ,'"}' ,sep='')
             fields <- paste(fields, '}', sep='')
-            func <- "math.stddev"
+            func <- '{"index":"cts.stddev", "noindex": "math.stddev"}'
+
             return(.ml.stat.func(x@.parent, fields, func))
 
           }
@@ -336,9 +338,9 @@ sd.pop <- function(x) {
   }
 
   fields <- "{"
-  fields <- paste(fields, '"',x@.name , '":{"fieldDef":"',x@.expr ,'"}', sep='')
+  fields <- paste(fields, '"',x@.name , '":{"fieldDef":"',x@.expr ,'","orgField":"', x@.org_name, '","orgFormat":"', x@.format ,'"}' ,sep='')
   fields <- paste(fields, '}', sep='')
-  func <- "math.stddev"
+  func <- '{"index":"cts.stddevP", "noindex": "math.stddevP"}'
   return(.ml.stat.func(x@.parent, fields, func))
 
 }
@@ -373,9 +375,9 @@ setMethod(f="median", signature=c(x="ml.col.def"),
             }
 
             fields <- "{"
-            fields <- paste(fields, '"',x@.name , '":{"fieldDef":"',x@.expr ,'"}', sep='')
+            fields <- paste(fields, '"',x@.name , '":{"fieldDef":"',x@.expr ,'","orgField":"', x@.org_name, '","orgFormat":"', x@.format ,'"}' ,sep='')
             fields <- paste(fields, '}', sep='')
-            func <- "math.median"
+            func <- '{"index":"cts.median", "noindex": "math.median"}'
             return(.ml.stat.func(x@.parent, fields, func))
           }
 )
@@ -409,9 +411,9 @@ setMethod(f="mean", signature=c(x="ml.col.def"),
             }
 
             fields <- "{"
-            fields <- paste(fields, '"',x@.name , '":{"fieldDef":"',x@.expr ,'"}', sep='')
+            fields <- paste(fields, '"',x@.name , '":{"fieldDef":"',x@.expr ,'","orgField":"', x@.org_name, '","orgFormat":"', x@.format ,'"}' ,sep='')
             fields <- paste(fields, '}', sep='')
-            func <- "fn.avg"
+            func <- '{"index":"cts.avgAggregate", "noindex": "fn.avg"}'
             return(.ml.stat.func(x@.parent, fields, func))
           }
 )
@@ -445,9 +447,10 @@ setMethod(f="sum", signature=c(x="ml.col.def"),
             }
 
             fields <- "{"
-            fields <- paste(fields, '"',x@.name , '":{"fieldDef":"',x@.expr ,'"}', sep='')
+            fields <- paste(fields, '"',x@.name , '":{"fieldDef":"',x@.expr ,'","orgField":"', x@.org_name, '","orgFormat":"', x@.format ,'"}' ,sep='')
             fields <- paste(fields, '}', sep='')
-            func <- "fn.sum"
+            func <- '{"index":"cts.sumAggregate", "noindex": "fn.sum"}'
+
             return(.ml.stat.func(x@.parent, fields, func))
           }
 )
@@ -481,9 +484,9 @@ setMethod(f="max", signature=c(x="ml.col.def"),
             }
 
             fields <- "{"
-            fields <- paste(fields, '"',x@.name , '":{"fieldDef":"',x@.expr ,'"}', sep='')
+            fields <- paste(fields, '"',x@.name , '":{"fieldDef":"',x@.expr ,'","orgField":"', x@.org_name, '","orgFormat":"', x@.format ,'"}' ,sep='')
             fields <- paste(fields, '}', sep='')
-            func <- "fn.max"
+            func <- '{"index":"cts.max", "noindex": "fn.max"}'
             return(.ml.stat.func(x@.parent, fields, func))
           }
 )
@@ -518,9 +521,9 @@ setMethod(f="min", signature=c(x="ml.col.def"),
             }
 
             fields <- "{"
-            fields <- paste(fields, '"',x@.name , '":{"fieldDef":"',x@.expr ,'"}', sep='')
+            fields <- paste(fields, '"',x@.name , '":{"fieldDef":"',x@.expr ,'","orgField":"', x@.org_name, '","orgFormat":"', x@.format ,'"}' ,sep='')
             fields <- paste(fields, '}', sep='')
-            func <- "fn.min"
+            func <- '{"index":"cts.min", "noindex": "fn.min"}'
             return(.ml.stat.func(x@.parent, fields, func))
           }
 )
@@ -537,7 +540,7 @@ setMethod(f="summary", signature=c("ml.data.frame"),
             labelNum<-c("Min.","1st Qu.","Median","Mean","3rd Qu.","Max.")
             labelCat <- c("Length","Class","Mode")
             # Get statsitics per field
-            sumResult <- .ml.summary.func(mlDf)
+            sumResult <- .ml.matrix(mlDf, "summary")
             # since the result is a list with lists (one for each field) we need to transform it to
             # a list with one value, all the statistics, for each field.
              for (i in 1:length(sumResult)) {

@@ -114,6 +114,59 @@ setMethod("Math",signature(x='ml.col.def'),function (x) {
   return(new(Class="ml.col.def",.expr=paste(func, '(', as.ml.col.def(eval(x)),')',sep=''),.parent=x@.parent,.data_type="number",.type="expr",.aggType=aggType(x)));
 });
 
+#' Cotangent
+#'
+#' Returns the cotangent of x.
+#'
+#' @param x a ml.data.frame field.
+#' @return The cotangent of x.
+#' @export
+cot <- function (x) {
+
+  func <- "math.cot"
+  return(new(Class="ml.col.def",.expr=paste(func, '(', as.ml.col.def(eval(x)),')',sep=''),.parent=x@.parent,.data_type="number",.type="expr",.aggType=aggType(x)));
+}
+
+#' Degrees
+#'
+#' Returns numeric expression converted from radians to degrees.
+#'
+#' @param x a ml.data.frame field.
+#' @return numeric expression converted from radians to degrees.
+#' @export
+degrees <- function (x) {
+
+  func <- "math.degrees"
+  return(new(Class="ml.col.def",.expr=paste(func, '(', as.ml.col.def(eval(x)),')',sep=''),.parent=x@.parent,.data_type="number",.type="expr",.aggType=aggType(x)));
+}
+
+#' Radians
+#'
+#' Returns numeric expression converted from degrees to radians.
+#'
+#' @param x a ml.data.frame field.
+#' @return numeric expression converted from degrees to radians.
+#' @export
+radians <- function (x) {
+
+  func <- "math.radians"
+  return(new(Class="ml.col.def",.expr=paste(func, '(', as.ml.col.def(eval(x)),')',sep=''),.parent=x@.parent,.data_type="number",.type="expr",.aggType=aggType(x)));
+};
+
+#' Hyperbolic sine
+#'
+#' Returns the hyperbolic sine of x.
+#'
+#' @param x a ml.data.frame field.
+#' @return the hyperbolic sine of x.
+#' @export
+sinh <- function (x) {
+
+  func <- "math.sinh"
+  return(new(Class="ml.col.def",.expr=paste(func, '(', as.ml.col.def(eval(x)),')',sep=''),.parent=x@.parent,.data_type="number",.type="expr",.aggType=aggType(x)));
+};
+
+
 #' @export
 ################ Casting operators ############################
 setMethod('as.numeric',signature(x="ml.col.def"),function (x) {

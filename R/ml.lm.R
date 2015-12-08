@@ -23,9 +23,9 @@ ml.lm <- function(form, mlDf) {
   queryComArgs <- mlDf@.queryArgs
 
   mlHost <- paste("http://", .rfmlEnv$conn$host, ":", .rfmlEnv$conn$port, sep="")
-  mlSearchURL <- paste(mlHost, "/LATEST/search", sep="")
+  mlSearchURL <- paste(mlHost, "/v1/resources/rfml.lm", sep="")
   nPageLength <- mlDf@.nrows
-  queryArgs <- c(queryComArgs, pageLength=nPageLength, transform="rfmlLm")
+  queryArgs <- c(queryComArgs, 'rs:pageLength'=nPageLength)
 
   #
   #addIntercept <- attr(terms(form, keep.order=T, data=data.frame(x=1)), "intercept")
@@ -50,19 +50,32 @@ ml.lm <- function(form, mlDf) {
   # check if dependent or independent is existing fields
   # or new, if new we ned to use the expersion
   if (is.null(mlDf@.col.defs[[dependent]])) {
-    fieldDefDep <- dependent
+    fieldDefDep <- paste('rfmlResult[\'', dependent,'\']',sep='')
+    i <- match(dependent, mlDf@.col.name)
+    fieldOrgNameDep <- mlDf@.col.org_name[i]
+    fieldFormatDep <- mlDf@.col.format[i]
   } else {
     fieldDefDep <- mlDf@.col.defs[[dependent]]
+    fieldOrgNameDep <- dependent
+    fieldFormatDep <- ''
   }
   if (is.null(mlDf@.col.defs[[independent]])) {
-    fieldDefInd <- independent
+    fieldDefInd <- paste('rfmlResult[\'', independent,'\']',sep='')
+    i <- match(independent, mlDf@.col.name)
+    fieldOrgNameInd <- mlDf@.col.org_name[i]
+    fieldFormatInd <- mlDf@.col.format[i]
   } else {
     fieldDefInd <- mlDf@.col.defs[[independent]]
+    fieldOrgNameInd <- independent
+    fieldFormatInd <- ''
   }
-  fields <- paste(fields, '"',dependent , '":{"fieldDef":"',fieldDefDep ,'"},"', independent, '":{"fieldDef":"',fieldDefInd ,'"}' ,sep='')
+
+  fields <- paste(fields, '"',dependent , '":{"fieldDef":"',fieldDefDep,'","orgField":"', fieldOrgNameDep, '","orgFormat":"', fieldFormatDep  ,'"},"',
+                  independent, '":{"fieldDef":"',fieldDefInd,'","orgField":"', fieldOrgNameInd, '","orgFormat":"', fieldFormatInd ,'"}' ,sep='')
+
   fields <- paste(fields, '}', sep='')
   #message(fields)
-  queryArgs <- c(queryArgs, 'trans:fields'=fields)
+  queryArgs <- c(queryArgs, 'rs:fields'=fields)
 
   response <- GET(mlSearchURL, query = queryArgs, authenticate(username, password, type="digest"), accept_json())
 
@@ -73,7 +86,7 @@ ml.lm <- function(form, mlDf) {
     stop(paste("Ops, something went wrong.", errorMsg))
   }
 
-  res <- list(intercept=rContent$`linear-model`$intercept, coefficients=rContent$`linear-model`$coefficients, rsquared=rContent$`linear-model`$rsquared)
+  res <- list(intercept=rContent$`math:linear-model`$intercept, coefficients=rContent$`math:linear-model`$coefficients, rsquared=rContent$`math:linear-model`$rsquared)
   class(res) = c("mlLm")
   res
 }

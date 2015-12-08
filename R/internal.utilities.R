@@ -14,35 +14,37 @@
   # name of libs used
   mlLibs <- .rfmlEnv$mlLibs
 
-  # get all transforms
-  mlURL <- paste(mlHost, "/v1/config/transforms?format=json", sep="")
+  mlExts <- .rfmlEnv$mlExts
 
-  response <- GET(mlURL, authenticate(username, password, type="digest"))
-  status_code <- response$status_code
-  rContent <- content(response)
-  if (status_code != 200){
-    # something  went wrong, could be wrong user etc
-    errorMsg <- paste("statusCode: ",
-                      rContent$errorResponse$statusCode,
-                      ", status: ", rContent$errorResponse$status,
-                      ", message: ", rContent$errorResponse$message, sep="")
-    stop(paste("Ops, something went wrong.", errorMsg))
-    return(FALSE)
-  } else if (rContent$transforms == "") {
-    return(FALSE)
-  }
-  # Need to check, if no transformations exists in DB the response is:
-  # {"transforms":""}
-  transforms <- rContent$transforms$transform
-  nbrFound <- 0
-  for (i in 1:length(transforms)) {
-    if (transforms[[i]]$name %in% mlTransforms) {
-      nbrFound <- nbrFound + 1
-    }
-  }
-  if (nbrFound != length(mlTransforms)) {
-    return(FALSE)
-  }
+  # get all transforms
+#   mlURL <- paste(mlHost, "/v1/config/transforms?format=json", sep="")
+#
+#   response <- GET(mlURL, authenticate(username, password, type="digest"))
+#   status_code <- response$status_code
+#   rContent <- content(response)
+#   if (status_code != 200){
+#     # something  went wrong, could be wrong user etc
+#     errorMsg <- paste("statusCode: ",
+#                       rContent$errorResponse$statusCode,
+#                       ", status: ", rContent$errorResponse$status,
+#                       ", message: ", rContent$errorResponse$message, sep="")
+#     stop(paste("Ops, something went wrong.", errorMsg))
+#     return(FALSE)
+#   } else if (rContent$transforms == "") {
+#     return(FALSE)
+#   }
+#   # Need to check, if no transformations exists in DB the response is:
+#   # {"transforms":""}
+#   transforms <- rContent$transforms$transform
+#   nbrFound <- 0
+#   for (i in 1:length(transforms)) {
+#     if (transforms[[i]]$name %in% mlTransforms) {
+#       nbrFound <- nbrFound + 1
+#     }
+#   }
+#   if (nbrFound != length(mlTransforms)) {
+#     return(FALSE)
+#   }
   # get search options
   mlURL <- paste(mlHost, "/v1/config/query?format=json", sep="")
 
@@ -104,7 +106,32 @@
   if (nbrFound != length(mlLibs)) {
     return(FALSE)
   }
-
+  # get libraries, we only look under /ext/rfml/ and support javascript (.sjs)
+  mlURL <- paste(mlHost, "/v1/config/resources?format=json", sep="")
+  response <- GET(mlURL, authenticate(username, password, type="digest"))
+  status_code <- response$status_code
+  rContent <- content(response)
+  if (status_code != 200){
+    # something else went wrong, could be wrong user etc
+    errorMsg <- paste("statusCode: ",
+                      rContent$errorResponse$statusCode,
+                      ", status: ", rContent$errorResponse$status,
+                      ", message: ", rContent$errorResponse$message, sep="")
+    stop(paste("Ops, something went wrong.", errorMsg))
+    return(FALSE)
+  } else if (length(rContent$resources$resource) == 0) {
+    return(FALSE)
+  }
+  exts <- rContent$resources$resource
+  nbrFound <- 0
+  for (i in 1:length(exts)) {
+    if (exts[[i]]$name %in% mlExts) {
+      nbrFound <- nbrFound + 1
+    }
+  }
+  if (nbrFound != length(mlExts)) {
+    return(FALSE)
+  }
   return(TRUE)
 }
 
@@ -240,6 +267,51 @@
   return(TRUE)
 }
 
+# internal function to add exstention to rest interface used
+.insert.ext <- function(mlHost, username, password, mlExtName)  {
+
+  mlExtFile <- paste(mlExtName, ".sjs", sep='')
+  file <- system.file("ext",mlExtFile ,package = "rfml")
+  ext <- upload_file(file, "application/vnd.marklogic-javascript")
+  #  'http://localhost:8004/v1/config/resources/example'
+  mlURL <- paste(mlHost, "/v1/config/resources/", mlExtName, sep="")
+  # add or replace search options to the database
+  response <- PUT(mlURL, authenticate(username, password, type="digest"), body=ext)
+  status_code <- response$status_code
+  if (status_code != 201 && status_code != 204) {
+    rContent <- content(response)
+    errorMsg <- paste("statusCode: ",
+                      rContent$errorResponse$statusCode,
+                      ", status: ", rContent$errorResponse$status,
+                      ", message: ", rContent$errorResponse$message, sep="")
+    stop(paste("Ops, something went wrong.", errorMsg))
+
+  }
+  # return the name of the search options
+  return(TRUE)
+}
+
+# internal function to remove ext used
+.remove.ext <- function(mlHost, username, password, mlExtName)  {
+
+  ##mlLibFile <- paste(mlLibName, ".sjs", sep='')
+  mlURL <- paste(mlHost, "/v1/config/resources/", mlExtName, sep="")
+  # add or replace search options to the database
+  response <- DELETE(mlURL, authenticate(username, password, type="digest"))
+
+  if (response$status_code != 204) {
+
+    rContent <- content(response)
+    errorMsg <- paste("statusCode: ",
+                      rContent$errorResponse$statusCode,
+                      ", status: ", rContent$errorResponse$status,
+                      ", message: ", rContent$errorResponse$message, sep="")
+    stop(paste("Ops, something went wrong.", errorMsg))
+  }
+  # return the name of the search options
+  return(TRUE)
+}
+
 .get.ml.data <- function(mlDf, nrows=0, searchOption=NULL) {
 
   key <- .rfmlEnv$key
@@ -250,7 +322,7 @@
   queryComArgs <- mlDf@.queryArgs
 
   mlHost <- paste("http://", .rfmlEnv$conn$host, ":", .rfmlEnv$conn$port, sep="")
-  mlSearchURL <- paste(mlHost, "/LATEST/search", sep="")
+  mlSearchURL <- paste(mlHost, "/v1/resources/rfml.dframe", sep="")
   if (is.null(searchOption)) {
     mlOptions <- .rfmlEnv$mlDefaultOption
   } else {
@@ -265,8 +337,7 @@
     nPageLength <- mlDf@.nrows
   }
 
-  queryArgs <- c(queryComArgs, pageLength=nPageLength, transform="rfmlTransform",
-                 'trans:dframe'=dframe, 'trans:return'="data")
+  queryArgs <- c(queryComArgs, 'rs:pageLength'=nPageLength, 'rs:return'="data")
 
 
   # create
@@ -279,7 +350,7 @@
       fields <- paste(fields, '"', names(mlDf@.col.defs[i]), '":{"fieldDef":"',mlDf@.col.defs[[i]] ,'"}',sep='')
     }
     fields <- paste(fields, '}', sep='')
-    queryArgs <- c(queryArgs, 'trans:fields'=fields)
+    queryArgs <- c(queryArgs, 'rs:fields'=fields)
   }
 
 
@@ -294,7 +365,7 @@
   }
 
   if (validate(rContent)) {
-    return(fromJSON(rContent, simplifyDataFrame = TRUE))
+    return(fromJSON(rContent, simplifyDataFrame = TRUE)$results)
   } else {
     stop("The call to MarkLogic did not return valid data. The ml.data.frame data could be missing in the database.")
   }
@@ -338,6 +409,43 @@
   return(rfmlCollection)
 
 }
+# Internal used function that deletes data created by as.ml.data.frame.
+.delete.ml.data <- function(myData, myCollection, format, directory) {
+
+  # get connection imformation
+  key <- .rfmlEnv$key
+  password <- rawToChar(PKI::PKI.decrypt(.rfmlEnv$conn$password, key))
+  username <- .rfmlEnv$conn$username
+  mlHost <- paste("http://", .rfmlEnv$conn$host, ":", .rfmlEnv$conn$port, sep="")
+
+  mlPostURL <- paste(mlHost, "/v1/documents", sep="")
+
+  rfmlCollection <- myCollection
+  # generate the directory URI
+  if (directory == "") {
+    rfmlDirectory <- paste("/rfml/", username, "/", myCollection, "/", sep="")
+  } else {
+    rfmlDirectory <- directory
+  }
+
+  if (format == "XML") {
+    bodyFile <- .generate.xml.body(myData, myCollection, rfmlDirectory)
+  } else if (format == "json") {
+    bodyFile <- .generate.json.body(myData, myCollection, rfmlDirectory)
+  } else {
+    stop("Unkown format")
+  }
+  response <- POST(mlPostURL,  body = upload_file(bodyFile, type = "multipart/mixed; boundary=BOUNDARY"), authenticate(username, password, type="digest"), encode = "multipart")
+  unlink(bodyFile)
+  if(response$status_code != 200) {
+    rContent <- content(response, as = "text")
+    errorMsg <- paste("statusCode: ",rContent, sep="")
+    stop(paste("Ops, something went wrong.", errorMsg))
+  }
+
+  return(rfmlCollection)
+
+}
 # executes a statistic function
 .ml.stat.func <- function(mlDf, fields, func) {
   key <- .rfmlEnv$key
@@ -346,9 +454,9 @@
   queryComArgs <- mlDf@.queryArgs
 
   mlHost <- paste("http://", .rfmlEnv$conn$host, ":", .rfmlEnv$conn$port, sep="")
-  mlSearchURL <- paste(mlHost, "/v1/search", sep="")
+  mlSearchURL <- paste(mlHost, "/v1/resources/rfml.stat", sep="")
   nPageLength <- mlDf@.nrows
-  queryArgs <- c(queryComArgs, pageLength=nPageLength, transform="rfmlStat", 'trans:statfunc'=func,'trans:fields'=fields)
+  queryArgs <- c(queryComArgs, 'rs:pageLength'=nPageLength, 'rs:statfunc'=func,'rs:fields'=fields)
 
   response <- GET(mlSearchURL, query = queryArgs, authenticate(username, password, type="digest"), accept_json())
   rContent <- content(response) #, as = "text""
@@ -418,7 +526,7 @@
 }
 
 # Get data for the summary function
-.ml.correlation.matrix <- function(mlDf) {
+.ml.matrix <- function(mlDf, matrixfunc) {
 
   key <- .rfmlEnv$key
   password <- rawToChar(PKI::PKI.decrypt(.rfmlEnv$conn$password, key))
@@ -428,7 +536,7 @@
   queryComArgs <- mlDf@.queryArgs
 
   mlHost <- paste("http://", .rfmlEnv$conn$host, ":", .rfmlEnv$conn$port, sep="")
-  mlSearchURL <- paste(mlHost, "/LATEST/search", sep="")
+  mlSearchURL <- paste(mlHost, "/v1/resources/rfml.matrix", sep="")
   # if (is.null(searchOption)) {
   mlOptions <- .rfmlEnv$mlDefaultOption
   #  } else {
@@ -443,7 +551,7 @@
   nPageLength <- mlDf@.nrows
   #  }
 
-  queryArgs <- c(queryComArgs, pageLength=nPageLength, transform="rfmlCor")
+  queryArgs <- c(queryComArgs, 'rs:pageLength'=nPageLength, 'rs:matrixfunc'=matrixfunc)
 
 
   # create
@@ -454,9 +562,10 @@
         fields <- paste(fields, ',', sep='')
       }
       fields <- paste(fields, '"', names(mlDf@.col.defs[i]), '":{"fieldDef":"',mlDf@.col.defs[[i]] ,'"}',sep='')
+      #fields <- paste(fields, '"',x@.name , '":{"fieldDef":"',x@.expr ,'","orgField":"', x@.org_name, '","orgFormat":"', x@.format , '"}
     }
     fields <- paste(fields, '}', sep='')
-    queryArgs <- c(queryArgs, 'trans:fields'=fields)
+    queryArgs <- c(queryArgs, 'rs:fields'=fields)
   }
 
 

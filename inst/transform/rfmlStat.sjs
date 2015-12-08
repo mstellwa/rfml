@@ -13,7 +13,8 @@ function rfmlStat(context, params, content)
 
   var fields = {};
   if (!params.fields) {
-    /* we need at least two fields */
+    /* we need at least 
+    a fields */
   }
   fields = JSON.parse(params.fields);
   var funcArray = rfmlUtilities.fields2array(fields, result);

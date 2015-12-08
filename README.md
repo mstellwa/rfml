@@ -1,10 +1,14 @@
-# rfml
+# rfml – a R package for MarkLogic Server
 
 rfml is a R package for MarkLogic Server, Enterprise NoSQL database, enabling in-dabase analytics.
 
-It uses the REST interfaces to allow user using search syntax for creating a data.frame similar object, ml.data.frame. There is no data brought back to the client during the creation of the object. [More information on the wiki](https://github.com/mstellwa/rfml/wiki/Introduction-to-the-rfml-package)
+It is based on the REST interface to allow users to use search syntax for creating a data.frame similar object, ml.data.frame. There is no data brought back to the client during the creation of the object. [More information on the wiki](https://github.com/mstellwa/rfml/wiki/Introduction-to-the-rfml-package)
+
+rfml only works with MarkLogic Server version 8 and higher.
 
 In order to use rfml you need a REST server, with a module database, for the MarkLogic database that contains your source data..
+
+**If you have previous installed rfml, before 7th December 2015, you need to execute ml.clear.database before installing the new version.**
 
 Currently the package is not avalible on CRAN so you need to install it using devtools.
 ```R
@@ -36,7 +40,7 @@ Using a string query, more information around the syntax can be found at http://
 # create a ml.data.frame
 mlIris <- ml.data.frame("setosa", collection = "iris")
 ```
-There is also possible to upload data to the MarkLogic database that is returned as a ml.data.frame object.
+There is also possible to upload data to the MarkLogic database, which returns a ml.data.frame object.
 ```R
 # create a ml.data.frame object based on the iris data set
 mlIris <- as.ml.data.frame(iris, "iris")

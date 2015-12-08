@@ -11,6 +11,8 @@
 .rfmlEnv$mlDefaultOption <- "rfml"
 # name of libs used
 .rfmlEnv$mlLibs <- c("rfmlUtilities", "xml2json")
+# name of exstentions used
+.rfmlEnv$mlExts <- c("rfml.dframe", "rfml.lm", "rfml.stat", "rfml.matrix", "rfml.collection")
 
 
 setClass("ml.data.frame",
@@ -22,6 +24,8 @@ setClass("ml.data.frame",
            .nrows="integer",  # the number of rows in the result
            .col.name="character", # column names
            .col.data_type = "character", # column types
+           .col.org_name = "character", # name of field in source document
+           .col.format = "character", # source document format XML/JSON
            .col.defs = "list"
           )
     )
@@ -32,6 +36,8 @@ setClass("ml.col.def",
                  .type = "character", # column types
                  .name = "character",
                  .data_type = "character",
+                 .org_name = "character",
+                 .format = "character",
                  .aggType="character"
                 )
          )
