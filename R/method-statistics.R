@@ -1,5 +1,4 @@
-# Various statistics methods
-
+################ Correlation ############################
 #' Correlation
 #'
 #' Returns the Pearson correlation coefficient of two variables, ml.data.frame fields.
@@ -50,6 +49,7 @@ setMethod(f="cor", signature=c(x="ml.col.def",y="ml.col.def"),
             return(.ml.stat.func(x@.parent, fields, func))
         }
 )
+################ Correlation Matrix ############################
 #' Correlation Matrix
 #'
 #' Returns the Pearson correlation coefficient matrix of all numeric fields in a ml.data.frame
@@ -102,6 +102,7 @@ setMethod(f="cor", signature=c(x="ml.data.frame"),
             corMat
           }
 )
+################ Covariance ############################
 #' Covariance
 #'
 #' Returns the sample covariance of two variables, ml.data.frame fields.
@@ -151,7 +152,7 @@ setMethod(f="cov", signature=c(x="ml.col.def",y="ml.col.def"),
             return(.ml.stat.func(x@.parent, fields, func))
           }
 )
-
+################ Population Covariance ############################
 #' Population Covariance
 #'
 #' Returns the population covariance of two variables, ml.data.frame fields.
@@ -189,7 +190,7 @@ cov.pop <- function(x,y) {
 
   return(.ml.stat.func(x@.parent, fields, func))
 }
-
+################ Variance ############################
 #' Variance
 #'
 #' Returns the sample variance of two variables, ml.data.frame fields.
@@ -230,7 +231,7 @@ setMethod(f="var", signature=c(x="ml.col.def"),
             return(.ml.stat.func(x@.parent, fields, func))
           }
 )
-
+################ Population Variance ############################
 #' Population variance
 #'
 #' Returns the population variance of two variables, ml.data.frame fields.
@@ -267,7 +268,7 @@ var.pop <- function(x,na.rm = FALSE ) {
   func <- '{"index":"cts.varianceP", "noindex": "math.varianceP"}'
   return(.ml.stat.func(x@.parent, fields, func))
 }
-
+################ Standard Deviation ############################
 #' Standard Deviation
 #'
 #' Returns the sample standard deviation of two variables, ml.data.frame fields.
@@ -312,6 +313,7 @@ setMethod(f="sd", signature=c(x="ml.col.def"),
           }
 )
 
+################ Standard Deviation population ############################
 #' Standard Deviation of a population
 #'
 #' Returns the sample standard deviation of a population.
@@ -344,7 +346,7 @@ sd.pop <- function(x) {
   return(.ml.stat.func(x@.parent, fields, func))
 
 }
-
+################ Median ############################
 #' Median
 #'
 #' Returns the median of a ml.data.frame field.
@@ -381,6 +383,7 @@ setMethod(f="median", signature=c(x="ml.col.def"),
             return(.ml.stat.func(x@.parent, fields, func))
           }
 )
+################ Mean ############################
 #' Mean
 #'
 #' Returns the mean of a ml.data.frame field.
@@ -417,6 +420,7 @@ setMethod(f="mean", signature=c(x="ml.col.def"),
             return(.ml.stat.func(x@.parent, fields, func))
           }
 )
+################ Sum ############################
 #' Sum
 #'
 #' Returns the sum of a ml.data.frame field.
@@ -454,6 +458,7 @@ setMethod(f="sum", signature=c(x="ml.col.def"),
             return(.ml.stat.func(x@.parent, fields, func))
           }
 )
+################ Max ############################
 #' Max
 #'
 #' Returns the maximum value of a ml.data.frame field.
@@ -490,7 +495,7 @@ setMethod(f="max", signature=c(x="ml.col.def"),
             return(.ml.stat.func(x@.parent, fields, func))
           }
 )
-
+################ Min ############################
 #' Min
 #'
 #' Returns the minimum value of a ml.data.frame field.
@@ -527,8 +532,23 @@ setMethod(f="min", signature=c(x="ml.col.def"),
             return(.ml.stat.func(x@.parent, fields, func))
           }
 )
+################ Percentile ############################
+# Currently no implemented since the range index version,cts.percentile, does not
+# follow how the majority  of the cts functions works.
+percentile <- function(x, p) {
+ # use
+  if(x@.data_type!="number") {
+    stop("Can only use columns of number type")
+  }
 
-# summary function
+  fields <- "{"
+  fields <- paste(fields, '"',x@.name , '":{"fieldDef":"',x@.expr ,'","orgField":"', x@.org_name, '","orgFormat":"', x@.format ,'"}' ,sep='')
+  fields <- paste(fields, '}', sep='')
+  func <- '{"index":"cts.percentile", "noindex": "math.percentile"}'
+  return(.ml.stat.func(x@.parent, fields, func))
+}
+
+################ Summary ############################
 #' @export
 setMethod(f="summary", signature=c("ml.data.frame"),
           function (object,digits=max(3L, getOption("digits") -3L), maxsum = 7L, ...) {

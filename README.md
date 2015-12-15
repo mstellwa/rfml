@@ -82,6 +82,12 @@ head(mlIris)
 # 5               5.6              3.0               4.5              1.5   versicolor      1.5       6.0      11.5       1.5
 # 6               4.7              3.2               1.6              0.2       setosa      0.2       1.8      10.2       0.2
 ```
+You can also extract a selection from a ml.data.frame into a new ml.data.frame. For example, the
+following statements, would select only rows for which the column 'Species' equals 'setosa', and
+only the columns 'Sepal.Length' and 'Sepal.Width'
+```R
+mlIris2 <- mlIris[mlIris$Species=="setosa"",c("Sepal.Length","Sepal.Width")]
+```
 It is possible also to pull back data from a  ml.data.frame object, it is returned as a data.frame.
 ```R
 localDf <- as.data.frame(mlIris)
