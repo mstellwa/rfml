@@ -7,7 +7,11 @@ function get(context, params) {
   var pageLength = params.pageLength;
   var getRows = (parseInt(pageLength) > 0) ? parseInt(pageLength) : 30;
 
-  var whereQuery = rfmlUtilities.getCtsQuery(qText, collections, directory );
+  var fieldQuery;
+  if (params.fieldQuery) {
+    fieldQuery = JSON.parse(params.fieldQuery);
+  }
+  var whereQuery = rfmlUtilities.getCtsQuery(qText, collections, directory, fieldQuery);
 
   context.outputTypes = ['application/json'];
 

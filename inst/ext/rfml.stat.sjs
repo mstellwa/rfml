@@ -6,10 +6,18 @@ function get(context, params) {
   var directory = params.directory;
   var pageLength = params.pageLength;
   var statFunc =  JSON.parse(params.statfunc);
+  /* pageStart only works with math functions becuase we first selects the result
+     and then apply the function after. With cts functions range indexes are used and
+     there is not possible to limit the resul other than with a query(?) */
+  var pageStart = (parseInt(params.start) > 0) ? parseInt(params.start) : 1;
   var getRows = (parseInt(pageLength) > 0) ? parseInt(pageLength) : 30;
 
-  var whereQuery = rfmlUtilities.getCtsQuery(qText, collections, directory );
-
+  var fieldQuery;
+  if (params.fieldQuery) {
+    fieldQuery = JSON.parse(params.fieldQuery);
+  }
+  var whereQuery = rfmlUtilities.getCtsQuery(qText, collections, directory, fieldQuery);
+  
   context.outputTypes = ['application/json'];
   var fields = {};
   if (params.fields) {
@@ -35,7 +43,7 @@ function get(context, params) {
     strParams = strParams + ',null,whereQuery';
     return eval(statFunc.index + '('+ strParams +')');
   } catch(err) {
-    var funcArray = rfmlUtilities.fields2array(whereQuery, getRows, fields)
+    var funcArray = rfmlUtilities.fields2array(whereQuery,pageStart, getRows, fields)
     return eval(statFunc.noindex + '(funcArray)');
   }
 

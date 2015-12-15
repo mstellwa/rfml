@@ -16,15 +16,15 @@ function isNumeric(n) {
 * If fieldDef if true it will onnly return the fieldname and datatype,
 * else it will return fieldname and value
 ************************************************************************/
-function flattenJsonObject(obj, flatJson, prefix, fieldDef, orgFormat) {
+function flattenJsonObject(obj, flatJson, prefix, fieldDef, orgFormat, path) {
  for (var key in obj) {
    if (Array.isArray(obj[key])) {
      var jsonArray = obj[key];
      if (jsonArray.length < 1) continue;
-     flatJson = flattenJsonArray(jsonArray, flatJson, key, fieldDef,orgFormat);
+     flatJson = flattenJsonArray(jsonArray, flatJson, key, fieldDef,orgFormat, path + '/'+ key);
    } else if (obj[key] !== null && typeof obj[key] === 'object') {
      var jsonObject = obj[key];
-      flatJson = flattenJsonObject(jsonObject, flatJson, key + 1, fieldDef,orgFormat);
+      flatJson = flattenJsonObject(jsonObject, flatJson, key + 1, fieldDef,orgFormat, path + '/'+ key);
    } else {
      var value = obj[key];
      if (value !== null) {
@@ -34,7 +34,10 @@ function flattenJsonObject(obj, flatJson, prefix, fieldDef, orgFormat) {
              flatJson[prefix + key].fieldType = 'string';
            };
          } else {
-           flatJson[prefix + key] = {"fieldType":isNumeric(obj[key]) ? 'number' : 'string', "fieldDef":prefix + key, "orgField": key, "orgFormat":orgFormat};
+           flatJson[prefix + key] = {"fieldType":isNumeric(obj[key]) ? 'number' : 'string',
+                                     "fieldDef":prefix + key, "orgField": key,
+                                     "orgPath" : path + '/' + key,
+                                     "orgFormat":orgFormat};
          };
        } else {
          flatJson[prefix + key] = isNumeric(obj[key]) ?  parseFloat(obj[key]) : obj[key];
@@ -50,16 +53,16 @@ function flattenJsonObject(obj, flatJson, prefix, fieldDef, orgFormat) {
 * If fieldDef if true it will onnly return the fieldname and datatype,
 * else it will return fieldname and value
 ************************************************************************/
-function flattenJsonArray(obj, flatJson, prefix, fieldDef, orgFormat) {
+function flattenJsonArray(obj, flatJson, prefix, fieldDef, orgFormat, path) {
  var length = obj.length;
  for (var i = 0; i < length; i++) {
    if (Array.isArray(obj[i])) {
      var jsonArray = obj[i];
      if (jsonArray.length < 1) continue;
-     flatJson = flattenJsonArray(jsonArray, flatJson, prefix + i,fieldDef,orgFormat);
+     flatJson = flattenJsonArray(jsonArray, flatJson, prefix + i,fieldDef,orgFormat,path);
     } else if (obj[i] !== null && typeof obj[i] === 'object') {
        var jsonObject = obj[i];
-       flatJson = flattenJsonObject(jsonObject, flatJson, prefix + (i + 1),fieldDef,orgFormat);
+       flatJson = flattenJsonObject(jsonObject, flatJson, prefix + (i + 1),fieldDef,orgFormat,path);
    } else {
      var value = obj[i];
      if (value !== null) {
@@ -69,7 +72,8 @@ function flattenJsonArray(obj, flatJson, prefix, fieldDef, orgFormat) {
              flatJson[prefix + i].fieldType = 'string';
            };
          } else {
-           flatJson[prefix + i] = {"fieldType":isNumeric(obj[i]) ? 'number' : 'string', "fieldDef":prefix + i, "orgField": i, "orgFormat":orgFormat };
+           flatJson[prefix + i] = {"fieldType":isNumeric(obj[i]) ? 'number' : 'string', "fieldDef":prefix + i, "orgField": prefix,
+                                    "orgPath" : path,"orgFormat":orgFormat };
          };
        } else {
          flatJson[prefix + i] = isNumeric(obj[i]) ?  parseFloat(obj[i]) : obj[i]
@@ -79,7 +83,8 @@ function flattenJsonArray(obj, flatJson, prefix, fieldDef, orgFormat) {
  }
  return(flatJson)
 }
-function getFlatResult(docRaw, docFormat, searchRelatedVals, fields) {
+
+function getFlatResult(docRaw, docFormat, searchRelatedVals, fields, extrFields) {
   /* var rfmlUtilities = require('/ext/rfml/rfmlUtilities.sjs'); */
   var xml2json = require('/ext/rfml/xml2json.sjs');
   var resultContent;
@@ -116,13 +121,23 @@ function getFlatResult(docRaw, docFormat, searchRelatedVals, fields) {
     var fieldDef = fields[field].fieldDef;
     flatDoc[fieldName] = eval(fieldDef.replace(/rfmlResult/g, "flatDoc"));
   };
-  return flatDoc;
+  var retDoc = {};
+  /* if we should only return a extract of the result */
+  if (extrFields) {
+    for (var extrField in extrFields) {
+      retDoc[extrField] = flatDoc[extrField]
+    }
+  } else {
+    retDoc = flatDoc;
+  }
+
+  return retDoc;
 }
 /***********************************************************************
  * Flatten a json document into a array with the values of each field
  * defined in the fields parameter.
  ************************************************************************/
- function fields2arrayJS(whereQuery, getRows, fields) {
+ function fields2arrayJS(whereQuery, pageStart, getRows, fields) {
    var jsearch = require('/MarkLogic/jsearch.sjs');
    var rfmlUtilities = require('/ext/rfml/rfmlUtilities.sjs');
    var xml2json = require('/ext/rfml/xml2json.sjs');
@@ -130,7 +145,7 @@ function getFlatResult(docRaw, docFormat, searchRelatedVals, fields) {
    /* We do not produce any result, the map function is updating flatResult that is used instead */
    var x = jsearch.documents()
                  .where(whereQuery)
-                 .slice(0,getRows)
+                 .slice(pageStart-1,getRows)
                  .map(function (match) {
                          var docRaw = match.document;
                          switch (docRaw.nodeKind) {
@@ -164,14 +179,14 @@ function getFlatResult(docRaw, docFormat, searchRelatedVals, fields) {
                    .result();
    return flatResult;
  }
- function fields2arrayCts(whereQuery, getRows, fields) {
+ function fields2arrayCts(whereQuery, pageStart,getRows, fields) {
    var jsearch = require('/MarkLogic/jsearch.sjs');
    var rfmlUtilities = require('/ext/rfml/rfmlUtilities.sjs');
    var xml2json = require('/ext/rfml/xml2json.sjs');
    var flatResult = [];
    var resultContent;
 
-   var results = fn.subsequence(cts.search(whereQuery), 1, getRows);
+   var results = fn.subsequence(cts.search(whereQuery), pageStart, getRows);
 
    for (var result of results) {
      switch (result.documentFormat) {
@@ -205,13 +220,13 @@ function getFlatResult(docRaw, docFormat, searchRelatedVals, fields) {
    return flatResult;
  }
 
- function fields2array(whereQuery, getRows, fields) {
+ function fields2array(whereQuery, pageStart, getRows, fields) {
    var mlVersion = xdmp.version();
      /* Check version and do diffrently */
    if (mlVersion >= "8.0-4") {
-       return fields2arrayJS(whereQuery, getRows, fields);
+       return fields2arrayJS(whereQuery, pageStart, getRows, fields);
    } else {
-      return fields2arrayCts(whereQuery, getRows, fields);
+      return fields2arrayCts(whereQuery, pageStart, getRows, fields);
    };
 
  }
@@ -219,12 +234,12 @@ function getFlatResult(docRaw, docFormat, searchRelatedVals, fields) {
  * Creates a result set that can be used to create
  * summary (descreptive statsitcs).
  ************************************************************************/
-function summaryResultJS(whereQuery, getRows, relevanceScores, docUri, fields) {
+function summaryResultJS(whereQuery, pageStart, getRows, relevanceScores, docUri, fields) {
   var jsearch = require('/MarkLogic/jsearch.sjs');
   var flatResult = {};
   var x = jsearch.documents()
                 .where(whereQuery)
-                .slice(0,getRows)
+                .slice(pageStart,getRows)
                 .map(function (match) {
                         var docRaw = match.document;
                         var searchRelatedVals = {};
@@ -266,9 +281,9 @@ function summaryResultJS(whereQuery, getRows, relevanceScores, docUri, fields) {
  * Creates a result set that can be used to create
  * summary (descreptive statsitcs).
  ************************************************************************/
-function summaryResultCts(whereQuery, getRows, relevanceScores, docUri, fields) {
+function summaryResultCts(whereQuery, pageStart, getRows, relevanceScores, docUri, fields) {
 
-  var results = fn.subsequence(cts.search(whereQuery), 1, getRows);
+  var results = fn.subsequence(cts.search(whereQuery), pageStart, getRows);
   var flatResult = {};
 
   for (var result of results) {
@@ -304,37 +319,59 @@ function summaryResultCts(whereQuery, getRows, relevanceScores, docUri, fields) 
  * Creates a result set that can be used to create
  * summary (descreptive statsitcs).
  ************************************************************************/
-function summaryResult(whereQuery, getRows, relevanceScores, docUri, fields) {
+function summaryResult(whereQuery, pageStart,getRows, relevanceScores, docUri, fields) {
   var mlVersion = xdmp.version();
 
   if (mlVersion >= "8.0-4") {
-    return summaryResultJS(whereQuery, getRows, relevanceScores, docUri, fields);
+    return summaryResultJS(whereQuery, pageStart, getRows, relevanceScores, docUri, fields);
   } else {
-    return summaryResultCts(whereQuery, getRows, relevanceScores, docUri, fields);
+    return summaryResultCts(whereQuery, pageStart, getRows, relevanceScores, docUri, fields);
   };
 
 }
 /******************************************************************************
  * Generates a cts query based on search text, collections and directory
  ******************************************************************************/
-function getCtsQuery(qText, collections, directory ) {
+function getCtsQuery(qText, collections, directory, fieldQuery) {
   var ctsQuery,collectionQuery, directoryQuery;
   var mlVersion = xdmp.version();
 
+  // count arguments to decide if and query...
+  var queries = 0;
   var andQuery = false;
 
+  if (qText != "") {
+    queries = queries +1;
+  }
   if ((collections) && (collections.length > 0)) {
     andQuery = true;
+    queries = queries +1;
     collectionQuery = cts.collectionQuery(collections);
   };
 
   if ((directory) && (directory.length > 0)) {
-     andQuery = true;
+    andQuery = true;
+    queries = queries +1;
     directoryQuery = cts.directoryQuery(directory);
+  };
+  if ((fieldQuery)) {
+     andQuery = true;
+     queries = queries +1;
+      var ctsFieldQuery = "";
+      for (var field in fieldQuery) {
+        if (ctsFieldQuery != "") {
+          ctsFieldQuery = ctsFieldQuery + ',';
+        }
+        var query = (fieldQuery[field].orgFormat == 'XML') ? 'cts.elementValueQuery(xs.QName("' + field +'")' : 'cts.jsonPropertyValueQuery("' + field + '"';
+        query = query + ', "' + fieldQuery[field].value + '")';
+        ctsFieldQuery = ctsFieldQuery + query;
+      };
+      ctsFieldQuery = eval(ctsFieldQuery);
+
   };
   if (mlVersion >= "8.0-4") {
     ctsQuery = cts.parse(qText);
-    return (andQuery) ? cts.andQuery([ctsQuery,collectionQuery, directoryQuery]) : ctsQuery;
+    return (andQuery) ? cts.andQuery([ctsQuery,ctsFieldQuery,collectionQuery, directoryQuery]) : ctsQuery;
 
   } else {
     ctsQuery = xdmp.xqueryEval(
@@ -344,7 +381,7 @@ function getCtsQuery(qText, collections, directory ) {
             'declare variable $qtext as xs:string external;  ' +
             'search:parse($qtext)',
              { '{}qtext': qText });
-      return (andQuery) ? cts.andQuery([cts.query(ctsQuery),collectionQuery, directoryQuery]) : cts.query(ctsQuery);
+      return (andQuery) ? cts.andQuery([cts.query(ctsQuery),ctsFieldQuery,collectionQuery, directoryQuery]) : cts.query(ctsQuery);
   };
 }
 

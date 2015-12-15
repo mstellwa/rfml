@@ -17,16 +17,17 @@
 
 setClass("ml.data.frame",
          slots=c(
-           .name="character", # the name of the data frame result
-           .qtext="character", # the search that defines the data frame
-           .ctsQuery="json", #the cts query for the data frame.
-           .queryArgs="list", #parameters used to query ML
-           .nrows="integer",  # the number of rows in the result
+           .name="character",
+           .queryArgs="list", # parameters used to query ML
+           .start="integer", # the index of the first result to get
+           .nrows="integer",  # the number of rows in the result or maximum number or result to get
+           .extracted="logical", # if we have selected a subset of columns
            .col.name="character", # column names
            .col.data_type = "character", # column types
            .col.org_name = "character", # name of field in source document
+           .col.org_xpath = "character",# xpath in the source document
            .col.format = "character", # source document format XML/JSON
-           .col.defs = "list"
+           .col.defs = "list" # added columns
           )
     )
 #Column expressions

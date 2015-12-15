@@ -66,7 +66,7 @@ ml.data.frame <- function (query="", collection = c(), directory = c(), relevanc
     queryComArgs <- c(queryComArgs, 'rs:directory'=strDir)
   }
 
-  queryArgs <- c(queryComArgs, 'rs:pageLength'=nPageLength, 'rs:return'="meta")
+  queryArgs <- c(queryComArgs,'rs:start=1', 'rs:pageLength'=nPageLength, 'rs:return'="meta")
   # do a search
   response <- GET(mlSearchURL, query = queryArgs, authenticate(username, password, type="digest"), accept_json())
 
@@ -86,24 +86,27 @@ ml.data.frame <- function (query="", collection = c(), directory = c(), relevanc
 
   res <- new("ml.data.frame")
   res@.name <- dframe
-  res@.qtext <- query
-  res@.ctsQuery <- toJSON(rContent$ctsQuery)
   res@.queryArgs <- queryComArgs
   res@.nrows <- as.integer(rContent$nrows)
+  res@.start <- 1L
+  res@.extracted=FALSE
   fieldList <- rContent$dataFrameFields
   fieldNames <- c()
   fieldTypes <- c()
   fieldOrgNames <- c()
+  fieldOrgXPaths <- c()
   fieldFormat <- c()
   for (i in 1:length(fieldList)) {
     fieldNames[i] <-  as.character(attributes(fieldList[i]))
     fieldTypes[i] <- fieldList[[i]]$fieldType
     fieldOrgNames[i] <- fieldList[[i]]$orgField
+    fieldOrgXPaths[i] <- fieldList[[i]]$orgPath
     fieldFormat[i] <- fieldList[[i]]$orgFormat
   }
   res@.col.name <- fieldNames
   res@.col.data_type <- fieldTypes
   res@.col.org_name <- fieldOrgNames
+  res@.col.org_xpath <- fieldOrgXPaths
   res@.col.format <- fieldFormat
   res@.col.defs <- list()
   return(res);
@@ -153,61 +156,116 @@ as.ml.data.frame <- function (x, name, format = "json", directory = "") {
   return(ml.data.frame(collection=c(rfmlCollection)));
 }
 ################ [ ############################
-# Not used!
+#' Extract subsets of a ml.data.frame
+#'
+#' Extract subset of columns and/or rows of a ml.data.frame. When extracting rows a ml.col.def
+#' referense can be used with only the equal (==) comparsion operator or a search text.
+#' The row filtering will be used togheter with the existing search of the ml.data.frame
+#'
+#' @param x a ml.data.frame from which to extract element(s).
+#' @param i,j Indices specifying elements to extract. Indices are ‘numeric’ or ‘character’ vectors or empty (missing) or ‘NULL’.
+#' @param drop Not implemented yet.
+#' @return A ml.data.frame object is returned
+#' @examples
+#' \dontrun{
+#'  library(rfml)
+#'  ml.connect("localhost", "8000", "admin", "admin")
+#'  # create a ml.data.frame based on the iris data set
+#'  mlIris <- as.ml.data.frame(iris, "iris")
+#'  mlIris2 <- mlIris[1:3] # select first three columns
+#'  mlIris2 <- mlIris[,1:3] # same
+#'  mlIris2 <- mlIris[,c("Sepal.Length","Sepal.Width","Petal.Length")] # same
+#'  mlIris2 <- mlIris[mlIris$Species=="setosa", 1:3] # select first three columns for all rows with Spieces = setosa
+#'  mlIris2 <- mlIris[mlIris$Species=="setosa",] # select all columns for all rows with Spieces = setosa
+#'  mlIris2 <- mlIris["setosa",] # select all columns for all rows with "setosa" in any column
+#' }
+#' @export
 setMethod("[", signature(x = "ml.data.frame"),
-          function (x, i=NULL, j=NULL, ..., drop=NA)
+          function (x, i, j,..., drop=NA)
           {
-            c <- c()
-            # check arguments - columns
-            if (try(!is.null(j),silent=TRUE) == TRUE) {
-              if (is.numeric(j))
-                c <- c(c,as.integer(j))
-              else if (!is.integer(j))
-                if (is.character(j)){
-
-                  for (n in j){
-                    if (is.element(n, x@.col.name))
-                      c <- c(c, which(names(x)==n))
-                    else
-                      if (is.element(tolower(n), x@.col.name))
-                        stop(paste("No column named ", n, " in the table. Column names are case-sensitive. Did you mean ", tolower(n), "?"))
-                    else if (is.element(toupper(n), x@.col.name))
-                      stop(paste("No column named ", j, " in the table. Column names are case-sensitive. Did you mean ", toupper(n), "?"))
-                    else stop(paste("No column named ", n, " in the table. Column names are case-sensitive."  , "."))
-
+            colArg <- NULL
+            rowArg <- NULL
+            cols <- c()
+            n <- nargs()
+            if (n == 1) {
+              stop("Argument is missing!")
+            }
+            if (n == 2) { # select columns -> mlDf[1]/mlDf[1:4]/mlDf["column"]/mlDf[c("col1","col2)]
+              colArg <- i
+            } else if (n == 3) { # several cases
+              if (missing(i)) {
+                # if i is missing -> mlDf[, 1:2]
+                # select columns based on j
+                colArg <- j
+              } else if (missing(j)) {
+                # if j is missing -> mlDf[1:2,] -> row selection...
+                rowArg <- i
+              } else {
+                # else mlDf[1:2,1:4]
+                # i is row selection ...
+                colArg <- j
+                rowArg <- i
+              }
+            }
+            # rows selection
+            if (!is.null(rowArg)) {
+              newQeryArgs <- x@.queryArgs
+              if (is.numeric(rowArg)) {
+                stop("row numbering is not allowed")
+              } else if (class(rowArg)=="ml.col.def") {
+                if(rowArg@.type!='logical' && validate(toJSON(rowArg@.expr))) {
+                  stop("Column expression must resolve into a boolean value for row selection.")
+                }
+                newQeryArgs <- c(newQeryArgs, 'rs:fieldQuery'=rowArg@.expr)
+                # we should update the row count since we are changing the definition...
+                #x@.nrows <- NA
+              } else if (is.character(rowArg)) {
+                qText <- newQeryArgs$`rs:q`
+                if (nchar(qText) > 0) {
+                  qText <- paste(qText, " AND ", sep="")
+                }
+                qText <- paste(qText, rowArg, sep="")
+                newQeryArgs$`rs:q` <- qText
+              } else {
+                stop("row object does not specify a subset")
+              }
+              x@.queryArgs <- newQeryArgs
+            }
+            # column selection.
+            # must verify that we handle added columns as well.
+            if (!is.null(colArg)) {
+              if (is.numeric(colArg)) { # column selection
+                # using  x[1:2]
+                cols <- c(cols,as.integer(colArg))
+              } else if (!is.integer(colArg)) {
+                # using column names
+                if (is.character(colArg)){
+                  for (n in colArg){
+                    # get the index of columnname
+                    cols <- c(cols, which(names(x)==n))
+                    # need to check if the name exists...
                   }
                 }
-              else
-                stop("columns argument must be integer or character")
-            }
-            # check arguments i (row)
-
-            if(!missing(i)) {
-              if (tryCatch(!is.null(i),error = function(e) {print(e);print("Sub set selection could not be created, the left-hand side of the expression must be a column reference, the right-hand side must be a value or a column reference in the same table.")}) == TRUE) {
-                if (is.numeric(i))
-                  stop("row numbering is not allowed")
-                else if (class(i)=="ida.col.def") {
-                  if((i@table@table != x@table)||(i@table@where!=x@where))
-                    stop("Cannot apply condition to columns not in the base table.")
-
-                  if(i@type!='logical')
-                    stop("Column expression must resolve into a boolean value for row selection.")
-                  newRowSelection <- i@term;
+              }
+              if (!is.null(x@.col.name) ) {
+                x@.col.name <- x@.col.name[cols]
+                x@.col.data_type <- x@.col.data_type[cols]
+                x@.col.org_name <- x@.col.org_name[cols]
+                x@.col.org_xpath <- x@.col.org_xpath[cols]
+                x@.col.format <- x@.col.format[cols]
+                # need to check if selected column is part of .col.defs
+                colDefs <- list()
+                if (length(x@.col.defs) > 0) {
+                  for (i in 1:length(x@.col.name)) {
+                    if (!is.null(x@.col.defs[[x@.col.name[i]]])) {
+                      colDefs <- c(colDefs, x@.col.defs[x@.col.name[i]])
+                    }
+                  }
                 }
-                else if (class(i) == "ida.data.frame.rows")
-                  newRowSelection <- i@where
-                else
-                  stop("row object does not specify a subset")
-
-                if (is.null(x@where) || !nchar(x@where))
-                  x@where <- newRowSelection
-                else
-                  x@where <- paste("(", x@where, ") AND (", newRowSelection, ")", sep="")
-              }}
-            # compute the right subset of columns
-            if (!is.null(x@cols) && !is.null(c))
-              x@cols <- x@cols[c]
-            # i variable has to be of a special class "ida.data.frame.rows"
+                x@.col.defs <- colDefs
+                x@.extracted <- TRUE
+              }
+            }
             return(x)
           }
 )
@@ -269,7 +327,48 @@ setMethod("$<-", signature(x = "ml.data.frame"),
             return(x);
           }
 )
+################ [<- ############################
 
+setMethod("[<-", signature(x = "ml.data.frame"),
+          function(x, i,j,value) {
+            print("rätt")
+            print(as.list(match.call()))
+            print(x@.name)
+            print(i)
+            #print(j)
+            print(value)
+            # mlDf["hej2"] <- 2
+            # x -> mlDf
+            # i -> "Hej2"
+            # value -> 2
+
+#             if(is.null(value)) {
+#               #remove col def
+#               if(!is.null(x@.col.defs[[name]])) {
+#                 x@.col.defs[[name]] <- NULL;
+#               }
+#               x@.col.name <- setdiff(x@.col.name,name)
+#             } else {
+#               if(!inherits(value,"ml.col.def"))
+#                 stop("Column definition is not valid for a ml.data.frame, please refer to the documentation of ml.data.frame for details on usage.")
+#               if(((value@.parent)@.name != x@.name))
+#                 stop("Column defintions are only allowed on the same ml.data.frame.");
+#
+#               if(value@.aggType!='none') {
+#                 stop("Cannot add column that contains aggregation term to ml.data.frame.")
+#               }
+#               # if we are refering an existing column ie x$field
+#               # then value is the defenition of that field.
+#               x@.col.defs[[name]]<-value@.expr;
+#               if(!(name %in% x@.col.name)) {
+#                 x@.col.name<-c(x@.col.name,name);
+#                 x@.col.data_type<-c(x@.col.data_type, value@.data_type)
+#               }
+#             }
+#
+#             return(x);
+          }
+)
 #' Check if an object is of type ml.data.frame
 #'
 #' This function checks if the input is of type ml.data.frame.
@@ -322,14 +421,14 @@ setMethod("head", signature(x="ml.data.frame"),
 #' @export
 setMethod("print", signature(x="ml.data.frame"),
           function (x) {
-            cat(object@.ctsQuery,"\n")
+            print(format(object@.queryArgs))
           }
 )
 ################ show ############################
 #' @export
 setMethod("show", signature(object="ml.data.frame"),
           function (object) {
-            cat(object@.ctsQuery,"\n")
+            print(format(object@.queryArgs))
           }
 )
 

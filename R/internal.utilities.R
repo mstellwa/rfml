@@ -317,8 +317,6 @@
   key <- .rfmlEnv$key
   password <- rawToChar(PKI::PKI.decrypt(.rfmlEnv$conn$password, key))
   username <- .rfmlEnv$conn$username
-  dframe <- mlDf@.name
-  #query <- mlDf@.ctsQuery
   queryComArgs <- mlDf@.queryArgs
 
   mlHost <- paste("http://", .rfmlEnv$conn$host, ":", .rfmlEnv$conn$port, sep="")
@@ -329,16 +327,31 @@
     mlOptions <- searchOption
   }
 
-
-  nStart=1
-  if (nrows>0) {
+  # need to pick start and end from mlDf...
+  nStart=mlDf@.start
+  if (nrows>0 && nrows<mlDf@.nrows) {
     nPageLength <- nrows
   } else {
     nPageLength <- mlDf@.nrows
   }
-
-  queryArgs <- c(queryComArgs, 'rs:pageLength'=nPageLength, 'rs:return'="data")
-
+  queryArgs <- c(queryComArgs, 'rs:start'=nStart,'rs:pageLength'=nPageLength, 'rs:return'="data")
+  # Need to check if extracted then we could have changed the rows...
+  if (mlDf@.extracted) {
+    # create a extfields parameter...
+    extFields <- "{"
+    for (i in 1:length(mlDf@.col.name)) {
+      if (nchar(extFields) > 1) {
+        extFields <- paste(extFields, ',', sep='')
+      }
+      extFields <- paste(extFields, '"', mlDf@.col.name[i],
+                         '":{"fieldDef":"',mlDf@.col.name[i],
+                         '","orgField":"',mlDf@.col.org_name[i],
+                         '","orgPath":"',mlDf@.col.org_xpath[i],
+                         '","orgFormat":"',mlDf@.col.format[i],'"}',sep='')
+    }
+    extFields <- paste(extFields, '}', sep='')
+    queryArgs <- c(queryArgs,'rs:extfields'=extFields)
+  }
 
   # create
   if (length(mlDf@.col.defs) > 0) {
@@ -475,7 +488,7 @@
   key <- .rfmlEnv$key
   password <- rawToChar(PKI::PKI.decrypt(.rfmlEnv$conn$password, key))
   username <- .rfmlEnv$conn$username
-  dframe <- mlDf@.name
+  #dframe <- mlDf@.name
   #query <- mlDf@.ctsQuery
   queryComArgs <- mlDf@.queryArgs
 
@@ -531,7 +544,7 @@
   key <- .rfmlEnv$key
   password <- rawToChar(PKI::PKI.decrypt(.rfmlEnv$conn$password, key))
   username <- .rfmlEnv$conn$username
-  dframe <- mlDf@.name
+  #dframe <- mlDf@.name
   #query <- mlDf@.ctsQuery
   queryComArgs <- mlDf@.queryArgs
 

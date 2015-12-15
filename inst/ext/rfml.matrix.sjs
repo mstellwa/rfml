@@ -55,6 +55,7 @@ function get(context, params) {
   var collections = params.collection;
   var directory = params.directory;
   var pageLength = params.pageLength;
+  var pageStart = (parseInt(params.start) > 0) ? parseInt(params.start) : 1;
   var matrixFunc = params.matrixfunc;
   var relevanceScores = params.relevanceScores == "TRUE" ? true : false;
   var docUri = params.docUri == "TRUE" ? true : false;
@@ -68,10 +69,15 @@ function get(context, params) {
     fields = JSON.parse(params.fields);
   };
 
-  var whereQuery = rfmlUtilities.getCtsQuery(qText, collections, directory );
+  var fieldQuery;
+  if (params.fieldQuery) {
+    fieldQuery = JSON.parse(params.fieldQuery);
+  }
+  var whereQuery = rfmlUtilities.getCtsQuery(qText, collections, directory, fieldQuery);
+
   /* Get a resultset whit all unique fields (element/porperties) from the search and for each
      field what data type (string/numeric) it is and the values */
-  var flatResult = rfmlUtilities.summaryResult(whereQuery, getRows, relevanceScores, docUri, fields);
+  var flatResult = rfmlUtilities.summaryResult(whereQuery, pageStart, getRows, relevanceScores, docUri, fields);
   switch (matrixFunc) {
     case "correlation":
         return getCorrelation(flatResult);

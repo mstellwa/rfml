@@ -3,13 +3,13 @@
 #' @export
 setMethod("print", signature(x="ml.col.def"),
           function (x) {
-            cat(paste("Column definition: ", x@.expr, " parent: ",x@.parent@.name ," \n Use this to define new columns on a ml.data.frame using the $ operator. To select a subset of a table, use bldf[] notation. "),"\n")
+            cat(paste("Column definition: ", x@.expr, " parent: ",x@.parent@.name ," \n Use this to define new columns on a ml.data.frame using the $ operator. To select a subset of a ml.data.frame, use bldf[] notation. "),"\n")
           }
 )
 #' @export
 setMethod("show", signature(object="ml.col.def"),
           function (object) {
-            cat(paste("Column definition: ", object@.expr, " parent: ",object@.parent@.name ," \n Use this to define new columns on a ml.data.frame using the $ operator. To select a subset of a table, use bldf[] notation. "),"\n")
+            cat(paste("Column definition: ", object@.expr, " parent: ",object@.parent@.name ," \n Use this to define new columns on a ml.data.frame using the $ operator. To select a subset of a ml.data.frame, use bldf[] notation. "),"\n")
           }
 )
 # Not used!
@@ -78,6 +78,26 @@ setMethod("Arith", signature(e1="ANY", e2="ml.col.def"), function(e1, e2) {
     dataType <- "number"
   }
   return(new(Class="ml.col.def",.expr=paste('(', as.ml.col.def(eval(e1)),.Generic,as.ml.col.def(eval(e2)),')',sep=''),.data_type=dataType,.parent=e2@.parent,.type="expr",.aggType=aggType(e1,e2)));
+})
+
+################ Comparison operators ############################
+#  "==" ">"  "<"  "!=" "<=" ">="
+#' @export
+setMethod("Compare", signature(e1="ml.col.def", e2="ANY"), function(e1, e2) {
+  mlDf <- e1@.parent
+  i <- which(mlDf@.col.name %in% e1@.name)
+  # need to handle the comparsion operator...
+  fieldQuery <- "{"
+  fieldQuery <- paste('{"', mlDf@.col.org_name[i],
+                     '":{"value":"',e2,
+                     '","operator":"',.Generic,
+                     '","orgPath":"',mlDf@.col.org_xpath[i],
+                     '","orgFormat":"',mlDf@.col.format[i],'"}}',sep='')
+  return(new(Class="ml.col.def",
+             .expr=fieldQuery,
+             .data_type="string",
+             .parent=e1@.parent,
+             .type="logical",.aggType="none"));
 })
 
 ################ Scalar functions ############################
