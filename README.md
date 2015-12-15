@@ -49,38 +49,38 @@ No data is pulled back to the client, if not asked for using for example head.
 ```R
 # pull back the first 6 rows, the returned object is a data.frame
 head(mlIris)
-# iris1Sepal.Length iris1Sepal.Width iris1Petal.Length iris1Petal.Width iris1Species
-# 1               6.4              2.9               4.3              1.3   versicolor
-# 2               5.6              2.9               3.6              1.3   versicolor
-# 3               6.4              2.8               5.6              2.1    virginica
-# 4               6.1              2.6               5.6              1.4    virginica
-# 5               5.6              3.0               4.5              1.5   versicolor
-# 6               4.7              3.2               1.6              0.2       setosa
+#    Sepal.Length    Sepal.Width     Petal.Length       Petal.Width     Species
+# 1  6.4              2.9               4.3              1.3            versicolor
+# 2  5.6              2.9               3.6              1.3            versicolor
+# 3  6.4              2.8               5.6              2.1            virginica
+# 4  6.1              2.6               5.6              1.4            virginica
+# 5  5.6              3.0               4.5              1.5            versicolor
+# 6  4.7              3.2               1.6              0.2            setosa
 ```
 It is possible to create new columns for the ml.data.frame object. The columns only exists within the object and are not created at the database. 
 ```R
 # create a field based on an existing
-mlIris$newField <- mlIris$iris1Petal.Width
+mlIris$newField <- mlIris$Petal.Width
 
 # create a field based calculation on existing
-mlIris$newField2 <- mlIris$iris1Petal.Width + dmlIris$iris1Petal.Length
+mlIris$newField2 <- mlIris$Petal.Width + dmlIris$Petal.Length
 
 # create a field based on an previous created
-mlIris$newField3 <- mlIris$iris1Petal.Width + 10
+mlIris$newField3 <- mlIris$Petal.Width + 10
 
-mlIris$abs_width <- abs(mlIris$iris1Petal.Width)
+mlIris$abs_width <- abs(mlIris$Petal.Width)
 ```
 The new columns are calculated at runtime when retriving the data, the calculation is done on the server side.
 ```R
 # pull back the whole result, including the previous created fields
 head(mlIris)
-#   iris1Sepal.Length iris1Sepal.Width iris1Petal.Length iris1Petal.Width iris1Species newField newField2 newField3 abs_width
-# 1               6.4              2.9               4.3              1.3   versicolor      1.3       5.6      11.3       1.3
-# 2               5.6              2.9               3.6              1.3   versicolor      1.3       4.9      11.3       1.3
-# 3               6.4              2.8               5.6              2.1    virginica      2.1       7.7      12.1       2.1
-# 4               6.1              2.6               5.6              1.4    virginica      1.4       7.0      11.4       1.4
-# 5               5.6              3.0               4.5              1.5   versicolor      1.5       6.0      11.5       1.5
-# 6               4.7              3.2               1.6              0.2       setosa      0.2       1.8      10.2       0.2
+#    Sepal.Length  Sepal.Width Petal.Length Petal.Width Species     newField newField2 newField3 abs_width
+# 1  6.4           2.9          4.3         1.3         versicolor  1.3       5.6      11.3       1.3
+# 2  5.6           2.9          3.6         1.3         versicolor  1.3       4.9      11.3       1.3
+# 3  6.4           2.8          5.6         2.1         virginica   2.1       7.7      12.1       2.1
+# 4  6.1           2.6          5.6         1.4         virginica   1.4       7.0      11.4       1.4
+# 5  5.6           3.0          4.5         1.5         versicolor  1.5       6.0      11.5       1.5
+# 6  4.7           3.2          1.6         0.2         setosa      0.2       1.8      10.2       0.2
 ```
 You can also extract a selection from a ml.data.frame into a new ml.data.frame. For example, the
 following statements, would select only rows for which the column 'Species' equals 'setosa', and
