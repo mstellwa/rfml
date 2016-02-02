@@ -17,6 +17,9 @@ function isNumeric(n) {
 * else it will return fieldname and value
 ************************************************************************/
 function flattenJsonObject(obj, flatJson, prefix, fieldDef, orgFormat, path) {
+  var orgFormat = typeof orgFormat !== 'undefined' ?  orgFormat : "";
+  var path = typeof path !== 'undefined' ?  path : "";
+
  for (var key in obj) {
    if (Array.isArray(obj[key])) {
      var jsonArray = obj[key];
@@ -54,8 +57,10 @@ function flattenJsonObject(obj, flatJson, prefix, fieldDef, orgFormat, path) {
 * else it will return fieldname and value
 ************************************************************************/
 function flattenJsonArray(obj, flatJson, prefix, fieldDef, orgFormat, path) {
- var length = obj.length;
- for (var i = 0; i < length; i++) {
+  var orgFormat = typeof orgFormat !== 'undefined' ?  orgFormat : "";
+  var path = typeof path !== 'undefined' ?  path : "";
+  var length = obj.length;
+  for (var i = 0; i < length; i++) {
    if (Array.isArray(obj[i])) {
      var jsonArray = obj[i];
      if (jsonArray.length < 1) continue;
@@ -114,7 +119,7 @@ function getFlatResult(docRaw, docFormat, searchRelatedVals, fields, extrFields)
   var flatDoc = {};
   /*  Add search related fields */
   flatDoc = searchRelatedVals;
-  flatDoc = flattenJsonObject(resultContent, flatDoc, "", false);
+  flatDoc = flattenJsonObject(resultContent, flatDoc, "", false, "", "");
   /* Add user defined fields */
   for (var field in fields) {
     var fieldName = field;
@@ -332,60 +337,83 @@ function summaryResult(whereQuery, pageStart,getRows, relevanceScores, docUri, f
 /******************************************************************************
  * Generates a cts query based on search text, collections and directory
  ******************************************************************************/
-function getCtsQuery(qText, collections, directory, fieldQuery) {
-  var ctsQuery,collectionQuery, directoryQuery;
-  var mlVersion = xdmp.version();
+ function getCtsQuery(qText, collections, directory, fieldQuery) {
+   var ctsQuery,collectionQuery, directoryQuery;
+   var mlVersion = xdmp.version();
 
-  // count arguments to decide if and query...
-  var queries = 0;
-  var andQuery = false;
+   // count arguments to decide if and query...
+   var queries = 0;
+   var andQuery = false;
 
-  if (qText != "") {
-    queries = queries +1;
-  }
-  if ((collections) && (collections.length > 0)) {
-    andQuery = true;
-    queries = queries +1;
-    collectionQuery = cts.collectionQuery(collections);
-  };
-
-  if ((directory) && (directory.length > 0)) {
-    andQuery = true;
-    queries = queries +1;
-    directoryQuery = cts.directoryQuery(directory);
-  };
-  if ((fieldQuery)) {
+   if (qText != "") {
+     queries = queries +1;
+   }
+   if ((collections) && (collections.length > 0)) {
      andQuery = true;
      queries = queries +1;
-      var ctsFieldQuery = "";
-      for (var field in fieldQuery) {
-        if (ctsFieldQuery != "") {
-          ctsFieldQuery = ctsFieldQuery + ',';
-        }
-        var query = (fieldQuery[field].orgFormat == 'XML') ? 'cts.elementValueQuery(xs.QName("' + field +'")' : 'cts.jsonPropertyValueQuery("' + field + '"';
-        query = query + ', "' + fieldQuery[field].value + '")';
-        ctsFieldQuery = ctsFieldQuery + query;
-      };
-      ctsFieldQuery = eval(ctsFieldQuery);
+     if (Array.isArray(collections)) {
+       var collParams = [];
+       collectionQuery = 'cts.collectionQuery(['
+       for (var i = 0; i < collections.length; i++) {
+         collParams.push(collections[i]);
+       }
+       collectionQuery = cts.collectionQuery(collParams);
+     } else {
+       collectionQuery = cts.collectionQuery(collections);
+     }
+   };
 
-  };
-  if (mlVersion >= "8.0-4") {
-    ctsQuery = cts.parse(qText);
-    return (andQuery) ? cts.andQuery([ctsQuery,ctsFieldQuery,collectionQuery, directoryQuery]) : ctsQuery;
+   if ((directory) && (directory.length > 0)) {
+     andQuery = true;
+     queries = queries +1;
+      if (Array.isArray(directory)) {
+       var dirParams = [];
+       directoryQuery = 'cts.directoryQuery(['
+       for (var i = 0; i < directory.length; i++) {
+         dirParams.push(directory[i]);
+       }
+       directoryQuery = cts.directoryQuery(dirParams);
+     } else {
+       directoryQuery = cts.directoryQuery(directory);
+     }
+   };
+   /*
+     In order to be able to handle both XML and JSON without knowing beforehand,
+     cts.orQuery needs to be used:
+     cts.orQuery([cts.elementValueQuery(xs.QName("addressLine1"), "4092 Furth Circle"),cts.jsonPropertyValueQuery("addressLine1", "4092 Furth Circle")])
+     If there is filtering on multiple fields (field1, field2)
+       cts.orQuery([field1 XML, field1 JSON]),cts.orQuery([field2 XML, field2 JSON])
+   */
+   if ((fieldQuery)) {
+      andQuery = true;
+      queries = queries +1;
+       var ctsFieldQuery = "";
+       for (var field in fieldQuery) {
+         if (ctsFieldQuery != "") {
+           ctsFieldQuery = ctsFieldQuery + ',';
+         }
+         var query = cts.orQuery([cts.elementValueQuery(xs.QName(field), fieldQuery[field].value),cts.jsonPropertyValueQuery(field, fieldQuery[field].value)])
+         ctsFieldQuery = ctsFieldQuery + query;
+       };
+   };
 
-  } else {
-    ctsQuery = xdmp.xqueryEval(
-            'xquery version "1.0-ml";  ' +
-            'import module namespace search = "http://marklogic.com/appservices/search"  ' +
-            '    at "/MarkLogic/appservices/search/search.xqy";  ' +
-            'declare variable $qtext as xs:string external;  ' +
-            'search:parse($qtext)',
-             { '{}qtext': qText });
-      return (andQuery) ? cts.andQuery([cts.query(ctsQuery),ctsFieldQuery,collectionQuery, directoryQuery]) : cts.query(ctsQuery);
-  };
-}
+   if (mlVersion >= "8.0-5") {
+     ctsQuery = cts.parse(qText);
 
-exports.flattenJsonArray = flattenJsonArray;
+   } else {
+     var parseQuery = xdmp.xqueryEval(
+             'xquery version "1.0-ml";  ' +
+             'import module namespace search = "http://marklogic.com/appservices/search"  ' +
+             '    at "/MarkLogic/appservices/search/search.xqy";  ' +
+             'declare variable $qtext as xs:string external;  ' +
+             'search:parse($qtext)',
+              { '{}qtext': qText });
+       ctsQuery = cts.query(parseQuery);
+   };
+  return (andQuery) ? cts.andQuery([ctsQuery,ctsFieldQuery,collectionQuery,directoryQuery]) : ctsQuery;
+ }
+
+/* exports.flattenJsonArray = flattenJsonArray; */
 exports.flattenJsonObject = flattenJsonObject;
 exports.fields2array = fields2array;
 exports.summaryResult = summaryResult;

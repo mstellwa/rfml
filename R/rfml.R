@@ -2,7 +2,6 @@
 #'
 #' @docType package
 #' @name rfml
-#' @import XML
 #' @import httr
 #' @import PKI
 #' @import jsonlite

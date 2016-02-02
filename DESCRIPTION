@@ -16,7 +16,8 @@ Imports:
     methods,
     httr,
     PKI,
-    XML,
     jsonlite
+Suggests:
+    arules
 RoxygenNote: 5.0.1
 Suggests: testthat

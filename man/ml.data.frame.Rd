@@ -4,11 +4,13 @@
 \alias{ml.data.frame}
 \title{Create a ml.data.frame object}
 \usage{
-ml.data.frame(query = "", collection = c(), directory = c(),
-  relevanceScores = FALSE, docUri = FALSE)
+ml.data.frame(query = "", fieldFilter = "", collection = c(),
+  directory = c(), relevanceScores = FALSE, docUri = FALSE)
 }
 \arguments{
 \item{query}{The query string used to define the result.}
+
+\item{fieldFilter}{Field level filtering. Currently only the == operator are supported. Multiple field filters are separated by ,}
 
 \item{collection}{A list of collection URI:s to filter on.}
 
@@ -37,6 +39,8 @@ between MarkLogic Server and R is minimized.
  df <- ml.data.frame("försäkringskassan AND kalle", collection=c("Analytics"))
  # using only collection filtering
  df <- ml.data.frame(collection=c("Analytics"))
+ # using field filter
+ df <- ml.data.frame("försäkringskassan AND kalle", fieldFilter="parti==m, replik==Y")
 }
 }
 

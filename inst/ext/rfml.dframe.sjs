@@ -93,7 +93,7 @@ function getMetaDataJS(whereQuery, getRows, docFields) {
                           default:
                             return;
                         };
-                        docFields = rfmlUtilities.flattenJsonObject(resultContent, docFields, "", true, orgFormat);
+                        docFields = rfmlUtilities.flattenJsonObject(resultContent, docFields, "", true, orgFormat,"");
 
                   })
                   .result();
@@ -129,7 +129,7 @@ function getMetaDataCts(whereQuery, getRows, docFields) {
       default:
         continue;
     };
-    docFields =  rfmlUtilities.flattenJsonObject(resultContent, docFields, "", true, result.documentFormat);
+    docFields =  rfmlUtilities.flattenJsonObject(resultContent, docFields, "", true, result.documentFormat,"");
   };
   var dfInfoDoc = {
     "ctsQuery": whereQuery,
@@ -180,7 +180,6 @@ function resultMetadata(whereQuery, getRows, relevanceScores, docUri, extFields)
    var fieldQuery;
 
    context.outputTypes = ['application/json'];
-
    if (params.extfields) {
      extFields = JSON.parse(params.extfields);
    }
@@ -200,4 +199,37 @@ function resultMetadata(whereQuery, getRows, relevanceScores, docUri, extFields)
    };
    //return whereQuery;
  }
+ function put(context, params, input) {
+   var rfmlUtilities = require('/ext/rfml/rfmlUtilities.sjs');
+   /* parmeters */
+   var qText = (params.q) ? params.q : "";
+   var collections = params.collection;
+   var directory = params.directory;
+   var pageLength = params.pageLength;
+   var pageStart = (parseInt(params.start) > 0) ? parseInt(params.start) : 1;
+   var returnFormat = params.return;
+   var relevanceScores = params.relevanceScores == "TRUE" ? true : false;
+   var docUri = params.docUri == "TRUE" ? true : false;
+
+   var getRows = (parseInt(pageLength) > 0) ? parseInt(pageLength) : 30;
+   var extFields;
+   var fieldQuery;
+
+   context.outputTypes = ['application/json'];
+
+
+   if (params.extfields) {
+     extFields = JSON.parse(params.extfields);
+   }
+
+   if (params.fieldQuery) {
+     fieldQuery = JSON.parse(params.fieldQuery);
+   }
+   var whereQuery = rfmlUtilities.getCtsQuery(qText, collections, directory, fieldQuery);
+   /* save all result from the query into a new documents
+      using directory and collection parameters */
+
+
+ }
  exports.GET = get;
+ exports.PUT = put;

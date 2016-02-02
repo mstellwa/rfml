@@ -3,13 +3,17 @@
 #' @export
 setMethod("print", signature(x="ml.col.def"),
           function (x) {
-            cat(paste("Column definition: ", x@.expr, " parent: ",x@.parent@.name ," \n Use this to define new columns on a ml.data.frame using the $ operator. To select a subset of a ml.data.frame, use bldf[] notation. "),"\n")
+            cat(paste("Column definition: ", x@.expr,
+                      "\nMarkLogic element/property name:", x@.org_name, "\nSource document format:", x@.format
+                      ,"\nUse this to define new columns on a ml.data.frame using the $ operator. To select a subset of a ml.data.frame, use bldf[] notation. "),"\n")
           }
 )
 #' @export
 setMethod("show", signature(object="ml.col.def"),
           function (object) {
-            cat(paste("Column definition: ", object@.expr, " parent: ",object@.parent@.name ," \n Use this to define new columns on a ml.data.frame using the $ operator. To select a subset of a ml.data.frame, use bldf[] notation. "),"\n")
+            cat(paste("Column definition:", object@.expr,
+                      " \nMarkLogic element/property name:", object@.org_name, "\nSource document format:", object@.format
+                      ,"\nUse this to define new columns on a ml.data.frame using the $ operator. To select a subset of a ml.data.frame, use bldf[] notation. "),"\n")
           }
 )
 # Not used!
@@ -87,7 +91,6 @@ setMethod("Compare", signature(e1="ml.col.def", e2="ANY"), function(e1, e2) {
   mlDf <- e1@.parent
   i <- which(mlDf@.col.name %in% e1@.name)
   # need to handle the comparsion operator...
-  fieldQuery <- "{"
   fieldQuery <- paste('{"', mlDf@.col.org_name[i],
                      '":{"value":"',e2,
                      '","operator":"',.Generic,
@@ -127,6 +130,7 @@ setMethod("Math",signature(x='ml.col.def'),function (x) {
          tanh='math.tanh',
          sqrt='math.sqrt',
          sin='math.sin',
+         sinh='math.sinh',
          trunc='math.trunc',
         stop(paste(.Generic, " not supported"))
   )
@@ -172,20 +176,6 @@ radians <- function (x) {
   func <- "math.radians"
   return(new(Class="ml.col.def",.expr=paste(func, '(', as.ml.col.def(eval(x)),')',sep=''),.parent=x@.parent,.data_type="number",.type="expr",.aggType=aggType(x)));
 };
-
-#' Hyperbolic sine
-#'
-#' Returns the hyperbolic sine of x.
-#'
-#' @param x a ml.data.frame field.
-#' @return the hyperbolic sine of x.
-#' @export
-sinh <- function (x) {
-
-  func <- "math.sinh"
-  return(new(Class="ml.col.def",.expr=paste(func, '(', as.ml.col.def(eval(x)),')',sep=''),.parent=x@.parent,.data_type="number",.type="expr",.aggType=aggType(x)));
-};
-
 
 #' @export
 ################ Casting operators ############################

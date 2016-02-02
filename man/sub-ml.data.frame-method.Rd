@@ -20,7 +20,7 @@ A ml.data.frame object is returned
 \description{
 Extract subset of columns and/or rows of a ml.data.frame. When extracting rows a ml.col.def
 referense can be used with only the equal (==) comparsion operator or a search text.
-The row filtering will be used togheter with the existing search of the ml.data.frame
+The row filtering will be used togheter with the existing query of the ml.data.frame
 }
 \examples{
 \dontrun{

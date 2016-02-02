@@ -12,7 +12,7 @@
 # name of libs used
 .rfmlEnv$mlLibs <- c("rfmlUtilities", "xml2json")
 # name of exstentions used
-.rfmlEnv$mlExts <- c("rfml.dframe", "rfml.lm", "rfml.stat", "rfml.matrix", "rfml.collection")
+.rfmlEnv$mlExts <- c("rfml.dframe", "rfml.lm", "rfml.stat", "rfml.matrix", "rfml.collection", "rfml.arules")
 
 
 setClass("ml.data.frame",
