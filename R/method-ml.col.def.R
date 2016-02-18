@@ -24,6 +24,17 @@ setMethod("as.vector", signature(x="ml.col.def"),
             message("as.vector")
           }
 )
+#' Check if an object is of type ml.col.def
+#'
+#' This function checks if the input is of type ml.col.def.
+#'
+#' @param x The input can be of any type.
+#' @return True if it is a ml.col.def. False otherwise.
+#' @export
+is.ml.col.def <-
+  function(x) {
+    return(inherits(x, "ml.col.def"))
+  }
 
 as.ml.col.def <- function(x) {
   if(inherits(x,"ml.data.frame")) {

@@ -2,7 +2,7 @@
 % Please edit documentation in R/method-ml.data.frame.R
 \name{ml.data.frame}
 \alias{ml.data.frame}
-\title{Create a ml.data.frame object}
+\title{Creates a ml.data.frame object}
 \usage{
 ml.data.frame(query = "", fieldFilter = "", collection = c(),
   directory = c(), relevanceScores = FALSE, docUri = FALSE)
@@ -25,22 +25,21 @@ A ml.data.frame object.
 }
 \description{
 This function creates an object of ml.data.frame, it is based on a search done using
-provided query. The operations that can be applied onto this class of objects are very
+the provided query, collection and/or directory parameters.
+The operations that can be applied onto this class of objects are very
 similar to those of data.frame. No real data is loaded into R. The data transfered
 between MarkLogic Server and R is minimized.
 }
 \examples{
 \dontrun{
  library(rfml)
- ml.connect("localhost", "8000", "admin", "admin")
+ ml.connect()
  # create a ml.data.frame based on a search
- df <- ml.data.frame("försäkringskassan AND kalle")
+ mlIris <- ml.data.frame("setosa")
  # using search and collection filtering
- df <- ml.data.frame("försäkringskassan AND kalle", collection=c("Analytics"))
- # using only collection filtering
- df <- ml.data.frame(collection=c("Analytics"))
+ mlIris <- ml.data.frame("setosa", collection = "iris")
  # using field filter
- df <- ml.data.frame("försäkringskassan AND kalle", fieldFilter="parti==m, replik==Y")
+ mlIris <- ml.data.frame(fieldFilter = "Species == setosa")
 }
 }
 

@@ -1,0 +1,36 @@
+{
+  "customerOrder":
+    {
+      "orderNumber":"T400",
+      "lineItems":
+      {
+        "lineItem":
+        [
+          {
+            "orderLineNumber":"1",
+            "productNo":"1",
+            "productName":"18th century schooner",
+            "quantityOrdered":"40",
+            "priceEach":"34.47",
+            "lineTotal":"1378.8"
+          },
+          {
+            "orderLineNumber":"2",
+            "productNo":"2",
+            "productName":"1900s Vintage Bi-Plane",
+            "quantityOrdered":"40",
+            "priceEach":"33.00",
+            "lineTotal":"1320"
+          },
+          {
+            "orderLineNumber":"3",
+            "productNo":"4",
+            "productName":"Collectable Wooden Train",
+            "quantityOrdered":"32",
+            "priceEach":"23.45",
+            "lineTotal":"750.4"
+          }
+      ]
+    }
+  }
+}

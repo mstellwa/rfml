@@ -16,8 +16,13 @@ Imports:
     methods,
     httr,
     PKI,
-    jsonlite
+    jsonlite,
+    XML
 Suggests:
-    arules
+    arules,
+    testthat,
+    knitr,
+    rmarkdown
+URL: https://github.com/mstellwa/rfml
 RoxygenNote: 5.0.1
-Suggests: testthat
+VignetteBuilder: knitr

@@ -1,4 +1,4 @@
-function get(context, params) {
+function getLm(context, params) {
   var rfmlUtilities = require('/ext/rfml/rfmlUtilities.sjs');
   var xml2json = require('/ext/rfml/xml2json.sjs');
   var qText = (params.q) ? params.q : "";
@@ -32,7 +32,7 @@ function get(context, params) {
                  (orgFields[1].format == "XML") ? cts.elementReference(xs.QName(orgFields[1].name)) : cts.jsonPropertyReference(orgFields[1].name)]
                       ,null,whereQuery);
   } catch(err) {
-    var lmArray = rfmlUtilities.fields2array(whereQuery, getRows, fields)
+    var lmArray = rfmlUtilities.fields2array(whereQuery, 1,getRows, fields);
     var lm =  math.linearModel(lmArray);
   }
   var strLm = String(lm);
@@ -44,4 +44,4 @@ function get(context, params) {
 
 }
 
-exports.GET = get;
+exports.GET = getLm;

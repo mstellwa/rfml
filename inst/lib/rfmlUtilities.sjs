@@ -89,7 +89,7 @@ function flattenJsonArray(obj, flatJson, prefix, fieldDef, orgFormat, path) {
  return(flatJson)
 }
 
-function getFlatResult(docRaw, docFormat, searchRelatedVals, fields, extrFields) {
+function getFlatResult(docRaw, docFormat, searchRelatedVals, addFields, extrFields) {
   /* var rfmlUtilities = require('/ext/rfml/rfmlUtilities.sjs'); */
   var xml2json = require('/ext/rfml/xml2json.sjs');
   var resultContent;
@@ -121,9 +121,9 @@ function getFlatResult(docRaw, docFormat, searchRelatedVals, fields, extrFields)
   flatDoc = searchRelatedVals;
   flatDoc = flattenJsonObject(resultContent, flatDoc, "", false, "", "");
   /* Add user defined fields */
-  for (var field in fields) {
+  for (var field in addFields) {
     var fieldName = field;
-    var fieldDef = fields[field].fieldDef;
+    var fieldDef = addFields[field].fieldDef;
     flatDoc[fieldName] = eval(fieldDef.replace(/rfmlResult/g, "flatDoc"));
   };
   var retDoc = {};
@@ -138,60 +138,199 @@ function getFlatResult(docRaw, docFormat, searchRelatedVals, fields, extrFields)
 
   return retDoc;
 }
-/***********************************************************************
- * Flatten a json document into a array with the values of each field
- * defined in the fields parameter.
- ************************************************************************/
- function fields2arrayJS(whereQuery, pageStart, getRows, fields) {
-   var jsearch = require('/MarkLogic/jsearch.sjs');
-   var rfmlUtilities = require('/ext/rfml/rfmlUtilities.sjs');
-   var xml2json = require('/ext/rfml/xml2json.sjs');
-   var flatResult = [];
-   /* We do not produce any result, the map function is updating flatResult that is used instead */
-   var x = jsearch.documents()
+/***********************************************************************************************************
+* Returns a flatten result set using cts.search
+*
+* whereQuery - a cts.query used for the search
+* pageStart - integer. One-based index of the first document to return.
+* getRows - integer. 	The one-based index of the document after the last document to return
+* relevanceScores - boolean. If the score, confidence and fitness values should be returned
+* docUri - boolean. If the uri should be returned
+* addFields - object. Additional fields to add to the results
+* extrFields - object. Fields that should be extracted from the results and returned instead of all fields.
+************************************************************************************************************/
+function getDataCts(whereQuery, pageStart, getRows, relevanceScores, docUri, addFields, extrFields) {
+  var path = typeof path !== 'undefined' ?  path : "";
+  var resultContent;
+  var flatResult = [];
+  var nEstimate = cts.estimate(whereQuery);
+  var results = fn.subsequence(cts.search(whereQuery), pageStart, getRows);
+
+  for (var result of results) {
+    var searchRelatedVals = {};
+    if (docUri) {
+      searchRelatedVals.docUri = results.uri;
+    };
+
+    if (relevanceScores) {
+      searchRelatedVals.score = results.score;
+      searchRelatedVals.confidence = results.confidence;
+      searchRelatedVals.fitness = results.fitness;
+    };
+    var flatDoc = getFlatResult(result, result.documentFormat, searchRelatedVals, addFields, extrFields);
+    flatResult.push(flatDoc);
+  };
+  return {"results":flatResult};
+}
+/***********************************************************************************************************
+* Returns a flatten result set using jsearch
+*
+* whereQuery - a cts.query used for the search
+* pageStart - integer. Zero-based index of the first document to return.
+* getRows - integer. 	The zero-based index of the document after the last document to return
+* relevanceScores - boolean. If the score, confidence and fitness values should be returned
+* docUri - boolean. If the uri should be returned
+* addFields - object. Additional fields to add to the results
+* extrFields - object. Fields that should be extracted from the results and returned instead of all fields.
+************************************************************************************************************/
+function getDataJS(whereQuery, pageStart,getRows, relevanceScores, docUri, addFields, extrFields) {
+  var jsearch = require('/MarkLogic/jsearch.sjs');
+  return jsearch.documents()
                  .where(whereQuery)
-                 .slice(pageStart-1,getRows)
+                 .slice(pageStart,getRows)
                  .map(function (match) {
                          var docRaw = match.document;
+                         var flatDoc = {};
+                         var searchRelatedVals = {};
+                         if (docUri) {
+                           searchRelatedVals.docUri = match.uri;
+                         };
+
+                         if (relevanceScores) {
+                           searchRelatedVals.score = match.score;
+                           searchRelatedVals.confidence = match.confidence;
+                           searchRelatedVals.fitness = match.fitness;
+                         };
+
+                        return getFlatResult(docRaw, docRaw.nodeKind, searchRelatedVals, addFields, extrFields);
+                   })
+                   .result();
+ }
+ /***********************************************************************************************
+ * Returns a array with the value pairs of the fields in fields
+ *
+ * whereQuery - a cts.query used for the search
+ * pageStart - integer. one-based index of the first document to return.
+ * getRows - integer. 	The one-based index of the document after the last document to return
+ * fields - object. The fields which vales is added to the returned array.
+ *************************************************************************************************/
+ function fields2array(whereQuery, pageStart, getRows, fields) {
+   var mlVersion = xdmp.version();
+   var res = {};
+     /* Check version and do diffrently */
+   if (mlVersion >= "8.0-6") {
+     /* jsearch DocumentsSearch.slice starts on 0 so we need to decrease with 1 (subsequence used in with cts starts at 1) */
+     pageStart = pageStart -1;
+     res = getDataJS(whereQuery, pageStart,getRows, true, true, fields, fields)
+   } else {
+     res = getDataCts(whereQuery, pageStart, getRows, true, true, fields, fields)
+   };
+  var resArray = res.results;
+  var flatResult = [];
+  for (var i=0; i<resArray.length;i++) {
+      var useFields = [];
+      for (var field in resArray[i]) {
+        useFields.push(resArray[i][field])
+      };
+      flatResult.push(useFields);
+    }
+    return flatResult;
+}
+
+/***********************************************************************
+ * Creates a result set that can be used to create
+ * summary (descreptive statsitcs).
+ ************************************************************************/
+function getMatrixResult(whereQuery, pageStart,getRows, relevanceScores, docUri, addFields, extFields) {
+  var mlVersion = xdmp.version();
+  var res = {};
+  if (mlVersion >= "8.0-4") {
+    /* jsearch DocumentsSearch.slice starts on 0 so we need to decrease with 1 (subsequence used in with cts starts at 1) */
+    pageStart = pageStart -1;
+    res = getDataJS(whereQuery, pageStart, getRows, relevanceScores, docUri, addFields,extFields);
+  } else {
+    res = getDataCts(whereQuery, pageStart, getRows, relevanceScores, docUri, addFields, extFields);
+  };
+  var resArray = res.results;
+  var flatResult = {};
+  for (var i=0; i<resArray.length;i++) {
+    for (var field in resArray[i]) {
+      if (flatResult[field]) {
+        if (flatResult[field].fieldType == 'number' && !isNumeric(resArray[i][field])) {
+          flatResult[field].fieldType = 'string';
+        };
+        flatResult[field].values.push(isNumeric(resArray[i][field]) ? parseFloat(resArray[i][field]) : resArray[i][field])
+      } else {
+        flatResult[field] = {"fieldType":isNumeric(resArray[i][field]) ? 'number' : 'string',
+                             'values' : [isNumeric(resArray[i][field]) ? parseFloat(resArray[i][field]) : resArray[i][field]]};
+      }
+    }
+  }
+  return flatResult;
+}
+/******************************************************************************
+ * Gets data using cts.search/jsearch, add additional fields and flatten the result
+ ******************************************************************************/
+ function getResultData(whereQuery, pageStart, getRows, relevanceScores, docUri, addFields, extFields) {
+   var mlVersion = xdmp.version();
+     /* Check version and do diffrently */
+   if (mlVersion >= "8.0-4") {
+       return getDataJS(whereQuery, pageStart, getRows, relevanceScores, docUri, addFields, extFields);
+   } else {
+      return getDataCts(whereQuery, pageStart, getRows, relevanceScores, docUri, addFields, extFields)
+   };
+ }
+ /******************************************************************************
+  * Gets metadata using jsearch
+  ******************************************************************************/
+ function getMetaDataJS(whereQuery, getRows, docFields) {
+   var jsearch = require('/MarkLogic/jsearch.sjs');
+   var xml2json = require('/ext/rfml/xml2json.sjs');
+
+     var x  = jsearch.documents()
+                 .where(whereQuery)
+                 .slice(0,getRows)
+                 .map(function (match) {
+                         var docRaw = match.document;
+                         var orgFormat = "";
+                         var resultContent;
                          switch (docRaw.nodeKind) {
                            case 'element':
+                             orgFormat = 'XML';
                              var xmlContent = xdmp.unquote(docRaw.toString()).next().value;
                              var x2js = new xml2json.X2JS();
                              var resultContent = x2js.xml2json( xmlContent );
                              break;
                            case 'object':
+                             orgFormat = 'JSON';
                              var resultContent = JSON.parse(docRaw);
                              break;
                            default:
                              return;
                          };
-                         var flatDoc = {};
-                         flatDoc.docUri = match.uri;
-                         flatDoc.score = match.score;
-                         flatDoc.confidence = match.confidence;
-                         flatDoc.fitness = match.fitness;
-                         flatDoc = rfmlUtilities.flattenJsonObject(resultContent, flatDoc, "", false);
-                         var useFields = []
-                         for (var field in fields) {
-                           var fieldName = field;
-                           var fieldDef = fields[field].fieldDef;
-                           flatDoc[fieldName] = eval(fieldDef.replace(/rfmlResult/g, "flatDoc"));
-                           useFields.push(flatDoc[fieldName])
-                         };
-                         flatResult.push(useFields);
+                         //getFlatResult(docRaw, docRaw.nodeKind, searchRelatedVals, addFields, extrFields);
+                         docFields = flattenJsonObject(resultContent, docFields, "", true, orgFormat,"");
 
                    })
                    .result();
-   return flatResult;
- }
- function fields2arrayCts(whereQuery, pageStart,getRows, fields) {
-   var jsearch = require('/MarkLogic/jsearch.sjs');
-   var rfmlUtilities = require('/ext/rfml/rfmlUtilities.sjs');
-   var xml2json = require('/ext/rfml/xml2json.sjs');
-   var flatResult = [];
-   var resultContent;
 
-   var results = fn.subsequence(cts.search(whereQuery), pageStart, getRows);
+   var dfInfoDoc = {
+     "ctsQuery": whereQuery,
+     "nrows": x.estimate,
+     "dataFrameFields": docFields
+   };
+
+   return dfInfoDoc;
+
+ }
+ /******************************************************************************
+  * Gets metadata using cts.search
+  ******************************************************************************/
+ function getMetaDataCts(whereQuery, getRows, docFields) {
+   var xml2json = require('/ext/rfml/xml2json.sjs');
+   var resultContent;
+   var nEstimate = cts.estimate(whereQuery);
+   var results = fn.subsequence(cts.search(whereQuery), 1, getRows);
 
    for (var result of results) {
      switch (result.documentFormat) {
@@ -205,135 +344,36 @@ function getFlatResult(docRaw, docFormat, searchRelatedVals, fields, extrFields)
        default:
          continue;
      };
-     var flatDoc = {};
-      /* add additional fields */
-     flatDoc.docUri = fn.documentUri(result);
-     flatDoc.score = cts.score(result);
-     flatDoc.confidence = cts.confidence(result);
-     flatDoc.fitness = cts.fitness(result);
-
-     flatDoc =  rfmlUtilities.flattenJsonObject(resultContent, flatDoc, "", false, result.documentFormat);
-     var useFields = []
-     for (var field in fields) {
-       var fieldName = field;
-       var fieldDef = fields[field].fieldDef;
-       flatDoc[fieldName] = eval(fieldDef.replace(/rfmlResult/g, "flatDoc"));
-       useFields.push(flatDoc[fieldName])
-     };
-     flatResult.push(useFields);
+     docFields =  flattenJsonObject(resultContent, docFields, "", true, result.documentFormat, "");
    };
-   return flatResult;
+   var dfInfoDoc = {
+     "ctsQuery": whereQuery,
+     "nrows": nEstimate,
+     "dataFrameFields": docFields
+   };
+   return dfInfoDoc;
  }
-
- function fields2array(whereQuery, pageStart, getRows, fields) {
+ function getResultMetadata(whereQuery, getRows, relevanceScores, docUri, extFields) {
    var mlVersion = xdmp.version();
-     /* Check version and do diffrently */
+
+   var docFields = {};
+   if (docUri) {
+       docFields.docUri = {"fieldType":'string', "fieldDef":'docUri'};
+   };
+   if (relevanceScores) {
+       docFields.score = {"fieldType":'number', "fieldDef":'score'};
+       docFields.confidence = {"fieldType":'number', "fieldDef":'confidence'};
+       docFields.fitness = {"fieldType":'number', "fieldDef":'fitness'};
+   };
+
+   /* Check version and do diffrently */
    if (mlVersion >= "8.0-4") {
-       return fields2arrayJS(whereQuery, pageStart, getRows, fields);
+     return getMetaDataJS(whereQuery, getRows, docFields)
    } else {
-      return fields2arrayCts(whereQuery, pageStart, getRows, fields);
+      return getMetaDataCts(whereQuery, getRows, docFields);
    };
 
  }
- /***********************************************************************
- * Creates a result set that can be used to create
- * summary (descreptive statsitcs).
- ************************************************************************/
-function summaryResultJS(whereQuery, pageStart, getRows, relevanceScores, docUri, fields) {
-  var jsearch = require('/MarkLogic/jsearch.sjs');
-  var flatResult = {};
-  var x = jsearch.documents()
-                .where(whereQuery)
-                .slice(pageStart,getRows)
-                .map(function (match) {
-                        var docRaw = match.document;
-                        var searchRelatedVals = {};
-                        if (docUri) {
-                          searchRelatedVals.docUri = match.uri;
-                        };
-
-                        if (relevanceScores) {
-                          searchRelatedVals.score = match.score;
-                          searchRelatedVals.confidence = match.confidence;
-                          searchRelatedVals.fitness = match.fitness;
-                        };
-
-                        var flatDoc =  getFlatResult(docRaw, docRaw.nodeKind, searchRelatedVals, fields);
-                        /*
-                          For each field add the type (string/numeric) and value to the  flatResult doc.
-                        */
-                        for (var field in flatDoc) {
-                          if (flatResult[field]) {
-                            if (flatResult[field].fieldType == 'number' && !isNumeric(flatDoc[field])) {
-                                  flatResult[field].fieldType = 'string';
-                            };
-                            flatResult[field].values.push(isNumeric(flatDoc[field]) ? parseFloat(flatDoc[field]) : flatDoc[field])
-                          } else {
-                             flatResult[field] = {"fieldType":isNumeric(flatDoc[field]) ? 'number' : 'string',
-                                                  'values' : [isNumeric(flatDoc[field]) ? parseFloat(flatDoc[field]) : flatDoc[field]]};
-                           }
-                        }
-
-                  })
-                  .result();
-
-
-  return flatResult;
-
-}
-
-/***********************************************************************
- * Creates a result set that can be used to create
- * summary (descreptive statsitcs).
- ************************************************************************/
-function summaryResultCts(whereQuery, pageStart, getRows, relevanceScores, docUri, fields) {
-
-  var results = fn.subsequence(cts.search(whereQuery), pageStart, getRows);
-  var flatResult = {};
-
-  for (var result of results) {
-    var searchRelatedVals = {};
-    if (docUri) {
-      searchRelatedVals.docUri = fn.documentUri(result);
-    }
-    if (relevanceScores) {
-      searchRelatedVals.score = cts.score(result);
-      searchRelatedVals.confidence = cts.confidence(result);
-      searchRelatedVals.fitness = cts.fitness(result);
-    }
-
-    flatDoc = getFlatResult(result, result.documentFormat, searchRelatedVals, fields)
-    for (var field in flatDoc) {
-      if (flatResult[field]) {
-        if (flatResult[field].fieldType == 'number' && !isNumeric(flatDoc[field])) {
-              flatResult[field].fieldType = 'string';
-        };
-        flatResult[field].values.push(isNumeric(flatDoc[field]) ? parseFloat(flatDoc[field]) : flatDoc[field])
-      } else {
-         flatResult[field] = {"fieldType":isNumeric(flatDoc[field]) ? 'number' : 'string',
-                              'values' : [isNumeric(flatDoc[field]) ? parseFloat(flatDoc[field]) : flatDoc[field]]};
-       }
-    }
-
-  };
-
-  return flatResult;
-
-}
-/***********************************************************************
- * Creates a result set that can be used to create
- * summary (descreptive statsitcs).
- ************************************************************************/
-function summaryResult(whereQuery, pageStart,getRows, relevanceScores, docUri, fields) {
-  var mlVersion = xdmp.version();
-
-  if (mlVersion >= "8.0-4") {
-    return summaryResultJS(whereQuery, pageStart, getRows, relevanceScores, docUri, fields);
-  } else {
-    return summaryResultCts(whereQuery, pageStart, getRows, relevanceScores, docUri, fields);
-  };
-
-}
 /******************************************************************************
  * Generates a cts query based on search text, collections and directory
  ******************************************************************************/
@@ -387,17 +427,13 @@ function summaryResult(whereQuery, pageStart,getRows, relevanceScores, docUri, f
    if ((fieldQuery)) {
       andQuery = true;
       queries = queries +1;
-       var ctsFieldQuery = "";
+       var ctsFieldQuery = [];
        for (var field in fieldQuery) {
-         if (ctsFieldQuery != "") {
-           ctsFieldQuery = ctsFieldQuery + ',';
-         }
-         var query = cts.orQuery([cts.elementValueQuery(xs.QName(field), fieldQuery[field].value),cts.jsonPropertyValueQuery(field, fieldQuery[field].value)])
-         ctsFieldQuery = ctsFieldQuery + query;
+         ctsFieldQuery.push(cts.orQuery([cts.elementValueQuery(xs.QName(field), fieldQuery[field].value),cts.jsonPropertyValueQuery(field, fieldQuery[field].value)]));
        };
    };
 
-   if (mlVersion >= "8.0-5") {
+   if (mlVersion >= "8.0-4") {
      ctsQuery = cts.parse(qText);
 
    } else {
@@ -413,9 +449,8 @@ function summaryResult(whereQuery, pageStart,getRows, relevanceScores, docUri, f
   return (andQuery) ? cts.andQuery([ctsQuery,ctsFieldQuery,collectionQuery,directoryQuery]) : ctsQuery;
  }
 
-/* exports.flattenJsonArray = flattenJsonArray; */
-exports.flattenJsonObject = flattenJsonObject;
 exports.fields2array = fields2array;
-exports.summaryResult = summaryResult;
+exports.getMatrixResult = getMatrixResult;
 exports.getCtsQuery = getCtsQuery;
-exports.getFlatResult = getFlatResult;
+exports.getResultData = getResultData;
+exports.getResultMetadata = getResultMetadata;

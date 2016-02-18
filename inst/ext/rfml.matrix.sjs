@@ -48,7 +48,7 @@ function getCorrelation(flatResult) {
   /*  return corResult */
 }
 
-function get(context, params) {
+function getMatrix(context, params) {
   var rfmlUtilities = require('/ext/rfml/rfmlUtilities.sjs');
   /* parmeters */
   var qText = (params.q) ? params.q : "";
@@ -63,11 +63,16 @@ function get(context, params) {
   var getRows = (parseInt(pageLength) > 0) ? parseInt(pageLength) : 30;
 
   context.outputTypes = ['application/json'];
-
-  var fields = {};
+  var addFields = {};
+  /* Have we added fields */
   if (params.fields) {
-    fields = JSON.parse(params.fields);
+    addFields = JSON.parse(params.fields);
   };
+  var extFields;
+  /* Are we only using part of the fields ? */
+  if (params.extfields) {
+     extFields = JSON.parse(params.extfields);
+  }
 
   var fieldQuery;
   if (params.fieldQuery) {
@@ -77,7 +82,7 @@ function get(context, params) {
 
   /* Get a resultset whit all unique fields (element/porperties) from the search and for each
      field what data type (string/numeric) it is and the values */
-  var flatResult = rfmlUtilities.summaryResult(whereQuery, pageStart, getRows, relevanceScores, docUri, fields);
+  var flatResult = rfmlUtilities.getMatrixResult(whereQuery, pageStart, getRows, relevanceScores, docUri, addFields, extFields);
   switch (matrixFunc) {
     case "correlation":
         return getCorrelation(flatResult);
@@ -89,4 +94,4 @@ function get(context, params) {
 
 }
 
-exports.GET = get;
+exports.GET = getMatrix;

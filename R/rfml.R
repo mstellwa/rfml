@@ -5,6 +5,7 @@
 #' @import httr
 #' @import PKI
 #' @import jsonlite
+#' @import XML
 #' @import methods
 NULL
 

@@ -28,9 +28,11 @@ The database must have a REST server and a module database.
 
 The user that is used for the login must have the  rest-admin role,
 or the following privileges:
-    http://marklogic.com/xdmp/privileges/rest-admin,
-    http://marklogic.com/xdmp/privileges/rest-writer,
-    http://marklogic.com/xdmp/privileges/rest-reader
+\itemize{
+ \item http://marklogic.com/xdmp/privileges/rest-admin
+ \item http://marklogic.com/xdmp/privileges/rest-writer
+ \item http://marklogic.com/xdmp/privileges/rest-reader
+ }
 }
 \examples{
 \dontrun{

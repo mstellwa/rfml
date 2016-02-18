@@ -25,15 +25,21 @@ The row filtering will be used togheter with the existing query of the ml.data.f
 \examples{
 \dontrun{
  library(rfml)
- ml.connect("localhost", "8000", "admin", "admin")
+ ml.connect()
  # create a ml.data.frame based on the iris data set
  mlIris <- as.ml.data.frame(iris, "iris")
- mlIris2 <- mlIris[1:3] # select first three columns
- mlIris2 <- mlIris[,1:3] # same
- mlIris2 <- mlIris[,c("Sepal.Length","Sepal.Width","Petal.Length")] # same
- mlIris2 <- mlIris[mlIris$Species=="setosa", 1:3] # select first three columns for all rows with Spieces = setosa
- mlIris2 <- mlIris[mlIris$Species=="setosa",] # select all columns for all rows with Spieces = setosa
- mlIris2 <- mlIris["setosa",] # select all columns for all rows with "setosa" in any column
+ # select first three columns
+ mlIris2 <- mlIris[1:3]
+ # same
+ mlIris2 <- mlIris[,1:3]
+ # same
+ mlIris2 <- mlIris[,c("Sepal.Length","Sepal.Width","Petal.Length")]
+ # select first three columns for all rows with Spieces = setosa
+ mlIris2 <- mlIris[mlIris$Species=="setosa", 1:3]
+ # select all columns for all rows with Spieces = setosa
+ mlIris2 <- mlIris[mlIris$Species=="setosa",]
+ # select all columns for all rows with "setosa" in any column
+ mlIris2 <- mlIris["setosa",]
 }
 }
 

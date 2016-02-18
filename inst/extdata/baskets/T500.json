@@ -1,0 +1,28 @@
+{
+  "customerOrder":
+    {
+      "orderNumber":"T500",
+      "lineItems":
+      {
+        "lineItem":
+        [
+          {
+            "orderLineNumber":"1",
+            "productNo":"1",
+            "productName":"18th century schooner",
+            "quantityOrdered":"34",
+            "priceEach":"34.47",
+            "lineTotal":"1171.98"
+          },
+          {
+            "orderLineNumber":"2",
+            "productNo":"3",
+            "productName":"1928 British Royal Navy Airplane",
+            "quantityOrdered":"50",
+            "priceEach":"45.10",
+            "lineTotal":"2255"
+          }
+      ]
+    }
+  }
+}

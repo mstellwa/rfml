@@ -2,8 +2,8 @@
 #'
 #' Mine frequent itemsets or association rules using MarkLogic Server built in Range Index functions.
 #' The function require that there is a Range Index on the underlying field of itemField. It will return
-#' a object of class rules or itemsets, that can be used with any package that works with output from
-#' the arules package apriori function.
+#' a object that is of class rules or itemsets defined in the arules package. It will need the arules package
+#' installed.
 #'
 #' The frequent itemset and association rules extraction method is using the same method as the Apriori
 #' algorithm by first identify all 1-n itemsets that satisfy the support threshold and based on these
@@ -23,10 +23,11 @@
 
 #' @export
 ml.arules <- function(data, itemField, support = 0.5, confidence = 0.8, maxlen = 5, target = "rules") {
+#"frequent itemsets" "maximally frequent itemsets" "closed frequent itemsets" "rules" (only available for Apriori) "hyperedgesets"
 
   # need to check for the arules package ...
   if (!requireNamespace("arules", quietly = TRUE)) {
-    stop("arules needed for this function to work. Please install it.",
+    stop("arules is needed for this function to work. Please install it.",
          call. = FALSE)
   }
 
@@ -38,7 +39,7 @@ ml.arules <- function(data, itemField, support = 0.5, confidence = 0.8, maxlen =
   mlHost <- paste("http://", .rfmlEnv$conn$host, ":", .rfmlEnv$conn$port, sep="")
   mlSearchURL <- paste(mlHost, "/v1/resources/rfml.arules", sep="")
 
-  queryArgs <- c(queryComArgs, 'rs:supp'=support, 'rs:conf'=confidence, 'rs:maxlen'=maxlen)
+  queryArgs <- c(queryComArgs, 'rs:supp'=support, 'rs:conf'=confidence, 'rs:maxlen'=maxlen, 'rs:target'=target)
 
   if (!inherits(itemField, "ml.col.def")) {
     stop("itemField parameter must be a valid ml.data.frame field.")
@@ -64,7 +65,10 @@ ml.arules <- function(data, itemField, support = 0.5, confidence = 0.8, maxlen =
     rItemsets <- rContent$itemsets
     extrItemsets <- list()
     supportDf <- data.frame(support=numeric())
-
+    if (length(rItemsets) == 0) {
+      warning("No itemsets returned. You might need to decrease the support or confidence thresholds.")
+      return()
+    }
     for (i in 1:length(rItemsets)) {
       for (j in 1:length(rItemsets[[i]])) {
         extrItemsets <- c(extrItemsets, toString(rItemsets[[i]][[j]]$'itemSet'))
@@ -83,17 +87,21 @@ ml.arules <- function(data, itemField, support = 0.5, confidence = 0.8, maxlen =
     extrRhs <- list()
     qualityRule <- data.frame(support=numeric(),confidence=numeric(),lift=numeric())
     rRules <- rContent$rules
-    for (i in 1:length(rRules)) {
-      extrLhs <- c(extrLhs, toString(rRules[[i]]$'lhs'))
-      extrRhs <- c(extrRhs, toString(rRules[[i]]$'rhs'))
-      qualityRule <- rbind(qualityRule, data.frame(support = rRules[[i]]$'support',confidence= rRules[[i]]$'confidence',lift= rRules[[i]]$'lift'))
+    if (length(rRules) == 0) {
+      warning("No rules returned. You might need to decrease the support or confidence thresholds.")
+      return()
     }
-
-    # we need arules loaded here!
-    result <- new("rules", lhs=as(extrLhs, "itemMatrix"), rhs=as(extrRhs, "itemMatrix"), quality=qualityRule)
+    for (i in 1:length(rRules)) {
+       extrLhs <- c(extrLhs, toString(rRules[[i]]$'lhs'))
+       extrRhs <- c(extrRhs, toString(rRules[[i]]$'rhs'))
+       qualityRule <- rbind(qualityRule, data.frame(support = rRules[[i]]$'support',confidence= rRules[[i]]$'confidence',lift= rRules[[i]]$'lift'))
+     }
+     # we need arules loaded here!
+     result <- new("rules", lhs=as(extrLhs, "itemMatrix"), rhs=as(extrRhs, "itemMatrix"), quality=qualityRule)
   }
   ## add some reflectance
-  result@info <- list(data = data,
+  call <- match.call()
+  result@info <- list(data = call$data,
                        ntransactions = data@.nrows,
                        support = support,
                        confidence = confidence)

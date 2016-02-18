@@ -1,0 +1,36 @@
+{
+  "customerOrder":
+    {
+      "orderNumber":"T100",
+      "lineItems":
+      {
+        "lineItem":
+        [
+          {
+            "orderLineNumber":"1",
+            "productNo":"1",
+            "productName":"18th century schooner",
+            "quantityOrdered":"49",
+            "priceEach":"34.47",
+            "lineTotal":"1689.03"
+          },
+          {
+            "orderLineNumber":"2",
+            "productNo":"2",
+            "productName":"1900s Vintage Bi-Plane",
+            "quantityOrdered":"20",
+            "priceEach":"33.00",
+            "lineTotal":"660"
+          },
+          {
+            "orderLineNumber":"3",
+            "productNo":"5",
+            "productName":"1903 Ford Model A",
+            "quantityOrdered":"33",
+            "priceEach":"36.45",
+            "lineTotal":"1202.85"
+          }
+      ]
+    }
+  }
+}

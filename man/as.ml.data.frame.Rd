@@ -7,7 +7,7 @@
 as.ml.data.frame(x, name, format = "json", directory = "")
 }
 \arguments{
-\item{x}{a Data Frame object.}
+\item{x}{a Data Frame or ml.data.frame object.}
 
 \item{name}{The name of the object.}
 
@@ -27,7 +27,7 @@ The documents will belong to a collection named "name".
 \examples{
 \dontrun{
  library(rfml)
- ml.connect("localhost", "8000", "admin", "admin")
+ ml.connect()
  # create a ml.data.frame based on the iris data set
  mlIris <- as.ml.data.frame(iris, "iris")
 }

@@ -8,7 +8,7 @@ ml.init.database(host = "localhost", port = "8000", adminuser = "admin",
   password = "admin")
 }
 \arguments{
-\item{host}{The hostname or ipadress of the MarkLogic http server. Default to localhost.}
+\item{host}{The hostname or ip-adress of the MarkLogic http server. Default to localhost.}
 
 \item{port}{The port number of the MarkLogic http server. 8000 is used default}
 
@@ -20,17 +20,20 @@ ml.init.database(host = "localhost", port = "8000", adminuser = "admin",
 The function will raise a error...
 }
 \description{
-The function installs search options and transformations/mdoules that is needed
-in order to use the package. You only needed to run it once for each database.
+The function installs \href{http://docs.marklogic.com/guide/rest-dev/extensions}{REST extensions} and
+modules needed to use the package. You only needed to run it once for each database.
 }
 \details{
-The database must have a REST server and a module database.
+The database must have a \href{http://docs.marklogic.com/guide/admin/http}{REST server}
+and a \href{http://docs.marklogic.com/guide/admin/databases#id_38484}{module database}.
 
 The user that is used for the login must have the  rest-admin role,
-or the following privileges:
-    http://marklogic.com/xdmp/privileges/rest-admin,
-    http://marklogic.com/xdmp/privileges/rest-writer,
-    http://marklogic.com/xdmp/privileges/rest-reader
+or at least the following privileges:
+\itemize{
+ \item http://marklogic.com/xdmp/privileges/rest-admin
+ \item http://marklogic.com/xdmp/privileges/rest-writer
+ \item http://marklogic.com/xdmp/privileges/rest-reader
+ }
 }
 \examples{
 \dontrun{

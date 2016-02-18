@@ -26,8 +26,8 @@ Returns an object of class rules or itemsets.
 \description{
 Mine frequent itemsets or association rules using MarkLogic Server built in Range Index functions.
 The function require that there is a Range Index on the underlying field of itemField. It will return
-a object of class rules or itemsets, that can be used with any package that works with output from
-the arules package apriori function.
+a object that is of class rules or itemsets defined in the arules package. It will need the arules package
+installed.
 }
 \details{
 The frequent itemset and association rules extraction method is using the same method as the Apriori

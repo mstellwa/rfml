@@ -137,7 +137,7 @@ function getAssociationRules(frequentItemSets, minConfidence) {
 /******************************************************************************
  * Primnary GET function
  ******************************************************************************/
-function get(context, params) {
+function arules(context, params) {
   var rfmlUtilities = require('/ext/rfml/rfmlUtilities.sjs');
   /* parmeters */
   var qText = (params.q) ? params.q : "";
@@ -147,6 +147,7 @@ function get(context, params) {
   var minItems = params.minlen ? params.minlen === 0 ? 0 : params.minlen : 1;
   var maxItems = params.maxlen ? params.maxlen === 0 ? 0 : params.maxlen : 2;
   var minConf = params.conf ? params.conf === 0 ? 0 : params.conf : 0.5;
+  var target = (params.target) ? params.target : "rules";
 
   var extFields;
   var fieldQuery;
@@ -171,7 +172,7 @@ function get(context, params) {
     return null;
   }
 
-   var field = orgFields[0].name;
+  var field = orgFields[0].name;
 
   if (params.fieldQuery) {
     fieldQuery = JSON.parse(params.fieldQuery);
@@ -182,19 +183,13 @@ function get(context, params) {
 
   /* Get the frequent itemsets */
   var freqItemsSets = getFreqItemSets(field, whereQuery, minAbsSupp,transLength, minItems, maxItems);
-
-  /* Get the associationRules */
-  var associationRules = getAssociationRules(freqItemsSets,minConf);
+  var associationRules;
+  if (target == "rules") {
+    /* Get the associationRules */
+    associationRules = getAssociationRules(freqItemsSets,minConf);
+  }
   //return associationRules;
   var arulesDoc = {'itemsets': freqItemsSets,'rules': associationRules};
   return arulesDoc;
-
-  /*
-    Create a return document, with itemsets and rules?
-    {
-      itemsets: {freqItemsSets},
-      rules: {associationRules}
-    }
-  */
 }
-exports.GET = get;
+exports.GET = arules;

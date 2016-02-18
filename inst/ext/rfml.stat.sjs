@@ -1,4 +1,4 @@
-function get(context, params) {
+function getStat(context, params) {
   var rfmlUtilities = require('/ext/rfml/rfmlUtilities.sjs');
 
   var qText = (params.q) ? params.q : "";
@@ -50,4 +50,4 @@ function get(context, params) {
 
 }
 
-exports.GET = get;
+exports.GET = getStat;

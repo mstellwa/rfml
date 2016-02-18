@@ -40,6 +40,11 @@ Using a string query, more information around the syntax can be found at http://
 # create a ml.data.frame
 mlIris <- ml.data.frame("setosa", collection = "iris")
 ```
+It is also possible to do simple field level filtering, only == is currently supported.
+```R
+# create a ml.data.frame object based filtering on the Species field
+mlIris <- ml.data.frame(fieldFilter = "Species == setosa")
+```
 There is also possible to upload data to the MarkLogic database, which returns a ml.data.frame object.
 ```R
 # create a ml.data.frame object based on the iris data set
@@ -63,7 +68,7 @@ It is possible to create new columns for the ml.data.frame object. The columns o
 mlIris$newField <- mlIris$Petal.Width
 
 # create a field based calculation on existing
-mlIris$newField2 <- mlIris$Petal.Width + dmlIris$Petal.Length
+mlIris$newField2 <- mlIris$Petal.Width + mlIris$Petal.Length
 
 # create a field based on an previous created
 mlIris$newField3 <- mlIris$Petal.Width + 10
@@ -86,7 +91,7 @@ You can also extract a selection from a ml.data.frame into a new ml.data.frame. 
 following statements, would select only rows for which the column 'Species' equals 'setosa', and
 only the columns 'Sepal.Length' and 'Sepal.Width'
 ```R
-mlIris2 <- mlIris[mlIris$Species=="setosa"",c("Sepal.Length","Sepal.Width")]
+mlIris2 <- mlIris[mlIris$Species=="setosa",c("Sepal.Length","Sepal.Width")]
 ```
 It is possible also to pull back data from a  ml.data.frame object, it is returned as a data.frame.
 ```R

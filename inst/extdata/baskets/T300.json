@@ -1,0 +1,28 @@
+{
+  "customerOrder":
+    {
+      "orderNumber":"T300",
+      "lineItems":
+      {
+        "lineItem":
+        [
+          {
+            "orderLineNumber":"1",
+            "productNo":"2",
+            "productName":"1900s Vintage Bi-Plane",
+            "quantityOrdered":"33",
+            "priceEach":"33.00",
+            "lineTotal":"1089"
+          },
+          {
+            "orderLineNumber":"2",
+            "productNo":"3",
+            "productName":"1928 British Royal Navy Airplane",
+            "quantityOrdered":"30",
+            "priceEach":"45.10",
+            "lineTotal":"1353"
+          }
+      ]
+    }
+  }
+}

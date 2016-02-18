@@ -10,14 +10,9 @@ is.ml.data.frame(x)
 \item{x}{The input can be of any type.}
 }
 \value{
-True if it is a ml.data.fram object. False otherwise.
+True if it is a ml.data.frame object. False otherwise.
 }
 \description{
 This function checks if the input is of type ml.data.frame.
-}
-\examples{
-\dontrun{
-
-}
 }
 

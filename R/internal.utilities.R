@@ -135,94 +135,6 @@
   return(TRUE)
 }
 
-# internal function to add default serach options
-.insert.search.options <- function(mlHost, username, password, mlQueryOpName, mlQueryOpFile, fileType)  {
-  #mlQueryOpName <- paste(mlOption, ".json", sep='')
-  #mlOptions <- upload_file(system.file("options",mlQueryOpName,package = "rfml"), "application/json")
-  mlOptions <- upload_file(mlQueryOpFile, fileType)
-
-  mlURL <- paste(mlHost, "/v1/config/query/", mlQueryOpName, sep="")
-
-  # add or replace search options to the database
-  response <- PUT(mlURL, authenticate(username, password, type="digest"), body=mlOptions)
-  status_code <- response$status_code
-  if (status_code != 201 && status_code != 204) {
-    rContent <- content(response)
-    errorMsg <- paste("statusCode: ",
-                      rContent$errorResponse$statusCode,
-                      ", status: ", rContent$errorResponse$status,
-                      ", message: ", rContent$errorResponse$message,sep="")
-       stop(paste("Ops, something went wrong.", errorMsg))
-
-  }
-
-  return(TRUE)
-}
-
-# internal function to remove default serach options
-.remove.search.options <- function(mlHost, username, password, mlQueryOpName)  {
-  mlURL <- paste(mlHost, "/v1/config/query/", mlQueryOpName, sep="")
-
-  # add or replace search options to the database
-  response <- DELETE(mlURL, authenticate(username, password, type="digest"))
-  # check the response
-  status_code <- response$status_code
-  if (status_code != 204) {
-    rContent <- content(response)
-    errorMsg <- paste("statusCode: ",
-                         rContent$errorResponse$statusCode,
-                         ", status: ", rContent$errorResponse$status,
-                         ", message: ", rContent$errorResponse$message, sep="")
-    warning(paste("Ops, something went wrong.", errorMsg))
-  }
-  return(TRUE)
-}
-
-# Transform function used with search
-.insert.search.transform <- function(mlHost, username, password, mlTransformName)  {
-
-  mlTransformFile <- paste(mlTransformName, ".sjs", sep='')
-  file <- system.file("transform",mlTransformFile ,package = "rfml")
-  transform <- upload_file(file, "application/vnd.marklogic-javascript")
-  mlURL <- paste(mlHost, "/v1/config/transforms/", mlTransformName, sep="")
-
-  # add or replace search options to the database
-  response <- PUT(mlURL, authenticate(username, password, type="digest"), body=transform)
-  status_code <- response$status_code
-
-  if (status_code != 204) {
-    rContent <- content(response)
-    errorMsg <- paste("statusCode: ",
-                      rContent$errorResponse$statusCode,
-                      ", status: ", rContent$errorResponse$status,
-                      ", message: ", rContent$errorResponse$message, sep="")
-    stop(paste("Ops, something went wrong.", errorMsg))
-
-  }
-
-  return(TRUE)
-}
-
-# internal function to remove Transforms
-.remove.search.transform <- function(mlHost, username, password, mlTransformName)  {
-
-  mlURL <- paste(mlHost, "/v1/config/transforms/", mlTransformName, sep="")
-
-  # add or replace search options to the database
-  response <- DELETE(mlURL, authenticate(username, password, type="digest"))
-  status_code <- response$status_code
-  if (status_code != 204) {
-
-    rContent <- content(response)
-    errorMsg <- paste("statusCode: ",
-                      rContent$errorResponse$statusCode,
-                      ", status: ", rContent$errorResponse$status,
-                      ", message: ", rContent$errorResponse$message, sep="")
-    warning(paste("Ops, something went wrong.", errorMsg))
-  }
-
-  return(TRUE)
-}
 # internal function to add rest interface used
 .insert.lib <- function(mlHost, username, password, mlLibName)  {
 
@@ -385,7 +297,8 @@
 
 }
 # Internal used function that inserts data.frame data into MarkLogic.
-# Each line is added as a document, put in a collection based on the name
+# Each line is added as a document, put in a collection named after
+# myCollection value
 .insert.ml.data <- function(myData, myCollection, format, directory) {
 
   # get connection imformation
@@ -423,7 +336,7 @@
 
 }
 # Internal used function that deletes data created by as.ml.data.frame.
-.delete.ml.data <- function(myData, myCollection, format, directory) {
+.delete.ml.data <- function(myData, directory) {
 
   # get connection imformation
   key <- .rfmlEnv$key
@@ -431,32 +344,28 @@
   username <- .rfmlEnv$conn$username
   mlHost <- paste("http://", .rfmlEnv$conn$host, ":", .rfmlEnv$conn$port, sep="")
 
-  mlPostURL <- paste(mlHost, "/v1/documents", sep="")
+  mlDelURL <- paste(mlHost, "/v1/resources/rfml.dframe", sep="")
 
-  rfmlCollection <- myCollection
+  rfmlCollection <- myData@.queryArgs$`rs:collection`
+  if (nchar(rfmlCollection) == 0) {
+    stop("Can only delete data for a ml.data.frame that has been created using as.mld.data.frame!")
+  }
   # generate the directory URI
   if (directory == "") {
-    rfmlDirectory <- paste("/rfml/", username, "/", myCollection, "/", sep="")
+    rfmlDirectory <- paste("/rfml/", username, "/", rfmlCollection, "/", sep="")
   } else {
     rfmlDirectory <- directory
   }
+  queryArgs <- list('rs:collection'=rfmlCollection, 'rs:directory'=rfmlDirectory)
 
-  if (format == "XML") {
-    bodyFile <- .generate.xml.body(myData, myCollection, rfmlDirectory)
-  } else if (format == "json") {
-    bodyFile <- .generate.json.body(myData, myCollection, rfmlDirectory)
-  } else {
-    stop("Unkown format")
-  }
-  response <- POST(mlPostURL,  body = upload_file(bodyFile, type = "multipart/mixed; boundary=BOUNDARY"), authenticate(username, password, type="digest"), encode = "multipart")
-  unlink(bodyFile)
-  if(response$status_code != 200) {
+  response <- DELETE(mlDelURL, query = queryArgs, authenticate(username, password, type="digest"), accept_json())
+  if(response$status_code != 204) {
     rContent <- content(response, as = "text")
     errorMsg <- paste("statusCode: ",rContent, sep="")
     stop(paste("Ops, something went wrong.", errorMsg))
   }
 
-  return(rfmlCollection)
+  return(TRUE)
 
 }
 # executes a statistic function
@@ -480,62 +389,6 @@
   }
   return(rContent)
 
-}
-
-# Get data for the summary function
-.ml.summary.func <- function(mlDf) {
-
-  key <- .rfmlEnv$key
-  password <- rawToChar(PKI::PKI.decrypt(.rfmlEnv$conn$password, key))
-  username <- .rfmlEnv$conn$username
-  #dframe <- mlDf@.name
-  #query <- mlDf@.ctsQuery
-  queryComArgs <- mlDf@.queryArgs
-
-  mlHost <- paste("http://", .rfmlEnv$conn$host, ":", .rfmlEnv$conn$port, sep="")
-  mlSearchURL <- paste(mlHost, "/LATEST/search", sep="")
- # if (is.null(searchOption)) {
-    mlOptions <- .rfmlEnv$mlDefaultOption
-#  } else {
-#    mlOptions <- searchOption
-#  }
-
-
-  nStart=1
-#  if (nrows>0) {
-#    nPageLength <- nrows
-#  } else {
-    nPageLength <- mlDf@.nrows
-#  }
-
-  queryArgs <- c(queryComArgs, pageLength=nPageLength, transform="rfmlSummary")
-
-
-  # create
-  if (length(mlDf@.col.defs) > 0) {
-    fields <- "{"
-    for (i in 1:length(mlDf@.col.defs)) {
-      if (nchar(fields) > 1) {
-        fields <- paste(fields, ',', sep='')
-      }
-      fields <- paste(fields, '"', names(mlDf@.col.defs[i]), '":{"fieldDef":"',mlDf@.col.defs[[i]] ,'"}',sep='')
-    }
-    fields <- paste(fields, '}', sep='')
-    queryArgs <- c(queryArgs, 'trans:fields'=fields)
-  }
-
-
-  # do a search
-  response <- GET(mlSearchURL, query = queryArgs, authenticate(username, password, type="digest"), accept_json())
-  # check that we get an 200
-  rContent <- content(response)
-  if(response$status_code != 200) {
-    errorMsg <- paste("statusCode: ",
-                      rContent, sep="")
-    stop(paste("Ops, something went wrong.", errorMsg))
-  }
-
-  return(rContent)
 }
 
 # Get data for the summary function
@@ -637,7 +490,6 @@
 .generate.json.body <- function(data, name, directory) {
 
   boundary <- "--BOUNDARY"
-  #contentTypeXML <- "Content-Type: application/xml"
   contentType <- "Content-Type: application/json"
   bodyText <- c(boundary,contentType)
 
@@ -646,15 +498,28 @@
   bodyText <- c(bodyText, "")
   bodyText <- c(bodyText, paste('{"collections" : ["', name, '"] }', sep=""))
 
+  if (is.data.frame(data)) {
+    # start loop
+    for (i in 1:nrow(data)) {
+      bodyText <- c(bodyText,boundary,contentType, paste("Content-Disposition: inline;extension=json;directory=", directory,sep=""), "")
+      jsonData <- toJSON(data[i,])
+      # need to remove the [ ] in the doc, before sending it
+      jsonData <- gsub("\\]", "", gsub("\\[", "", jsonData))
 
-  # start loop
-  for (i in 1:nrow(data)) {
-    bodyText <- c(bodyText,boundary,contentType, paste("Content-Disposition: inline;extension=json;directory=", directory,sep=""), "")
-    jsonData <- toJSON(data[i,])
-    # need to remove the [ ] in the doc, before sending it
-    jsonData <- gsub("\\]", "", gsub("\\[", "", jsonData))
+      bodyText <- c(bodyText, jsonData)
+    }
+  } else if (is.character(data)) {
+    uploadFiles <- list.files(system.file(data, package = "rfml"))
+    for (i in 1:length(uploadFiles)) {
+      bodyText <- c(bodyText,boundary,contentType, paste("Content-Disposition: inline;extension=json;directory=", directory,sep=""), "")
+      fileName <- system.file(data, uploadFiles[i], package="rfml")
+      jsonData <-readChar(fileName, file.info(fileName)$size) #toJSON(data[i,])
 
-    bodyText <- c(bodyText, jsonData)
+      # need to remove the [ ] in the doc, before sending it
+      #jsonData <- gsub("\\]", "", gsub("\\[", "", jsonData))
+
+      bodyText <- c(bodyText, jsonData)
+    }
   }
   bodyText <- c(bodyText, "--BOUNDARY--", "")
   # add it

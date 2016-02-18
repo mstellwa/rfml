@@ -1,0 +1,28 @@
+{
+  "customerOrder":
+    {
+      "orderNumber":"T200",
+      "lineItems":
+      {
+        "lineItem":
+        [
+          {
+            "orderLineNumber":"1",
+            "productNo":"2",
+            "productName":"1900s Vintage Bi-Plane",
+            "quantityOrdered":"21",
+            "priceEach":"33.00",
+            "lineTotal":"693"
+          },
+          {
+            "orderLineNumber":"2",
+            "productNo":"4",
+            "productName":"Collectable Wooden Train",
+            "quantityOrdered":"32",
+            "priceEach":"23.45",
+            "lineTotal":"750.4"
+          }
+      ]
+    }
+  }
+}
