@@ -1,6 +1,6 @@
 context("ml.lm")
 
-ml.connect(host = "192.168.33.10", port = "8020", username = "admin", password = "Pass1234")
+ml.connect()
 
 test_that("lm works", {
   mlIris <- as.ml.data.frame(iris, "iris")

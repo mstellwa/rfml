@@ -1,0 +1,12 @@
+# Sample .travis.yml for R projects
+
+language: r
+warnings_are_errors: true
+sudo: required
+
+install:
+- env
+- if [ "${TRAVIS_SECURE_ENV_VARS}" = "true" ] ; then ./shared/dev-tasks/travis-install-ml.sh
+  release ; else (exit 0) ; fi
+- if [ "${TRAVIS_SECURE_ENV_VARS}" = "true" ] ; then ./shared/dev-tasks/setup-marklogic.sh
+  ; else (exit 0) ; fi

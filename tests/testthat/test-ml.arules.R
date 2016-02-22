@@ -1,6 +1,6 @@
 context("ml.arules")
 
-ml.connect(host = "192.168.33.10", port = "8020", username = "admin", password = "Pass1234")
+ml.connect()
 
 test_that("ml.arules works", {
   mlBaskets <- ml.load.sample.data("baskets", "baskets-test")
