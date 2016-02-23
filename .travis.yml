@@ -4,9 +4,10 @@ language: R
 cache: packages
 warnings_are_errors: true
 sudo: required
-r_packages:
-  - arules
-  - knitr
+
+r_binary_packages:
+- arules
+- knitr
 
 install:
 - env
