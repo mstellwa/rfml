@@ -5,12 +5,7 @@ cache: packages
 warnings_are_errors: true
 sudo: required
 
-r_binary_packages:
-- arules
-- knitr
-- rmarkdown
-
-install:
+before_install:
 - env
 - if [ "${TRAVIS_SECURE_ENV_VARS}" = "true" ] ; then ./shared/dev-tasks/travis-install-ml.sh
   release ; else (exit 0) ; fi
