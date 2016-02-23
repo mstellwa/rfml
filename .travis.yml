@@ -8,6 +8,7 @@ sudo: required
 r_binary_packages:
 - arules
 - knitr
+- rmarkdown
 
 install:
 - env
