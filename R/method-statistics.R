@@ -17,11 +17,11 @@
 #' @examples
 #' \dontrun{
 #'  library(rfml)
-#'  ml.connect("localhost", "8000", "admin", "admin")
+#'  ml.connect()
 #'  # create a ml.data.frame based on a search
-#'  mlDf <- ml.data.frame("corvette NEAR/1 convertible", collection = c("Analytics"))
+#'  mlIris <- ml.data.frame(collection = "iris")
 #'  # return the correlation
-#'  cor(mlDf$orderLines1quantityOrdered, mlDf$orderLines1priceEach)
+#'  cor(mlIris$Sepal.Length, mlIris$Petal.Length)
 #' }
 #' @export
 setMethod(f="cor", signature=c(x="ml.col.def",y="ml.col.def"),
@@ -68,11 +68,11 @@ setMethod(f="cor", signature=c(x="ml.col.def",y="ml.col.def"),
 #' @examples
 #' \dontrun{
 #'  library(rfml)
-#'  ml.connect("localhost", "8000", "admin", "admin")
+#'  ml.connect()
 #'  # create a ml.data.frame based on a search
-#'  mlDf <- ml.data.frame("corvette NEAR/1 convertible", collection = c("Analytics"))
-#'  # return the correlation
-#'  cor(mlDf)
+#'  mlIris <- ml.data.frame(collection = "iris")
+#'  # return the correlation matrix
+#'  cor(mlIris)
 #' }
 #' @export
 setMethod(f="cor", signature=c(x="ml.data.frame"),
@@ -119,11 +119,11 @@ setMethod(f="cor", signature=c(x="ml.data.frame"),
 #' @examples
 #' \dontrun{
 #'  library(rfml)
-#'  ml.connect("localhost", "8000", "admin", "admin")
+#'  ml.connect()
 #'  # create a ml.data.frame based on a search
-#'  mlDf <- ml.data.frame("corvette NEAR/1 convertible", collection = c("Analytics"))
+#'  mlIris <- ml.data.frame(collection = "iris")
 #'  # return the Covariance
-#'  cov(mlDf$orderLines1quantityOrdered, mlDf$orderLines1priceEach)
+#'  cov(mlIris$Sepal.Length, mlIris$Petal.Length)
 #' }
 #' @export
 setMethod(f="cov", signature=c(x="ml.col.def",y="ml.col.def"),
@@ -167,11 +167,11 @@ setMethod(f="cov", signature=c(x="ml.col.def",y="ml.col.def"),
 #' @examples
 #' \dontrun{
 #'  library(rfml)
-#'  ml.connect("localhost", "8000", "admin", "admin")
+#'  ml.connect()
 #'  # create a ml.data.frame based on a search
-#'  mlDf <- ml.data.frame("corvette NEAR/1 convertible", collection = c("Analytics"))
-#'  # return the Covariance
-#'  cov.pop(mlDf$orderLines1quantityOrdered, mlDf$orderLines1priceEach)
+#'  mlIris <- ml.data.frame(collection = "iris")
+#'  # return the population covariance
+#'  cov.pop(mlIris$Sepal.Length, mlIris$Petal.Length)
 #' }
 #' @export
 cov.pop <- function(x,y) {
@@ -204,11 +204,11 @@ cov.pop <- function(x,y) {
 #' @examples
 #' \dontrun{
 #'  library(rfml)
-#'  ml.connect("localhost", "8000", "admin", "admin")
+#'  ml.connect()
 #'  # create a ml.data.frame based on a search
-#'  mlDf <- ml.data.frame("corvette NEAR/1 convertible", collection = c("Analytics"))
-#'  # return the Covariance
-#'  var(mlDf$orderLines1quantityOrdered)
+#'  mlIris <- ml.data.frame(collection = "iris")
+#'  # return the variance
+#'  var(mlIris$Sepal.Length)
 #' }
 #' @export
 setMethod(f="var", signature=c(x="ml.col.def"),
@@ -241,14 +241,14 @@ setMethod(f="var", signature=c(x="ml.col.def"),
 #'
 #' @param x a ml.data.frame field.
 #' @param na.rm not used currently
-#' @return The sample variance
+#' @return The population variance
 #' @examples
 #' \dontrun{
 #'  library(rfml)
-#'  ml.connect("localhost", "8000", "admin", "admin")
+#'  ml.connect()
 #'  # create a ml.data.frame based on a search
-#'  mlDf <- ml.data.frame("corvette NEAR/1 convertible", collection = c("Analytics"))
-#'  # return the Covariance
+#'  mlIris <- ml.data.frame(collection = "iris")
+#'  # population variance
 #'  var.pop(mlDf$orderLines1quantityOrdered)
 #' }
 #' @export
@@ -282,11 +282,11 @@ var.pop <- function(x,na.rm = FALSE ) {
 #' @examples
 #' \dontrun{
 #'  library(rfml)
-#'  ml.connect("localhost", "8000", "admin", "admin")
+#'  ml.connect()
 #'  # create a ml.data.frame based on a search
-#'  mlDf <- ml.data.frame("corvette NEAR/1 convertible", collection = c("Analytics"))
-#'  # return the Covariance
-#'  sd(mlDf$orderLines1quantityOrdered)
+#'  mlIris <- ml.data.frame(collection = "iris")
+#'  # standard deviation
+#'  sd(mlIris$Sepal.Length)
 #' }
 #' @export
 setMethod(f="sd", signature=c(x="ml.col.def"),
@@ -319,15 +319,15 @@ setMethod(f="sd", signature=c(x="ml.col.def"),
 #' Returns the sample standard deviation of a population.
 #'
 #' @param x a ml.data.frame field.
-#' @return The sample standard deviation
+#' @return The sample standard deviation of a population.
 #' @examples
 #' \dontrun{
 #'  library(rfml)
-#'  ml.connect("localhost", "8000", "admin", "admin")
+#'  ml.connect()
 #'  # create a ml.data.frame based on a search
-#'  mlDf <- ml.data.frame("corvette NEAR/1 convertible", collection = c("Analytics"))
-#'  # return the Covariance
-#'  sd.pop(mlDf$orderLines1quantityOrdered)
+#'  mlIris <- ml.data.frame(collection = "iris")
+#'  # standard deviation
+#'  sd.pop(mlIris$Sepal.Length)
 #' }
 #' @export
 sd.pop <- function(x) {
@@ -356,12 +356,11 @@ sd.pop <- function(x) {
 #' @return The median
 #' @examples
 #' \dontrun{
-#'  library(rfml)
-#'  ml.connect("localhost", "8000", "admin", "admin")
+#'  ml.connect()
 #'  # create a ml.data.frame based on a search
-#'  mlDf <- ml.data.frame("corvette NEAR/1 convertible", collection = c("Analytics"))
-#'  # return the median
-#'  median(mlDf$orderLines1quantityOrdered)
+#'  mlIris <- ml.data.frame(collection = "iris")
+#'  # median
+#'  median(mlIris$Sepal.Length)
 #' }
 #' @export
 setMethod(f="median", signature=c(x="ml.col.def"),
@@ -390,15 +389,14 @@ setMethod(f="median", signature=c(x="ml.col.def"),
 #'
 #' @param x a ml.data.frame field.
 #' @param na.rm not currently used.
-#' @return The meamn
+#' @return The mean
 #' @examples
 #' \dontrun{
-#'  library(rfml)
-#'  ml.connect("localhost", "8000", "admin", "admin")
+#'  ml.connect()
 #'  # create a ml.data.frame based on a search
-#'  mlDf <- ml.data.frame("corvette NEAR/1 convertible", collection = c("Analytics"))
-#'  # return the median
-#'  mean(mlDf$orderLines1quantityOrdered)
+#'  mlIris <- ml.data.frame(collection = "iris")
+#'  # mean
+#'  mean(mlIris$Sepal.Length)
 #' }
 #' @export
 setMethod(f="mean", signature=c(x="ml.col.def"),
@@ -430,12 +428,11 @@ setMethod(f="mean", signature=c(x="ml.col.def"),
 #' @return The sum
 #' @examples
 #' \dontrun{
-#'  library(rfml)
-#'  ml.connect("localhost", "8000", "admin", "admin")
+#'  ml.connect()
 #'  # create a ml.data.frame based on a search
-#'  mlDf <- ml.data.frame("corvette NEAR/1 convertible", collection = c("Analytics"))
-#'  # return the median
-#'  sum(mlDf$orderLines1quantityOrdered)
+#'  mlIris <- ml.data.frame(collection = "iris")
+#'  # sum
+#'  sum(mlIris$Sepal.Length)
 #' }
 #' @export
 setMethod(f="sum", signature=c(x="ml.col.def"),
@@ -468,12 +465,11 @@ setMethod(f="sum", signature=c(x="ml.col.def"),
 #' @return The maximum value
 #' @examples
 #' \dontrun{
-#'  library(rfml)
-#'  ml.connect("localhost", "8000", "admin", "admin")
+#'  ml.connect()
 #'  # create a ml.data.frame based on a search
-#'  mlDf <- ml.data.frame("corvette NEAR/1 convertible", collection = c("Analytics"))
-#'  # return the median
-#'  max(mlDf$orderLines1quantityOrdered)
+#'  mlIris <- ml.data.frame(collection = "iris")
+#'  # max
+#'  max(mlIris$Sepal.Length)
 #' }
 #' @export
 setMethod(f="max", signature=c(x="ml.col.def"),
@@ -505,12 +501,11 @@ setMethod(f="max", signature=c(x="ml.col.def"),
 #' @return The minimum value
 #' @examples
 #' \dontrun{
-#'  library(rfml)
-#'  ml.connect("localhost", "8000", "admin", "admin")
+#'  ml.connect()
 #'  # create a ml.data.frame based on a search
-#'  mlDf <- ml.data.frame("corvette NEAR/1 convertible", collection = c("Analytics"))
-#'  # return the median
-#'  min(mlDf$orderLines1quantityOrdered)
+#'  mlIris <- ml.data.frame(collection = "iris")
+#'  # min
+#'  min(mlIris$Sepal.Length)
 #' }
 #' @export
 setMethod(f="min", signature=c(x="ml.col.def"),
@@ -549,6 +544,12 @@ percentile <- function(x, p) {
 }
 
 ################ Summary ############################
+#' ml.data.frame Summaries
+#'
+#' @param object an ml.data.frame object
+#' @param digits integer, used for number formatting
+#' @param maxsum not used.
+#' @param ... not used.
 #' @export
 setMethod(f="summary", signature=c("ml.data.frame"),
           function (object,digits=max(3L, getOption("digits") -3L), maxsum = 7L, ...) {

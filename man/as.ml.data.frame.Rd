@@ -2,7 +2,7 @@
 % Please edit documentation in R/method-ml.data.frame.R
 \name{as.ml.data.frame}
 \alias{as.ml.data.frame}
-\title{Upload a data.frame object data to MarkLogic.}
+\title{Upload a data.frame object data to MarkLogic server.}
 \usage{
 as.ml.data.frame(x, name, format = "json", directory = "")
 }

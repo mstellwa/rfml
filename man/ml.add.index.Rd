@@ -32,7 +32,7 @@ ml.add.index(x, scalarType = "string",
 The function will raise a error if something goes wrong.
 }
 \description{
-The function creates or updates a \href{http://docs.marklogic.com/guide/concepts/indexing#id_51573} {range element index}
+The function creates or updates a \href{http://docs.marklogic.com/guide/concepts/indexing#id_51573}{range element index}
 on the underlying element/property of a ml.data.frame field.
 The user that is used for the login must have administration priviligies.
 }

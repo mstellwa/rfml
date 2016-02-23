@@ -1,5 +1,8 @@
 
 ############## General ######################
+#' Prints information of a ml.col.def
+#'
+#' @param x an ml.col.def object
 #' @export
 setMethod("print", signature(x="ml.col.def"),
           function (x) {
@@ -8,20 +11,15 @@ setMethod("print", signature(x="ml.col.def"),
                       ,"\nUse this to define new columns on a ml.data.frame using the $ operator. To select a subset of a ml.data.frame, use bldf[] notation. "),"\n")
           }
 )
+#' Prints information of a ml.col.def
+#'
+#' @param object an ml.col.def object
 #' @export
 setMethod("show", signature(object="ml.col.def"),
           function (object) {
             cat(paste("Column definition:", object@.expr,
                       " \nMarkLogic element/property name:", object@.org_name, "\nSource document format:", object@.format
                       ,"\nUse this to define new columns on a ml.data.frame using the $ operator. To select a subset of a ml.data.frame, use bldf[] notation. "),"\n")
-          }
-)
-# Not used!
-setMethod("as.vector", signature(x="ml.col.def"),
-          function (x,mode="any") {
-            #res <- idaQuery("SELECT ", x@term , " FROM ",x@table@table,ifelse(nchar(x@table@where), paste(" WHERE ", x@table@where), ""))
-            #return(res[[1]])
-            message("as.vector")
           }
 )
 #' Check if an object is of type ml.col.def
@@ -35,7 +33,7 @@ is.ml.col.def <-
   function(x) {
     return(inherits(x, "ml.col.def"))
   }
-
+# internal used function
 as.ml.col.def <- function(x) {
   if(inherits(x,"ml.data.frame")) {
     return(paste('"rfmlResult[\'',x@.col.name[1],'\']"',sep=''))
@@ -60,6 +58,13 @@ as.ml.col.def <- function(x) {
 # x ^ y
 # x %% y
 # x %/% y
+#' Arithmetic Operators
+#'
+#' @param e1,e2 numeric vectors or string or ml.col.def object.
+#' @name arith
+NULL
+
+#' @rdname arith
 #' @export
 setMethod("Arith", signature(e1="ml.col.def",e2="ml.col.def"), function(e1, e2) {
   if(e1@.parent@.name!=e2@.parent@.name) {
@@ -75,6 +80,7 @@ setMethod("Arith", signature(e1="ml.col.def",e2="ml.col.def"), function(e1, e2) 
   return(new(Class="ml.col.def",.expr=paste('(',as.ml.col.def(eval(e1)),.Generic,as.ml.col.def(eval(e2)),')',sep=''),.data_type=dataType,.parent=e1@.parent,.type="expr",.aggType=aggType(e1,e2)));
 })
 
+#' @rdname arith
 #' @export
 setMethod("Arith", signature(e1="ml.col.def", e2="ANY"), function(e1, e2) {
   if (!(is.numeric(e2)) || e1@.data_type == "string") {
@@ -85,6 +91,7 @@ setMethod("Arith", signature(e1="ml.col.def", e2="ANY"), function(e1, e2) {
   return(new(Class="ml.col.def",.expr=paste('(', as.ml.col.def(eval(e1)),.Generic,as.ml.col.def(eval(e2)),')',sep=''),.data_type=dataType,.parent=e1@.parent,.type="expr",.aggType=aggType(e1,e2)));
 })
 
+#' @rdname arith
 #' @export
 setMethod("Arith", signature(e1="ANY", e2="ml.col.def"), function(e1, e2) {
   if (!(is.numeric(e1)) || e2@.data_type == "string") {
@@ -97,6 +104,10 @@ setMethod("Arith", signature(e1="ANY", e2="ml.col.def"), function(e1, e2) {
 
 ################ Comparison operators ############################
 #  "==" ">"  "<"  "!=" "<=" ">="
+#' Relational Operators
+#'
+#' @param e1 an ml.col.def object.
+#' @param e2 any object
 #' @export
 setMethod("Compare", signature(e1="ml.col.def", e2="ANY"), function(e1, e2) {
   mlDf <- e1@.parent
@@ -122,6 +133,13 @@ setMethod("Compare", signature(e1="ml.col.def", e2="ANY"), function(e1, e2) {
 # lgamma, gamma, digamma, trigamma, cumsum, cumprod, cummax, cummin,
 #
 # We only currently support part of these, se below.
+
+#' Miscellaneous Mathematical Functions
+#'
+#' Only abs, acos, asin, atan, ceiling, cos, cosh, exp, floor, log, log10 ,
+#' tan, tanh, sqrt, sin, sinh and trunc is currently supported.
+#'
+#' @param x an ml.col.def object.
 #' @export
 setMethod("Math",signature(x='ml.col.def'),function (x) {
 
@@ -188,18 +206,39 @@ radians <- function (x) {
   return(new(Class="ml.col.def",.expr=paste(func, '(', as.ml.col.def(eval(x)),')',sep=''),.parent=x@.parent,.data_type="number",.type="expr",.aggType=aggType(x)));
 };
 
-#' @export
+
 ################ Casting operators ############################
+#' Cast a ml.col.def expresion to numeric.
+#'
+#' This function will add a function to cast the expresion of the  ml.col.def to
+#' a numeric value. The cast will occur when the result is returned.
+#'
+#' @param  x an ml.col.def object
+#' @export
 setMethod('as.numeric',signature(x="ml.col.def"),function (x) {
   #checkLogical(F,x);
   return(new(Class="ml.col.def",.exor=paste('Number(',as.ml.col.def(eval(x)),')',sep=''),.parent=x@.parent,.data_type="number",.type="expr",.aggType=aggType(x)));
 })
 
+#' Cast a ml.col.def expresion to string
+#'
+#' This function will add a function to cast the expresion of the  ml.col.def to
+#' a string value. The cast will occur when the result is returned.
+#'
+#' @param  x an ml.col.def object
+#' @export
+#' @export
 setMethod('as.character',signature(x="ml.col.def"),function (x) {
   #checkLogical(F,x);
   return(new(Class="ml.col.def",.expr=paste('String(',as.ml.col.def(x),')',sep=''),.parent=x@.parent,.data_type="string",.type="expr",.aggType=aggType(x)));
 })
 
+#' Cast a ml.col.def expresion to integer
+#'
+#' This function will add a function to cast the expresion of the  ml.col.def to
+#' a integer value. The cast will occur when the result is returned.
+#'
+#' @param  x an ml.col.def object
 #' @export
 setMethod('as.integer',signature(x="ml.col.def"),function (x) {
 

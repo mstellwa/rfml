@@ -20,12 +20,11 @@ Returns the minimum value of a ml.data.frame field.
 }
 \examples{
 \dontrun{
- library(rfml)
- ml.connect("localhost", "8000", "admin", "admin")
+ ml.connect()
  # create a ml.data.frame based on a search
- mlDf <- ml.data.frame("corvette NEAR/1 convertible", collection = c("Analytics"))
- # return the median
- min(mlDf$orderLines1quantityOrdered)
+ mlIris <- ml.data.frame(collection = "iris")
+ # min
+ min(mlIris$Sepal.Length)
 }
 }
 

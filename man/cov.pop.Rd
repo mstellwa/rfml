@@ -25,11 +25,11 @@ the function returns the empty sequence.
 \examples{
 \dontrun{
  library(rfml)
- ml.connect("localhost", "8000", "admin", "admin")
+ ml.connect()
  # create a ml.data.frame based on a search
- mlDf <- ml.data.frame("corvette NEAR/1 convertible", collection = c("Analytics"))
- # return the Covariance
- cov.pop(mlDf$orderLines1quantityOrdered, mlDf$orderLines1priceEach)
+ mlIris <- ml.data.frame(collection = "iris")
+ # return the population covariance
+ cov.pop(mlIris$Sepal.Length, mlIris$Petal.Length)
 }
 }
 

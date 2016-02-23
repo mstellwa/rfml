@@ -90,6 +90,11 @@ ml.lm <- function(form, mlDf) {
   class(res) = c("mlLm")
   res
 }
+#' Prints information for a simnple linear model returned by \link{ml.lm}
+#'
+#' @param x a ml.lm result
+#' @param ... not used
+#' @method print mlLm
 #' @export
 print.mlLm <- function(x, ...) {
   cat("intercept: ", x$intercept)

@@ -31,11 +31,11 @@ the function returns the empty sequence.
 \examples{
 \dontrun{
  library(rfml)
- ml.connect("localhost", "8000", "admin", "admin")
+ ml.connect()
  # create a ml.data.frame based on a search
- mlDf <- ml.data.frame("corvette NEAR/1 convertible", collection = c("Analytics"))
+ mlIris <- ml.data.frame(collection = "iris")
  # return the Covariance
- cov(mlDf$orderLines1quantityOrdered, mlDf$orderLines1priceEach)
+ cov(mlIris$Sepal.Length, mlIris$Petal.Length)
 }
 }
 

@@ -14,7 +14,19 @@
 # name of exstentions used
 .rfmlEnv$mlExts <- c("rfml.dframe", "rfml.lm", "rfml.stat", "rfml.matrix", "rfml.collection", "rfml.arules")
 
-
+#' An S4 class to represent a ml.data.frame.
+#'
+#' @slot .name A string with the internal name for the ml.data.frame
+#' @slot .queryArgs A list with parameters used to query MarkLogic Server
+#' @slot .start A integer with the index of the first result to get
+#' @slot .nrows A integer with the number of rows in the result
+#' @slot .extracted A logical value indicating if we have selected a subset of fields
+#' @slot .col.name A character vector with the field names
+#' @slot .col.data_type A character vector with the data types of the fields
+#' @slot .col.org_name A character vector with the original names of fields in the source documents
+#' @slot .col.org_xpath A character vector with the xpath to the original names in the source documents
+#' @slot .col.format A character vector withthe  source document format XML/JSON
+#' @slot .col.defs  A list of \link{ml.col.def-class} added fields
 setClass("ml.data.frame",
          slots=c(
            .name="character",
@@ -30,7 +42,17 @@ setClass("ml.data.frame",
            .col.defs = "list" # added columns
           )
     )
-#Column expressions
+
+#' An S4 class to represent a ml.col.def.
+#'
+#' @slot .expr A string with expresion that define the ml.col.def
+#' @slot .parent Pointer to the \link{ml.data.frame-class} object that the field belongs to
+#' @slot .type A string with the type of field
+#' @slot .name A string with name of the field
+#' @slot .data_type A string with the data type of the field
+#' @slot .org_name A character string with the original names of field
+#' @slot .format  character
+#' @slot .aggType character
 setClass("ml.col.def",
          slots=c(.expr="character",
                  .parent="ml.data.frame",

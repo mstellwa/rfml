@@ -131,7 +131,7 @@ ml.load.sample.data <- function(dataSet = "baskets", name = "") {
 }
 #' Creates or updates a Range element index.
 #'
-#' The function creates or updates a \href{http://docs.marklogic.com/guide/concepts/indexing#id_51573} {range element index}
+#' The function creates or updates a \href{http://docs.marklogic.com/guide/concepts/indexing#id_51573}{range element index}
 #' on the underlying element/property of a ml.data.frame field.
 #' The user that is used for the login must have administration priviligies.
 #'

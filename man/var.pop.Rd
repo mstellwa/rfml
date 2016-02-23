@@ -12,7 +12,7 @@ var.pop(x, na.rm = FALSE)
 \item{na.rm}{not used currently}
 }
 \value{
-The sample variance
+The population variance
 }
 \description{
 Returns the population variance of two variables, ml.data.frame fields.
@@ -24,10 +24,10 @@ that x belongs to is less than 2.
 \examples{
 \dontrun{
  library(rfml)
- ml.connect("localhost", "8000", "admin", "admin")
+ ml.connect()
  # create a ml.data.frame based on a search
- mlDf <- ml.data.frame("corvette NEAR/1 convertible", collection = c("Analytics"))
- # return the Covariance
+ mlIris <- ml.data.frame(collection = "iris")
+ # population variance
  var.pop(mlDf$orderLines1quantityOrdered)
 }
 }

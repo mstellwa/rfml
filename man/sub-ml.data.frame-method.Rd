@@ -10,7 +10,7 @@
 \arguments{
 \item{x}{a ml.data.frame from which to extract element(s).}
 
-\item{i, j}{Indices specifying elements to extract. Indices are ‘numeric’ or ‘character’ vectors or empty (missing) or ‘NULL’.}
+\item{i, j}{Indices specifying elements to extract. Indices are 'numeric' or 'character' vectors or empty (missing) or 'NULL'.}
 
 \item{...}{Not used.}
 
