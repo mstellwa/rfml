@@ -4,12 +4,9 @@ language: R
 cache: packages
 warnings_are_errors: true
 sudo: required
-
-env:
-   global:
-     - R_BUILD_ARGS=" "
-     - R_CHECK_ARGS="--as-cran"
-     - BOOTSTRAP_LATEX="1"
+r_packages:
+  - arules
+  - knitr
 
 install:
 - env

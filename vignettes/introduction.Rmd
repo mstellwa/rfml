@@ -8,12 +8,13 @@ vignette: >
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
+rfml is a R package for MarkLogic Server, Enterprise NoSQL database, enabling in-dabase analytics.
 
-Vignettes are long form documentation commonly included in packages. Because they are part of the distribution of the package, they need to be as compact as possible. The `html_vignette` output type provides a custom style sheet (and tweaks some options) to ensure that the resulting html is as small as possible. The `html_vignette` format:
+It is based on the REST interface to allow users to use search syntax for creating a data.frame similar object, ml.data.frame. There is no data brought back to the client during the creation of the object.
 
-- Never uses retina figures
-- Has a smaller default figure size
-- Uses a custom CSS stylesheet instead of the default Twitter Bootstrap style
+rfml only works with MarkLogic Server version 8 and higher.
+
+In order to use rfml you need a REST server, with a module database, for the MarkLogic database that contains your source data..
 
 ## Vignette Info
 
