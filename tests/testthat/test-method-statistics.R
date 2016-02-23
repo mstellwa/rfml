@@ -1,6 +1,6 @@
 context("method-statistics")
 
-ml.connect()
+ml.connect(port = "8088")
 
 test_that("Statistics field based methods", {
   mlIris <- as.ml.data.frame(iris, "iris-test")

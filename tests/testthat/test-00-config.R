@@ -1,7 +1,7 @@
 context("Config")
 
 test_that("MarkLogic database can be initiated for rfml", {
-  #ml.init.database(host = "192.168.33.10", port = "8020", adminuser = "admin", password = "Pass1234")
+  ml.init.database(port = "8088")
 })
 
 test_that("MarkLogic database can be cleand up", {

@@ -91,7 +91,7 @@ ml.lm <- function(form, mlDf) {
   res
 }
 #' @export
-print.mlLm <- function(x) {
+print.mlLm <- function(x, ...) {
   cat("intercept: ", x$intercept)
   cat("\ncoefficients: ", x$coefficients)
   cat("\nr-squared :", x$rsquared, "\n")

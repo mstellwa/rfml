@@ -1,12 +1,13 @@
 context("ml.arules")
 
-ml.connect()
+ml.connect(port = "8088")
 
 test_that("ml.arules works", {
   mlBaskets <- ml.load.sample.data("baskets", "baskets-test")
-  db <- "techdeck-demo-content"
-  pwd = "Pass1234"
-  expect_message(ml.add.index(mlBaskets$lineItem1productName, "string", db, password = pwd), "Range element index created on productName")
+  db <- "rfml"
+  expect_message(ml.add.index(x = mlBaskets$lineItem1productName, scalarType = "string", database =  db), "Range element index created on productName")
+  # We need to wait so that the index gets updated before using a function that leverage it
+  Sys.sleep(10)
   itemsets <- ml.arules(mlBaskets, mlBaskets$lineItem1productName, support = 0.22, confidence = 0.01, target = "frequent itemsets")
   expect_is(itemsets, "itemsets")
   expect_equal(length(itemsets), 13)

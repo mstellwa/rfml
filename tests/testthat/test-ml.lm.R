@@ -1,6 +1,6 @@
 context("ml.lm")
 
-ml.connect()
+ml.connect(port = "8088")
 
 test_that("lm works", {
   mlIris <- as.ml.data.frame(iris, "iris")

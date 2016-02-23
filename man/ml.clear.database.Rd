@@ -20,14 +20,11 @@ ml.clear.database(host = "localhost", port = "8000", adminuser = "admin",
 The function will raise a error...
 }
 \description{
-The function removes search options, transformations and mdoules that is needed
-in order to use the package.
+The function removes the \href{http://docs.marklogic.com/guide/rest-dev/extensions}{REST extensions} and
+modules added with the \link{ml.init.database} function.
 }
 \details{
-The database must have a REST server and a module database.
-
-The user that is used for the login must have the  rest-admin role,
-or the following privileges:
+The user that is used for the login must have the  rest-admin role, or the following privileges:
 \itemize{
  \item http://marklogic.com/xdmp/privileges/rest-admin
  \item http://marklogic.com/xdmp/privileges/rest-writer

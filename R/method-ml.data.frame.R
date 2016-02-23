@@ -170,7 +170,7 @@ setMethod("as.data.frame", signature(x="ml.data.frame"),
 as.ml.data.frame <- function (x, name, format = "json", directory = "") {
 
   if (is.data.frame(x)) {
-    rfmlCollection <- .insert.ml.data(x, name, format, directory)
+    suppressWarnings(rfmlCollection <- .insert.ml.data(x, name, format, directory))
   } else if (is.ml.data.frame(x)) {
     #stop("Only objects of ml.data.frame type are supported!")
 
@@ -220,7 +220,7 @@ rm.ml.data.frame <- function(x, directory = "" ){
 #'
 #' @param x a ml.data.frame from which to extract element(s).
 #' @param i,j Indices specifying elements to extract. Indices are ‘numeric’ or ‘character’ vectors or empty (missing) or ‘NULL’.
-#' @param ...
+#' @param ... Not used.
 #' @param drop Not implemented yet.
 #' @return A ml.data.frame object is returned
 #' @examples
@@ -253,9 +253,11 @@ setMethod("[", signature(x = "ml.data.frame"),
             if (n == 1) {
               stop("Argument is missing!")
             }
-            if (n == 2) { # select columns -> mlDf[1]/mlDf[1:4]/mlDf["column"]/mlDf[c("col1","col2)]
+            if (n == 2) {
+              # select columns -> mlDf[1]/mlDf[1:4]/mlDf["column"]/mlDf[c("col1","col2)]
               colArg <- i
-            } else if (n == 3) { # several cases
+            } else if (n == 3) {
+              # several cases
               if (missing(i)) {
                 # if i is missing -> mlDf[, 1:2]
                 # select columns based on j

@@ -21,8 +21,7 @@ Imports:
 Suggests:
     arules,
     testthat,
-    knitr,
-    rmarkdown
+    knitr
 URL: https://github.com/mstellwa/rfml
 RoxygenNote: 5.0.1
 VignetteBuilder: knitr

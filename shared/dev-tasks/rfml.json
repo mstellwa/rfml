@@ -1,0 +1,10 @@
+{
+  "rest-api":
+    {
+      "name":"rfml-http",
+      "group": "Default",
+      "database":"rfml",
+      "modules-database": "rfml-modules",
+      "port":8088
+  }
+}

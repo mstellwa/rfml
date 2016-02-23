@@ -12,6 +12,8 @@
 
 \item{i, j}{Indices specifying elements to extract. Indices are ‘numeric’ or ‘character’ vectors or empty (missing) or ‘NULL’.}
 
+\item{...}{Not used.}
+
 \item{drop}{Not implemented yet.}
 }
 \value{

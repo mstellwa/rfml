@@ -7,75 +7,11 @@
 # it will add a warning
 .check.database <- function(mlHost, username, password) {
 
-  # the transforms used
-  mlTransforms <- .rfmlEnv$mlTransforms
-  # name of options used
-  mlOptions <-.rfmlEnv$mlOptions
   # name of libs used
   mlLibs <- .rfmlEnv$mlLibs
 
   mlExts <- .rfmlEnv$mlExts
 
-  # get all transforms
-#   mlURL <- paste(mlHost, "/v1/config/transforms?format=json", sep="")
-#
-#   response <- GET(mlURL, authenticate(username, password, type="digest"))
-#   status_code <- response$status_code
-#   rContent <- content(response)
-#   if (status_code != 200){
-#     # something  went wrong, could be wrong user etc
-#     errorMsg <- paste("statusCode: ",
-#                       rContent$errorResponse$statusCode,
-#                       ", status: ", rContent$errorResponse$status,
-#                       ", message: ", rContent$errorResponse$message, sep="")
-#     stop(paste("Ops, something went wrong.", errorMsg))
-#     return(FALSE)
-#   } else if (rContent$transforms == "") {
-#     return(FALSE)
-#   }
-#   # Need to check, if no transformations exists in DB the response is:
-#   # {"transforms":""}
-#   transforms <- rContent$transforms$transform
-#   nbrFound <- 0
-#   for (i in 1:length(transforms)) {
-#     if (transforms[[i]]$name %in% mlTransforms) {
-#       nbrFound <- nbrFound + 1
-#     }
-#   }
-#   if (nbrFound != length(mlTransforms)) {
-#     return(FALSE)
-#   }
-  # get search options
-  mlURL <- paste(mlHost, "/v1/config/query?format=json", sep="")
-
-  response <- GET(mlURL, authenticate(username, password, type="digest"))
-  status_code <- response$status_code
-  rContent <- content(response)
-  if (status_code != 200){
-    # something else went wrong, could be wrong user etc
-    errorMsg <- paste("statusCode: ",
-                      rContent$errorResponse$statusCode,
-                      ", status: ", rContent$errorResponse$status,
-                      ", message: ", rContent$errorResponse$message, sep="")
-    stop(paste("Ops, something went wrong.", errorMsg))
-    return(FALSE)
-  } else if (rContent == "[]") {
-    return(FALSE)
-  }
-  options <- fromJSON(rContent)
-  nbrFound <- 0
-  # Need to add .json
-  for (i in 1:length(mlOptions)) {
-    mlOptions[i] <- paste(mlOptions[i], ".json", sep='')
-  }
-  for (i in 1:nrow(options)) {
-    if (options[i,]$name %in% mlOptions) {
-      nbrFound <- nbrFound + 1
-    }
-  }
-  if (nbrFound != length(mlOptions)) {
-    return(FALSE)
-  }
   # get libraries, we only look under /ext/rfml/ and support javascript (.sjs)
   mlURL <- paste(mlHost, "/v1/ext/rfml/?format=json", sep="")
   response <- GET(mlURL, authenticate(username, password, type="digest"))
@@ -106,7 +42,7 @@
   if (nbrFound != length(mlLibs)) {
     return(FALSE)
   }
-  # get libraries, we only look under /ext/rfml/ and support javascript (.sjs)
+  # get extensions, we only look under /ext/rfml/ and support javascript (.sjs)
   mlURL <- paste(mlHost, "/v1/config/resources?format=json", sep="")
   response <- GET(mlURL, authenticate(username, password, type="digest"))
   status_code <- response$status_code
@@ -325,13 +261,13 @@
     stop("Unkown format")
   }
   response <- POST(mlPostURL,  body = upload_file(bodyFile, type = "multipart/mixed; boundary=BOUNDARY"), authenticate(username, password, type="digest"), encode = "multipart")
-  unlink(bodyFile)
+  suppressWarnings(unlink(bodyFile))
   if(response$status_code != 200) {
     rContent <- content(response, as = "text")
     errorMsg <- paste("statusCode: ",rContent, sep="")
     stop(paste("Ops, something went wrong.", errorMsg))
   }
-
+  suppressWarnings(closeAllConnections())
   return(rfmlCollection)
 
 }

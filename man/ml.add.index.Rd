@@ -4,13 +4,19 @@
 \alias{ml.add.index}
 \title{Creates or updates a Range element index.}
 \usage{
-ml.add.index(x, scalarType = "string", database = "Documents", host = "",
-  port = "8002", adminuser = "", password = "")
+ml.add.index(x, scalarType = "string",
+  collation = "http://marklogic.com/collation/", namespaceUri = "",
+  database = "Documents", host = "", port = "8002", adminuser = "",
+  password = "")
 }
 \arguments{
 \item{x}{a ml.data.frame field that the index will be created on}
 
 \item{scalarType}{An atomic type specification. "string" is default}
+
+\item{collation}{For scalarType = string, you can use a different collation than the default. Default is "http://marklogic.com/collation/"}
+
+\item{namespaceUri}{The namespace URI of the XML element, if JSON ignore. Default is empty.}
 
 \item{database}{The name of the database to create the index in. "Documents" is default.}
 
@@ -26,10 +32,13 @@ ml.add.index(x, scalarType = "string", database = "Documents", host = "",
 The function will raise a error if something goes wrong.
 }
 \description{
-The function creates or updates a range element index on the underlying element/property of a ml.data.frame field.
-The index
+The function creates or updates a \href{http://docs.marklogic.com/guide/concepts/indexing#id_51573} {range element index}
+on the underlying element/property of a ml.data.frame field.
+The user that is used for the login must have administration priviligies.
 }
 \details{
-The user that is used for the login must have administration priviligies.
+The function only creates and updates range index on a XML element or JSON property based on the ml.data.frame field.
+Information about the field can be shown by mlDataFrame$itemField, where mlDataFrame is a ml.data.frame object
+and itemField is the name of the field.
 }
 

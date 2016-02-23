@@ -34,17 +34,17 @@ ml.init.database <- function(host = "localhost", port = "8000", adminuser = "adm
 
  for (i in 1:length(mlLibs)) {
   # install the needed module library
-    if (.insert.lib(mlHost, adminuser, password, mlLibs[i])) {
+    if (suppressWarnings(.insert.lib(mlHost, adminuser, password, mlLibs[i]))) {
       message(paste("Library ",mlLibs[i] ," is now installed on ", host, ":", port, sep=""))
     }
   }
 
   for (i in 1:length(mlExts)) {
-    if (.insert.ext(mlHost, adminuser, password, mlExts[i])) {
+    if (suppressWarnings(.insert.ext(mlHost, adminuser, password, mlExts[i]))) {
       message(paste("REST extension ",mlExts[i], " is now installed on ", host, ":", port, sep=""))
     }
   }
-  closeAllConnections()
+  suppressWarnings(closeAllConnections())
   # need to store the current version of rfml
   # packageVersion("rfml")
   message(paste(host, ":", port, " is now ready for use with rfml",sep=""))
@@ -52,13 +52,10 @@ ml.init.database <- function(host = "localhost", port = "8000", adminuser = "adm
 
 #' Remove all rfml internal files in a MarkLogic database.
 #'
-#' The function removes search options, transformations and mdoules that is needed
-#' in order to use the package.
+#' The function removes the \href{http://docs.marklogic.com/guide/rest-dev/extensions}{REST extensions} and
+#' modules added with the \link{ml.init.database} function.
 #'
-#' The database must have a REST server and a module database.
-#'
-#' The user that is used for the login must have the  rest-admin role,
-#' or the following privileges:
+#' The user that is used for the login must have the  rest-admin role, or the following privileges:
 #' \itemize{
 #'  \item http://marklogic.com/xdmp/privileges/rest-admin
 #'  \item http://marklogic.com/xdmp/privileges/rest-writer
@@ -102,11 +99,12 @@ ml.clear.database <- function(host = "localhost", port = "8000", adminuser = "ad
 }
 #' Load sample data set into MarkLogic server
 #'
-#' The function uploads a sample data set to MarkLogic Server.
+#' The function uploads a sample data set to MarkLogic Server and returns a ml.data.frame object.
 #' Provided data sets are:
 #' \itemize{
 #'  \item "baskets" - sample order documents that can be used with the \link{ml.arules} function.
 #'  }
+#' To remove the sample use the \link{rm.ml.data.frame} on the returned ml.data.frame object.
 #'
 #' @param dataSet Which dataset to upload, "baskets"
 #' @param name The name of the object. The data will be added to a collection with that name. If not provided the dataSet name is used.
@@ -128,18 +126,23 @@ ml.load.sample.data <- function(dataSet = "baskets", name = "") {
   if (nchar(name) > 0) {
     collection <- name
   }
-  rfmlCollection <- .insert.ml.data(dataFolder, collection, "json", "")
+  suppressWarnings(rfmlCollection <- .insert.ml.data(dataFolder, collection, "json", ""))
   return(ml.data.frame(collection=c(rfmlCollection)));
 }
 #' Creates or updates a Range element index.
 #'
-#' The function creates or updates a range element index on the underlying element/property of a ml.data.frame field.
-#' The index
-#'
+#' The function creates or updates a \href{http://docs.marklogic.com/guide/concepts/indexing#id_51573} {range element index}
+#' on the underlying element/property of a ml.data.frame field.
 #' The user that is used for the login must have administration priviligies.
+#'
+#' The function only creates and updates range index on a XML element or JSON property based on the ml.data.frame field.
+#' Information about the field can be shown by mlDataFrame$itemField, where mlDataFrame is a ml.data.frame object
+#' and itemField is the name of the field.
 #'
 #' @param x a ml.data.frame field that the index will be created on
 #' @param scalarType An atomic type specification. "string" is default
+#' @param collation For scalarType = string, you can use a different collation than the default. Default is "http://marklogic.com/collation/"
+#' @param namespaceUri The namespace URI of the XML element, if JSON ignore. Default is empty.
 #' @param database The name of the database to create the index in. "Documents" is default.
 #' @param host The hostname or ipadress of the MarkLogic Manage server. Default is the same as used for ml.connect.
 #' @param port The port number of the MarkLogic Manage server. 8002 is used default
@@ -147,7 +150,9 @@ ml.load.sample.data <- function(dataSet = "baskets", name = "") {
 #' @param password The password. Default is the same as used for ml.connect.
 #' @return The function will raise a error if something goes wrong.
 #' @export
-ml.add.index <- function(x, scalarType= "string", database = "Documents", host = "", port = "8002", adminuser = "", password = "") {
+ml.add.index <- function(x, scalarType= "string", collation = "http://marklogic.com/collation/",
+                         namespaceUri = "",database = "Documents", host = "", port = "8002",
+                         adminuser = "", password = "") {
   if (!is.ml.col.def(x)) {
     stop("x needs to be a ml.col.def object!")
   }
@@ -174,9 +179,9 @@ ml.add.index <- function(x, scalarType= "string", database = "Documents", host =
   mlURL <- paste(mlHost, "/manage/v2/databases/", database, "/properties", sep="")
   localname <- x@.org_name
   indexJson <- paste('{"range-element-indexes":{"range-element-index": {"scalar-type": "', scalarType,
-                     '", "namespace-uri":"","localname":"', localname,'"' ,  sep="")
+                     '", "namespace-uri":"',namespaceUri ,'","localname":"', localname,'"' ,  sep="")
   if (scalarType == "string") {
-    indexJson <- paste( indexJson, ',"collation": "http://marklogic.com/collation/"' ,  sep="")
+    indexJson <- paste( indexJson, ',"collation": "', collation , '"' ,  sep="")
 
   }
   indexJson <- paste( indexJson,',"range-value-positions":true}}}', sep="")

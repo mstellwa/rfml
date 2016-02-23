@@ -1,6 +1,6 @@
 context("ml.data.frame")
 
-ml.connect()
+ml.connect(port = "8088")
 
 test_that("can create and delete a ml.data.frame based on iris dataset", {
    mlIris <- as.ml.data.frame(iris, "iris-test")

@@ -15,11 +15,12 @@ ml.load.sample.data(dataSet = "baskets", name = "")
 A ml.data.frame object pointing to the uploaded dataset.
 }
 \description{
-The function uploads a sample data set to MarkLogic Server.
+The function uploads a sample data set to MarkLogic Server and returns a ml.data.frame object.
 Provided data sets are:
 \itemize{
  \item "baskets" - sample order documents that can be used with the \link{ml.arules} function.
  }
+To remove the sample use the \link{rm.ml.data.frame} on the returned ml.data.frame object.
 }
 \examples{
 \dontrun{
