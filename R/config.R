@@ -133,11 +133,14 @@ ml.load.sample.data <- function(dataSet = "baskets", name = "") {
 #'
 #' The function creates or updates a \href{http://docs.marklogic.com/guide/concepts/indexing#id_51573}{range element index}
 #' on the underlying element/property of a ml.data.frame field.
-#' The user that is used for the login must have administration priviligies.
+#' The user that is used for the login needs the manage-admin role, or the following privilege:
+#' \itemize{
+#'  \item http://marklogic.com/xdmp/privileges/manage-admin
+#'  }
 #'
 #' The function only creates and updates range index on a XML element or JSON property based on the ml.data.frame field.
 #' Information about the field can be shown by mlDataFrame$itemField, where mlDataFrame is a ml.data.frame object
-#' and itemField is the name of the field.
+#' and itemField is the name of the field. Indexes created with this function will always have range-value-positions equal true.
 #'
 #' @param x a ml.data.frame field that the index will be created on
 #' @param scalarType An atomic type specification. "string" is default
@@ -177,22 +180,60 @@ ml.add.index <- function(x, scalarType= "string", collation = "http://marklogic.
   # general URL, used as basis for all
   mlHost <- paste("http://", mlhost, ":", port, sep="")
   mlURL <- paste(mlHost, "/manage/v2/databases/", database, "/properties", sep="")
+
+  # first we need to get the existing properties because we need existing range-element-index, otherwise
+  # we will replace them
+  response <- GET(mlURL, authenticate(username, pwd, type="digest"), accept_json())
+  rContent <- content(response) #, as = "text"
+  #
   localname <- x@.org_name
-  indexJson <- paste('{"range-element-indexes":{"range-element-index": {"scalar-type": "', scalarType,
-                     '", "namespace-uri":"',namespaceUri ,'","localname":"', localname,'"' ,  sep="")
-  if (scalarType == "string") {
-    indexJson <- paste( indexJson, ',"collation": "', collation , '"' ,  sep="")
+  indexJson <- ''
+  if (length(rContent$`range-element-index`) > 0 ) {
+    # build up the properties for existing range-element indexes
+    exRange <- rContent$`range-element-index`
+    indexJsonStart <- '{"range-element-index": ['
+    for (i in 1:length(exRange)) {
+      # if the index we are creating already exist we will replace it
+      if (exRange[[i]]$localname == localname) {
+        next()
+      }
+      if (nchar(indexJson) > 0) {
+        indexJson <- paste(indexJson, ",", sep="")
+      }
+      # {"range-element-index": [{"scalar-type": "string", "namespace-uri":"","localname":"productName","collation":"http://marklogic.com/collation/","range-value-positions":true,"invalid-values":"reject"},{"scalar-type": "dateTime", "namespace-uri":"","collation":"","localname":"date","range-value-positions":true,"invalid-values":"reject"}]}
+      indexJson <- paste(indexJson, '{"scalar-type": "', exRange[[i]]$`scalar-type`,
+                         '", "namespace-uri":"',exRange[[i]]$`namespace-uri` ,'","localname":"',exRange[[i]]$localname,
+                         '","collation": "', exRange[[i]]$collation ,
+                         '","range-value-positions":', tolower(exRange[[i]]$`range-value-positions`),
+                         ', "invalid-values":"',exRange[[i]]$`invalid-values`,'"}', sep="")
 
+
+    }
+    indexJsonEnd <- ']}'
+  } else {
+    indexJsonStart <- '{"range-element-indexes": {"range-element-index":'
+    indexJsonEnd <- '}}'
   }
-  indexJson <- paste( indexJson,',"range-value-positions":true}}}', sep="")
+  if (nchar(indexJson) > 0) {
+    indexJson <- paste(indexJson, ",", sep="")
+  }
+   indexJson <- paste(indexJson, '{"scalar-type": "', scalarType,
+                      '", "namespace-uri":"',namespaceUri ,'","localname":"', localname,'"' ,  sep="")
 
+   # Only string that uses collation, but the collation attribute needs to be provided
+   if (scalarType != "string") {
+     collation <- ''
+   }
+   indexJson <- paste( indexJson, ',"collation": "', collation , '"' ,  sep="")
+  indexJson <- paste( indexJson,',"range-value-positions":true}', sep="")
+  indexJson <- paste(indexJsonStart, indexJson, indexJsonEnd, sep="")
   response <- PUT(mlURL, authenticate(username, pwd, type="digest"), body=indexJson, encode = "json", content_type_json(),accept_json())
   if(response$status_code != 204) {
     rContent <- content(response, as = "text")
     errorMsg <- paste("return message: ",
                       rContent, sep="")
-    stop(paste("Ops, something went wrong.", errorMsg))
+    stop(paste("Ops, something went wrong.", errorMsg, "\n body: ", indexJson))
   }
   message(paste("Range element index created on ", localname,sep=""))
-  #return(response)
+  #return(indexJson)
 }

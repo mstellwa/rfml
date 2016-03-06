@@ -8,52 +8,170 @@ vignette: >
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
-rfml is a R package for MarkLogic Server, Enterprise NoSQL database, enabling in-dabase analytics.
+The purpose of the package is to enable R users to use MarkLogic without deep knowledge of JavaScript/XQuery or the REST API. It goes beyond ODBC and expose a lot of the functionality within MarkLogic.
 
-It is based on the REST interface to allow users to use search syntax for creating a data.frame similar object, ml.data.frame. There is no data brought back to the client during the creation of the object.
+It is using MarkLogic server built in [REST API](http://docs.marklogic.com/REST) with the use of [REST extensions](http://docs.marklogic.com/guide/rest-dev/extensions). 
 
-rfml only works with MarkLogic Server version 8 and higher.
+Currently rfml is using the following extensions:
 
-In order to use rfml you need a REST server, with a module database, for the MarkLogic database that contains your source data..
+* rfml.dframe - handles the definition and data of a ml.data.frame object. 
 
-## Vignette Info
+* rfml.stat - for execution of statistics functions
 
-Note the various macros within the `vignette` section of the metadata block above. These are required in order to instruct R how to build the vignette. Note that you should change the `title` field and the `\VignetteIndexEntry` to match the title of your vignette.
+* rfml.lm - for execution of a simple regression 
 
-## Styles
+* rfml.matrix - for matrix type of functions such as summary and correlation matrix
 
-The `html_vignette` template includes a basic CSS theme. To override this theme you can specify your own CSS in the document metadata as follows:
+* rfml.arules - for doing association mining
 
-    output: 
-      rmarkdown::html_vignette:
-        css: mystyles.css
+In addition, there is two libraries installed:
 
-## Figures
+* rfmlUtilities - helper functions
 
-The figure sizes have been customised so that you can easily put two images side-by-side. 
+* xml2json - functions to convert XML to JSON, based on https://github.com/abdmob/x2js
 
-```{r, fig.show='hold'}
-plot(1:10)
-plot(10:1)
+All backend code is developed in JavaScript. Depending on MarkLogic server version either [jsearch](http://docs.marklogic.com/js/jsearch) or [cts search](http://docs.marklogic.com/js/cts/search) functions are used. The code is also trying to use existing Range indexes if possible, currently only element range indexes are supported.
+
+The package is designed to utilize the MarkLogic server as much as possible by pushing processing back to the database and only keeping information about the data on the client.
+
+## Data handling
+Most data within MarkLogic server are either stored as XML or JSON which is very flexible data formats enabling a hierarchy structure. However, this type of storage is not always optimal for the analysis done with R, most analytical functions expect a tabular format.
+
+Rfml is overcoming that obstacle by converting data retrieved from MarkLogic Server  into a tabular format, it can handle both XML and JSON documents.
+
+As a  example consider the following XML document:
+```XML
+<customerOrder>
+  <orderNumber>T200<orderNumber>
+  <lineItems>
+    <lineItem>
+      <orderLineNumber>1</orderLineNumber>
+      <productNo>2</productNo>
+      <productName>1900s Vintage Bi-Plane</productName>
+      <quantityOrdered>21</quantityOrdered>
+      <priceEach>33.00</priceEach>
+      <lineTotal>693</lineTotal>
+    </lineItem>
+    <lineItem>
+      <orderLineNumber>2</orderLineNumber>
+      <productNo>4</productNo>
+      <productName>Collectable Wooden Train</productName>
+      <quantityOrdered>32</quantityOrdered>
+      <priceEach>23.45</priceEach>
+      <lineTotal>750.4</lineTotal>
+    </lineItem>
+  </lineItems>
+</customerOrder>
+```
+When viewed using rfml it will look like this:
+```
+customerOrder1orderNumber lineItem1orderLineNumber lineItem1productNo   lineItem1productName   lineItem1quantityOrdered lineItem1priceEach lineItem1lineTotal lineItem2orderLineNumber lineItem2productNo     lineItem2productName lineItem2quantityOrdered lineItem2priceEach lineItem2lineTotal
+                    T200                        1                  2    1900s Vintage Bi-Plane                       21                 33                693                        2                  4 Collectable Wooden Train                       32              23.45              750.4
+
+
+```
+What is happening behind the scene is that all data is flatten out before returned to the R client. Column names are created based on the level the element is, having the names of the parent elements with a number after before the element name.
+
+```XML
+<customerOrder><orderNumber>
+```
+becomes
+```
+customerOrder1orderNumber
+```
+This means that values that are in the same level with the same element name will be in the same column in the result. 
+
+Another effect is that there is a risk of getting very wide tables, so a best practise is to keep your documents in MarkLogic server simple if they are going to be used with rfml.
+
+## Setting up a MarkLogic databse to be used with rfml
+Before you can use rfml against a MarkLogic Server database you need to make sure that there are a [HTTP/REST server](http://docs.marklogic.com/guide/admin/http) , with a [modules database](http://docs.marklogic.com/guide/admin/databases#id_38484) , defined.
+
+You also need to install the REST extensions and library modules; this is needed once for each database that is going to be used with the package.  In order to that you need to use an administrator user or a user with rest-admin role or the following privileges:
+
+* http://marklogic.com/xdmp/privileges/rest-admin
+
+* http://marklogic.com/xdmp/privileges/rest-writer
+
+* http://marklogic.com/xdmp/privileges/rest-reader
+
+The actual installation is done with the ml.init.database function, as in the example below.
+```R
+library(rfml)
+# setup the database to be used with rfml
+ml.init.database("localhost", "8088", "admin", "admin")
+````
+Once the function is done you can start using rfml.
+
+## Using rfml
+Before data can be selected a call to ml.connect is needed, the function verifies that the database is setup correctly and also saves the connection information to be used by other functions.
+```R
+#create a connection
+ml.connect("localhost","8000", "myuser", "mypassword")
+```
+After the connections is done there is multiple ways to select data from the MarkLogic database.
+
+Using a string query, more information around the syntax can be found at http://docs.marklogic.com/guide/search-dev/search-api#id_41745, to search within a collection.
+```R
+# create a ml.data.frame
+mlIris <- ml.data.frame("setosa", collection = "iris")
+```
+Data can also be selected using simple field level filtering. Currently only == is supported.
+```R
+# create a ml.data.frame object based filtering on the Species field
+mlIris <- ml.data.frame(fieldFilter = "Species == setosa")
+```
+There is also possible to upload data to the MarkLogic database, which returns a ml.data.frame object.
+```R
+# create a ml.data.frame object based on the iris data set
+mlIris <- as.ml.data.frame(iris, "iris")
+```
+No data is pulled back to the client, if not asked for using for example head.
+```R
+# pull back the first 6 rows, the returned object is a data.frame
+head(mlIris)
+#    Sepal.Length    Sepal.Width     Petal.Length       Petal.Width     Species
+# 1  6.4              2.9               4.3              1.3            versicolor
+# 2  5.6              2.9               3.6              1.3            versicolor
+# 3  6.4              2.8               5.6              2.1            virginica
+# 4  6.1              2.6               5.6              1.4            virginica
+# 5  5.6              3.0               4.5              1.5            versicolor
+# 6  4.7              3.2               1.6              0.2            setosa
+```
+It is possible to create new columns for the ml.data.frame object. The columns only exist within the object and are not physical created in the source documents in the database. 
+```R
+# create a field based on an existing
+mlIris$newField <- mlIris$Petal.Width
+
+# create a field based calculation on existing
+mlIris$newField2 <- mlIris$Petal.Width + mlIris$Petal.Length
+
+# create a field based on a previous created
+mlIris$newField3 <- mlIris$Petal.Width + 10
+
+mlIris$abs_width <- abs(mlIris$Petal.Width)
+```
+The new columns are calculated at runtime when retrieving the data, the calculation is done on the server side.
+```R
+# pull back the whole result, including the previous created fields
+head(mlIris)
+#    Sepal.Length  Sepal.Width Petal.Length Petal.Width Species     newField newField2 newField3 abs_width
+# 1  6.4           2.9          4.3         1.3         versicolor  1.3       5.6      11.3       1.3
+# 2  5.6           2.9          3.6         1.3         versicolor  1.3       4.9      11.3       1.3
+# 3  6.4           2.8          5.6         2.1         virginica   2.1       7.7      12.1       2.1
+# 4  6.1           2.6          5.6         1.4         virginica   1.4       7.0      11.4       1.4
+# 5  5.6           3.0          4.5         1.5         versicolor  1.5       6.0      11.5       1.5
+# 6  4.7           3.2          1.6         0.2         setosa      0.2       1.8      10.2       0.2
+```
+You can also extract a selection from a ml.data.frame into a new ml.data.frame. 
+
+For example, the following statement would select only rows where the column 'Species' equals 'setosa', and only the columns 'Sepal.Length' and 'Sepal.Width'
+```R
+mlIris2 <- mlIris[mlIris$Species=="setosa",c("Sepal.Length","Sepal.Width")]
+```
+If the data is going to be used with functions not covered with the rfml package or with other package, it can be pulled back and returned as a data.frame object.
+
+```R
+localDf <- as.data.frame(mlIris)
 ```
 
-You can enable figure captions by `fig_caption: yes` in YAML:
 
-    output:
-      rmarkdown::html_vignette:
-        fig_caption: yes
-
-Then you can use the chunk option `fig.cap = "Your figure caption."` in **knitr**.
-
-## More Examples
-
-You can write math expressions, e.g. $Y = X\beta + \epsilon$, footnotes^[A footnote here.], and tables, e.g. using `knitr::kable()`.
-
-```{r, echo=FALSE, results='asis'}
-knitr::kable(head(mtcars, 10))
-```
-
-Also a quote using `>`:
-
-> "He who gives up [code] safety for [code] speed deserves neither."
-([via](https://twitter.com/hadleywickham/status/504368538874703872))

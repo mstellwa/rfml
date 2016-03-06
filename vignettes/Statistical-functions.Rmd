@@ -1,0 +1,86 @@
+---
+title: "Statistical functions"
+author: "Mats Stellwall"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+MarkLogic server has a large number of statistical functions built in that the rfml package exposes. 
+
+## Field level functions
+The built in functions are primary on field level, one or more fields that can be used as inputs. All functions will return a value.
+
+Currently Pearson correlation, Covariance, Population Covariance, Variance, Population variance, Standard Deviation, Population Standard Deviation, Median, Mean, Sum, Max and Min are implemented.
+
+Example of field level functions:
+```R
+library(rfml)
+
+ml.connect()
+# Create a ml.data.frame based on iris, you can upload the iris data set using as.ml.data.frame
+mlIris <- ml.data.frame(collection = "iris")
+
+# Pearson correlation
+cor(mlIris$Sepal.Length, mlIris$Petal.Length)
+# ==>
+# [1] 0.8717538
+
+# Covariance
+cov(mlIris$Sepal.Length, mlIris$Petal.Length)
+# ==>
+# [1] 1.274315
+
+# Variance
+var(mlIris$Sepal.Length)
+# ==>
+# [1] 0.6856935
+
+# Standard derivation
+sd(mlIris$Sepal.Length)
+# ==>
+# [1] 0.8280661
+```
+## ml.data.frame level functions
+
+In addition to the built in field level functions there is a number of statistical functions that take a ml.data.frame object as input. These functions are as well executed on the server side and only the result are returned to the client.
+
+Currently summary and Pearson Correlation are implemented. 
+
+Example using summary:
+```R
+library(rfml)
+
+ml.connect()
+# Create a ml.data.frame based on iris, you can upload the iris data set using as.ml.data.frame
+mlIris <- ml.data.frame(collection = "iris")
+
+summary(mlIris)
+# ====>
+# Sepal.Length     Sepal.Width    Petal.Length    Petal.Width    Species      
+# Min.   :4.300   Min.   :2.000   Min.   :1.000   Min.   :0.100   Length:150        
+# 1st Qu.:5.100   1st Qu.:2.800   1st Qu.:1.550   1st Qu.:0.300   Class :character  
+# Median :5.800   Median :3.000   Median :4.350   Median :1.300   Mode  :character  
+# Mean   :5.843   Mean   :3.057   Mean   :3.758   Mean   :1.199                     
+# 3rd Qu.:6.400   3rd Qu.:3.350   3rd Qu.:5.100   3rd Qu.:1.800                     
+# Max.   :7.900   Max.   :4.400   Max.   :6.900   Max.   :2.500 
+```
+Example using correlation:
+```R
+library(rfml)
+
+ml.connect()
+# Create a ml.data.frame based on iris, you can upload the iris data set using as.ml.data.frame
+mlIris <- ml.data.frame(collection = "iris")
+
+cor(mlIris)
+# ====>
+#                Sepal.Length Sepal.Width Petal.Length Petal.Width
+# Sepal.Length    1.0000000  -0.1175698    0.8717538   0.8179411
+# Sepal.Width    -0.1175698   1.0000000   -0.4284401  -0.3661259
+# Petal.Length    0.8717538  -0.4284401    1.0000000   0.9628654
+# Petal.Width     0.8179411  -0.3661259    0.9628654   1.0000000
+```

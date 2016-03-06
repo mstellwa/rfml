@@ -10,6 +10,8 @@ Description: Functionality required to efficiently use R with MarkLogic Server.
     Many basic and complex R operations are pushed down into the database, which
     removes the main memory boundary of R and allows to make full use of MarkLogic
     server.
+URL: https://github.com/mstellwa/rfml
+BugReports: https://github.com/mstellwa/rfml/issues
 License: GPL-3
 LazyData: TRUE
 Imports:
@@ -23,6 +25,5 @@ Suggests:
     testthat,
     knitr,
     rmarkdown
-URL: https://github.com/mstellwa/rfml
 RoxygenNote: 5.0.1
 VignetteBuilder: knitr

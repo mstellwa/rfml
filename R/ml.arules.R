@@ -69,18 +69,21 @@ ml.arules <- function(data, itemField, support = 0.5, confidence = 0.8, maxlen =
       warning("No itemsets returned. You might need to decrease the support or confidence thresholds.")
       return()
     }
+    sets <- 1
     for (i in 1:length(rItemsets)) {
       for (j in 1:length(rItemsets[[i]])) {
-        extrItemsets <- c(extrItemsets, toString(rItemsets[[i]][[j]]$'itemSet'))
-        supportDf <- rbind(supportDf, rItemsets[[i]][[j]]$'support')
+        extrItemsets[[sets]] <- as.vector(unlist(rItemsets[[i]][[j]]$'itemSet'))
+        supportDf <- rbind(supportDf,data.frame(support=rItemsets[[i]][[j]]$'support'))
+        sets <- sets + 1
       }
     }
     # we need arules loaded here!
     result <- new("itemsets")
     # seems to work but not fully...
-    # iteminfo not right...
+    # itemsetInfo not right...
     result@items <- as(extrItemsets, "itemMatrix")
     result@quality <- supportDf
+    validObject(result@items@data)
   } else if (target == "rules") {
     # get rules ...
     extrLhs <- list()
@@ -92,12 +95,22 @@ ml.arules <- function(data, itemField, support = 0.5, confidence = 0.8, maxlen =
       return()
     }
     for (i in 1:length(rRules)) {
-       extrLhs <- c(extrLhs, toString(rRules[[i]]$'lhs'))
-       extrRhs <- c(extrRhs, toString(rRules[[i]]$'rhs'))
+      if (length(rRules[[i]]$'lhs') > 0) {
+        extrLhs[[i]] <- as.vector(unlist(rRules[[i]]$'lhs')) #c(extrLhs, toString(rRules[[i]]$'lhs'))
+      } else {
+        extrLhs[[i]] <- ""
+      }
+      if (length(rRules[[i]]$'rhs') > 0) {
+        extrRhs[[i]] <- as.vector(unlist(rRules[[i]]$'rhs')) #c(extrRhs, toString(rRules[[i]]$'rhs'))
+      }else{
+        extrRhs[[i]] <- ""
+      }
        qualityRule <- rbind(qualityRule, data.frame(support = rRules[[i]]$'support',confidence= rRules[[i]]$'confidence',lift= rRules[[i]]$'lift'))
      }
      # we need arules loaded here!
-     result <- new("rules", lhs=as(extrLhs, "itemMatrix"), rhs=as(extrRhs, "itemMatrix"), quality=qualityRule)
+    suppressWarnings(result <- new("rules", lhs=as(extrLhs, "itemMatrix"), rhs=as(extrRhs, "itemMatrix"), quality=qualityRule))
+     validObject(result@lhs@data)
+     validObject(result@rhs@data)
   }
   ## add some reflectance
   call <- match.call()

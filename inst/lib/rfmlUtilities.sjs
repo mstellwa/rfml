@@ -275,6 +275,7 @@ function getMatrixResult(whereQuery, pageStart,getRows, relevanceScores, docUri,
    var mlVersion = xdmp.version();
      /* Check version and do diffrently */
    if (mlVersion >= "8.0-4") {
+       pageStart = pageStart -1;
        return getDataJS(whereQuery, pageStart, getRows, relevanceScores, docUri, addFields, extFields);
    } else {
       return getDataCts(whereQuery, pageStart, getRows, relevanceScores, docUri, addFields, extFields)

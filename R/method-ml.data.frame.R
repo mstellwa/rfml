@@ -287,6 +287,7 @@ setMethod("[", signature(x = "ml.data.frame"),
                 }
                 newQueryArgs <- c(newQueryArgs, 'rs:fieldQuery'=rowArg@.expr)
                 # we should update the row count since we are changing the definition...
+                # need a estimate function....
                 #x@.nrows <- NA
               } else if (is.character(rowArg)) {
                 qText <- newQueryArgs$`rs:q`

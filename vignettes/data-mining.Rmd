@@ -1,0 +1,79 @@
+---
+title: "Data Mining Algorithms"
+author: "Mats Stellwall"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+## MarkLogic Server built in algorithms
+
+MarkLogic has built in support for Simple Linear Model, K-means clustering and SVM classification, currently only Simple Linear Model is exposed through the package.
+
+To use Linear Regression
+```R
+library(rfml)
+# connect to source database
+ml.connect()
+# Create a ml.data.frame based on iris, you can upload the iris data set using as.ml.data.frame
+mlIris <- ml.data.frame(collection = "iris")
+# create a linear model
+lm <- ml.lm(Sepal.Length~Sepal.Width, mlIris)
+# print the model
+lm
+# ==>
+# intercept:  6.52622255089448
+# coefficients:  -0.2233610611299
+# r-squared : 0.0138226541410807 
+```
+## rfml added algorithms
+The rfml package also implement additional algorithms, still using server side processing. 
+
+### Association rules and Frequent Itemsets
+Association rule mining, or Market Basket Analysis, is basically about finding associations or relationships among data items, which in the case is products.
+
+Association rule mining is done in two steps:
+
+1. Find all frequent itemsets. Identify all item combinations that exists in our data set and that occur at least as frequently as our minimum support threshold.
+2. Generate rules from our itemsets that satisfy our minimum support and confidence thresholds.
+
+Current implementation, ml.arules, can generate either frequent itmesets or association rules. The returned objects are of class rules or itemsets as defined in the arules package.
+
+In order to use it there need to exists range index on the element/property that is going to be used. The rfml package has a function for creating such index, the user used for it must have appropriate rights (se documentation for more information).
+
+```R
+library(rfml)
+# connect to source database
+ml.connect()
+# Upload provided sample data
+mlBaskets <- ml.load.sample.data("baskets", "baskets-test")
+# create a index on the productName field in the database rfml, using the same connection infromation as ml.connect
+ml.add.index(x = mlBaskets$lineItem1productName, scalarType = "string", database = "rfml")
+# ==>
+# Range element index created on productName
+```
+Once the index are created then we can generate a frequent itemsets and plot it
+```R
+itemsets <- ml.arules(mlBaskets, mlBaskets$lineItem1productName, support = 0.22, confidence = 0.01, target = "frequent itemsets")
+library(arules)
+inspect(itemsets)
+# ==>
+#    items                                                                             X0.666666666666667
+# 1  {18th century schooner}                                                                    0.6666667
+# 2  {1900s Vintage Bi-Plane}                                                                   0.7777778
+# 3  {1903 Ford Model A}                                                                        0.2222222
+# 4  {1928 British Royal Navy Airplane}                                                         0.6666667
+# 5  {Collectable Wooden Train}                                                                 0.2222222
+# 6  {18th century schooner, 1900s Vintage Bi-Plane}                                            0.4444444
+# 7  {18th century schooner, 1903 Ford Model A}                                                 0.2222222
+# 8  {18th century schooner, 1928 British Royal Navy Airplane}                                  0.4444444
+# 9  {1900s Vintage Bi-Plane, 1903 Ford Model A}                                                0.2222222
+# 10 {1900s Vintage Bi-Plane, 1928 British Royal Navy Airplane}                                 0.4444444
+# 11 {1900s Vintage Bi-Plane, Collectable Wooden Train}                                         0.2222222
+# 12 {18th century schooner, 1900s Vintage Bi-Plane, 1903 Ford Model A}                         0.2222222
+# 13 {18th century schooner, 1900s Vintage Bi-Plane, 1928 British Royal Navy Airplane}          0.2222222
+```
+
+

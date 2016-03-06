@@ -5,7 +5,7 @@ function getFreqItemSets(itemField, whereQuery, supp, totTrans ,minlen, maxlen) 
   /* calculate the minimum support count */
   var minTransSupp = supp;
   var frequentItemSets = {};
-  var itemSetSize = 1;
+
   /* for minlen to maxlen */
   for (var i = minlen; i <= maxlen; i++) {
     var elementRefs = [];
@@ -22,15 +22,14 @@ function getFreqItemSets(itemField, whereQuery, supp, totTrans ,minlen, maxlen) 
      }
     }
     if (itemSetFreq.length > 0) {
-      frequentItemSets[itemSetSize] = itemSetFreq
-      itemSetSize += 1;
+      frequentItemSets[i] = itemSetFreq;
     }
   }
 
   return frequentItemSets;
 }
 
-function getAssociationRules(frequentItemSets, minConfidence) {
+function getAssociationRules(frequentItemSets, minConfidence, minLen) {
   /* internal helper functions */
 
   /* returns the itemset from f */
@@ -78,15 +77,29 @@ function getAssociationRules(frequentItemSets, minConfidence) {
 
   /* create and save the rules, if they apply to the confidence threshold */
   var saveAssociationRuleFound = function (subsetItemSet) {
-    var diffItemSet = getDiffArray(currentItemSet, subsetItemSet);
-    if (diffItemSet.length > 0) {
-      var itemSupport = frequencies[currentItemSet.toString()];
-      var subsetSupport = frequencies[subsetItemSet.toString()];
-      var confidence = itemSupport / subsetSupport;
-      var diffItemSetSupport = frequencies[diffItemSet.toString()];
-      var lift = (itemSupport / (subsetSupport * diffItemSetSupport ))
-      if (!isNaN(confidence) && confidence >= minConfidence) {
-        associationRules.push({"lhs":subsetItemSet,"rhs":diffItemSet, "support":itemSupport, "confidence":confidence, "lift":lift });
+    if (currentItemSet.length >= minLen ) {
+      var diffItemSet = getDiffArray(currentItemSet, subsetItemSet);
+
+      /* Apriori only creates rules with one item in the RHS (Consequent)! */
+      if (diffItemSet.length === 1 || (subsetItemSet.length === 1 && diffItemSet.length === 0)) {
+        var itemSupport = frequencies[currentItemSet.toString()];
+        var subsetSupport = frequencies[subsetItemSet.toString()];
+        var confidence = itemSupport / subsetSupport;
+        var diffItemSetSupport = frequencies[diffItemSet.toString()];
+        var lift = (itemSupport / (subsetSupport * diffItemSetSupport))
+        if (!isNaN(confidence) && confidence >= minConfidence) {
+          var lhs = [];
+          /* to support rules with only one item (empty LHS)
+             They will have same confidence as support and always a lift of 1 */
+          if (diffItemSet.length === 0) {
+            confidence = itemSupport;
+            diffItemSet = subsetItemSet;
+            lift = 1;
+          } else {
+            lhs = subsetItemSet;
+          }
+          associationRules.push({"lhs":lhs ,"rhs":diffItemSet, "support":itemSupport, "confidence":confidence, "lift":lift });
+        }
       }
     }
   };
@@ -125,8 +138,8 @@ function getAssociationRules(frequentItemSets, minConfidence) {
   for (var k in frequentItemSets) {
     /* get the all itemsets that has the same number of items */
     var itemSets = frequentItemSets[k].map(extractItemSet);
-    if (itemSets.length === 0 || itemSets[0].length <= 1) {
-      continue;
+    if (itemSets.length === 0 ) {
+        continue;
     }
     /* for each itemset add the rules into associationRules */
     itemSets.forEach(saveAllAssociationRulesFound);
@@ -145,6 +158,8 @@ function arules(context, params) {
   var directory = params.directory;
   var minSupport = params.supp ? params.supp === 0 ? 0 : params.supp : 0.15;
   var minItems = params.minlen ? params.minlen === 0 ? 0 : params.minlen : 1;
+  /* We keep a seperated variable for the minum items in a rule */
+  var minRItems = minItems;
   var maxItems = params.maxlen ? params.maxlen === 0 ? 0 : params.maxlen : 2;
   var minConf = params.conf ? params.conf === 0 ? 0 : params.conf : 0.5;
   var target = (params.target) ? params.target : "rules";
@@ -182,14 +197,18 @@ function arules(context, params) {
   var minAbsSupp = transLength * minSupport;
 
   /* Get the frequent itemsets */
+  if (target == "rules") {
+    /* If we also are going to generate rules we need single itemssets */
+    minItems = 1;
+  }
   var freqItemsSets = getFreqItemSets(field, whereQuery, minAbsSupp,transLength, minItems, maxItems);
-  var associationRules;
+  var arulesDoc = {};
   if (target == "rules") {
     /* Get the associationRules */
-    associationRules = getAssociationRules(freqItemsSets,minConf);
+    arulesDoc = {'rules': getAssociationRules(freqItemsSets,minConf, minRItems)};
+  } else {
+    arulesDoc = {'itemsets': freqItemsSets};
   }
-  //return associationRules;
-  var arulesDoc = {'itemsets': freqItemsSets,'rules': associationRules};
   return arulesDoc;
 }
 exports.GET = arules;

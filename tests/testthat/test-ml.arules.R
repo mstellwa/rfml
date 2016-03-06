@@ -13,7 +13,7 @@ test_that("ml.arules works", {
   expect_equal(length(itemsets), 13)
   rules <- ml.arules(mlBaskets, mlBaskets$lineItem1productName, support = 0.22, confidence = 0.01)
   expect_is(rules, "rules")
-  expect_equal(length(rules), 24)
+  expect_equal(length(rules), 23)
   rm.ml.data.frame(mlBaskets)
 })
 

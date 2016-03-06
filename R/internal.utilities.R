@@ -159,7 +159,9 @@
   # return the name of the search options
   return(TRUE)
 }
+.get.ml.metadata <- function(mlDf, nrows=0, searchOption=NULL) {
 
+}
 .get.ml.data <- function(mlDf, nrows=0, searchOption=NULL) {
 
   key <- .rfmlEnv$key
@@ -384,6 +386,28 @@
   return(rContent)
 }
 
+# executes a Moving Average function
+.ml.movavg.func <- function(mlTs, fields, func, n) {
+  key <- .rfmlEnv$key
+  password <- rawToChar(PKI::PKI.decrypt(.rfmlEnv$conn$password, key))
+  username <- .rfmlEnv$conn$username
+  queryComArgs <- mlTs@.queryArgs
+
+  mlHost <- paste("http://", .rfmlEnv$conn$host, ":", .rfmlEnv$conn$port, sep="")
+  mlSearchURL <- paste(mlHost, "/v1/resources/rfml.movavg", sep="")
+  nPageLength <- mlTs@.nrows
+  queryArgs <- c(queryComArgs, 'rs:pageLength'=nPageLength, 'rs:avgfunc'=func,'rs:fields'=fields)
+
+  response <- GET(mlSearchURL, query = queryArgs, authenticate(username, password, type="digest"), accept_json())
+  rContent <- content(response) #, as = "text""
+  if(response$status_code != 200) {
+    errorMsg <- paste("statusCode: ",
+                      rContent, sep="")
+    stop(paste("Ops, something went wrong.", errorMsg))
+  }
+  return(rContent)
+
+}
 
 .generate.xml.body <- function(data, name, directory) {
 

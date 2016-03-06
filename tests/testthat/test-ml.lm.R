@@ -3,7 +3,7 @@ context("ml.lm")
 ml.connect(port = "8088")
 
 test_that("lm works", {
-  mlIris <- as.ml.data.frame(iris, "iris")
+  mlIris <- as.ml.data.frame(iris, "iris-test")
   lm <- ml.lm(Sepal.Length~Sepal.Width, mlIris)
   expect_match(lm$intercept, "6.52622255089448")
   expect_match(lm$coefficients, "-0.2233610611299")
