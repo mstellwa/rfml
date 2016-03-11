@@ -172,11 +172,6 @@
 
   mlHost <- paste("http://", conn@.host, ":", conn@.port, sep="")
   mlSearchURL <- paste(mlHost, "/v1/resources/rfml.dframe", sep="")
-  if (is.null(searchOption)) {
-    mlOptions <- .rfmlEnv$mlDefaultOption
-  } else {
-    mlOptions <- searchOption
-  }
 
   # need to pick start and end from mlDf...
   nStart=mlDf@.start
@@ -216,8 +211,6 @@
     fields <- paste(fields, '}', sep='')
     queryArgs <- c(queryArgs, 'rs:fields'=fields)
   }
-
-
    # do a search
   response <- GET(mlSearchURL, query = queryArgs, authenticate(username, password, type="digest"), accept_json())
   # check that we get an 200
@@ -233,6 +226,78 @@
   } else {
     stop("The call to MarkLogic did not return valid data. The ml.data.frame data could be missing in the database.")
   }
+
+}
+# Internal used function that creats new documentsin MarkLogic based on a
+# ml.data.frame object.
+# Each line is added as a document, put in a collection named after
+# myCollection value
+.save.ml.data <- function(mlDf, myCollection, directory) {
+
+  conn <- mlDf@.conn
+  # get connection imformation
+  key <- .rfmlEnv$key[[conn@.id]]
+  password <- rawToChar(PKI::PKI.decrypt(conn@.password, key))
+  username <- conn@.username
+  mlHost <- paste("http://", conn@.host, ":", conn@.port, sep="")
+  mlSearchURL <- paste(mlHost, "/v1/resources/rfml.dframe", sep="")
+
+  rfmlCollection <- myCollection
+  # generate the directory URI
+  if (directory == "") {
+    rfmlDirectory <- paste("/rfml/", username, "/", myCollection, "/", sep="")
+  } else {
+    rfmlDirectory <- directory
+  }
+
+  # need to pick start and end from mlDf...
+  nStart=mlDf@.start
+  nPageLength <- mlDf@.nrows
+  queryComArgs <- mlDf@.queryArgs
+  queryArgs <- c(queryComArgs, 'rs:start'=nStart,'rs:pageLength'=nPageLength, 'rs:saveDirectory'=rfmlDirectory, 'rs:saveCollection'=rfmlCollection)
+  # Need to check if extracted then we could have changed the rows...
+  if (mlDf@.extracted) {
+    # create a extfields parameter...
+    extFields <- "{"
+    for (i in 1:length(mlDf@.col.name)) {
+      if (nchar(extFields) > 1) {
+        extFields <- paste(extFields, ',', sep='')
+      }
+      extFields <- paste(extFields, '"', mlDf@.col.name[i],
+                         '":{"fieldDef":"',mlDf@.col.name[i],
+                         '","orgField":"',mlDf@.col.org_name[i],
+                         '","orgPath":"',mlDf@.col.org_xpath[i],
+                         '","orgFormat":"',mlDf@.col.format[i],'"}',sep='')
+    }
+    extFields <- paste(extFields, '}', sep='')
+    queryArgs <- c(queryArgs,'rs:extfields'=extFields)
+  }
+
+  # create
+  if (length(mlDf@.col.defs) > 0) {
+    fields <- "{"
+    for (i in 1:length(mlDf@.col.defs)) {
+      if (nchar(fields) > 1) {
+        fields <- paste(fields, ',', sep='')
+      }
+      fields <- paste(fields, '"', names(mlDf@.col.defs[i]), '":{"fieldDef":"',mlDf@.col.defs[[i]] ,'"}',sep='')
+    }
+    fields <- paste(fields, '}', sep='')
+    queryArgs <- c(queryArgs, 'rs:fields'=fields)
+  }
+
+
+  # do a search
+  response <- PUT(mlSearchURL, query = queryArgs, authenticate(username, password, type="digest"), accept_json())
+  # check that we get an 200
+  rContent <- content(response, as = "text")
+  if(response$status_code != 204) {
+    errorMsg <- paste("statusCode: ",
+                      rContent, sep="")
+    stop(paste("Ops, something went wrong.", errorMsg))
+  }
+
+  return(rfmlCollection)
 
 }
 # Internal used function that inserts data.frame data into MarkLogic.

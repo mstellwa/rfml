@@ -95,3 +95,18 @@ test_that("sub select on a ml.data.frame", {
   rm.ml.data.frame(mlIris)
 })
 
+test_that("can create data based on a ml.data.frame", {
+  mlIris <- as.ml.data.frame(myConn, iris, "iris-test")
+  mlIris$SepLength <- mlIris$Sepal.Length
+  mlIris$SepLength10 <- mlIris$Sepal.Length * 10
+  mlIris$SepRatio <- mlIris$Sepal.Length / mlIris$Sepal.Width
+  mlIris$SepLengthAbs <- abs(mlIris$Sepal.Length)
+  newIris <- as.ml.data.frame(x = mlIris, name = "newIris-test" )
+  expect_equal(nrow(newIris), 150)
+  expect_equal(length(newIris@.col.name), 9)
+  expect_equal(length(newIris@.col.defs), 0)
+  rm.ml.data.frame(mlIris)
+  rm.ml.data.frame(newIris)
+})
+
+

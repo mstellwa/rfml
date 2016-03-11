@@ -469,9 +469,74 @@ function getMatrixResult(whereQuery, pageStart,getRows, relevanceScores, docUri,
    };
   return (andQuery) ? cts.andQuery([ctsQuery,ctsFieldQuery,collectionQuery,directoryQuery]) : ctsQuery;
  }
- 
+function saveDfDataCTS(whereQuery, pageStart, getRows, relevanceScores, docUri, addFields, extrFields, collection, directory) {
+ var rfmlUtilities = require('/ext/rfml/rfmlUtilities.sjs');
+ var path = typeof path !== 'undefined' ?  path : "";
+ var resultContent;
+ var flatResult = [];
+ var nEstimate = cts.estimate(whereQuery);
+ var results = fn.subsequence(cts.search(whereQuery), pageStart, getRows);
+ var i = 0;
+ for (var result of results) {
+   var searchRelatedVals = {};
+   if (docUri) {
+     searchRelatedVals.docUri = results.uri;
+   };
+
+   if (relevanceScores) {
+     searchRelatedVals.score = results.score;
+     searchRelatedVals.confidence = results.confidence;
+     searchRelatedVals.fitness = results.fitness;
+   };
+   var saveDoc = rfmlUtilities.getFlatResult(result, result.documentFormat, searchRelatedVals, addFields, extrFields);
+   var ext = result.documentFormat;
+   var docURI =  directory + i + ext;
+   xdmp.documentInsert(docURI, saveDoc, null, collection);
+   i += 1;
+ };
+ return true;
+}
+function saveDfDataJS(whereQuery, pageStart, getRows, relevanceScores, docUri, addFields, extrFields, collection, directory) {
+
+ var jsearch = require('/MarkLogic/jsearch.sjs');
+ var x = jsearch.documents()
+                .where(whereQuery)
+                .slice(pageStart,getRows)
+                .map(function (match) {
+                        var docRaw = match.document;
+                        var flatDoc = {};
+                        var searchRelatedVals = {};
+                        if (docUri) {
+                          searchRelatedVals.docUri = match.uri;
+                        };
+
+                        if (relevanceScores) {
+                          searchRelatedVals.score = match.score;
+                          searchRelatedVals.confidence = match.confidence;
+                          searchRelatedVals.fitness = match.fitness;
+                        };
+
+                       var saveDoc = getFlatResult(docRaw, docRaw.nodeKind, searchRelatedVals, addFields, extrFields);
+                       var ext = (docRaw.nodeKind === 'element') ? '.XML' : '.JSON';
+                       var docURI =  directory + match.index + ext;
+                       xdmp.documentInsert(docURI, saveDoc, null, collection);
+                  })
+                  .result();
+    return true;
+}
+function saveDfData(whereQuery, pageStart, getRows, relevanceScores, docUri, addFields, extFields, saveCollection, saveDirectory) {
+  var mlVersion = xdmp.version();
+    /* Check version and do diffrently */
+  if (mlVersion >= "8.0-4") {
+      pageStart = pageStart -1;
+      return saveDfDataJS(whereQuery, pageStart, getRows, relevanceScores, docUri, addFields, extFields, saveCollection, saveDirectory);
+  } else {
+     return saveDfDataCTS(whereQuery, pageStart, getRows, relevanceScores, docUri, addFields, extFields, saveCollection, saveDirectory);
+  };
+}
 exports.fields2array = fields2array;
 exports.getMatrixResult = getMatrixResult;
 exports.getCtsQuery = getCtsQuery;
 exports.getResultData = getResultData;
 exports.getResultMetadata = getResultMetadata;
+exports.saveDfData = saveDfData;

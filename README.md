@@ -111,4 +111,18 @@ It is possible also to pull back data from a  ml.data.frame object, it is return
 ```R
 localDf <- as.data.frame(mlIris)
 ```
+You can also create new documents in MarkLogic based on a ml.data.frame.
+```R
+# Generate new documents in MarkLogic Server based on the mlIris ml-data.frame object.
+newIris <- as.ml.data.frame(x=mlIris,name="newIris" )
+head(newIris)
+#    Sepal.Length  Sepal.Width Petal.Length Petal.Width Species     newField newField2 newField3 abs_width
+# 1  6.4           2.9          4.3         1.3         versicolor  1.3       5.6      11.3       1.3
+# 2  5.6           2.9          3.6         1.3         versicolor  1.3       4.9      11.3       1.3
+# 3  6.4           2.8          5.6         2.1         virginica   2.1       7.7      12.1       2.1
+# 4  6.1           2.6          5.6         1.4         virginica   1.4       7.0      11.4       1.4
+# 5  5.6           3.0          4.5         1.5         versicolor  1.5       6.0      11.5       1.5
+# 6  4.7           3.2          1.6         0.2         setosa      0.2       1.8      10.2       0.2
+```
+
 For more information about the functions see the package help and vignettes.
