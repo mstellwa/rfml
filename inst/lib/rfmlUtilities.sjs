@@ -519,7 +519,7 @@ function saveDfDataJS(whereQuery, pageStart, getRows, relevanceScores, docUri, a
                        var saveDoc = getFlatResult(docRaw, docRaw.nodeKind, searchRelatedVals, addFields, extrFields);
                        var ext = (docRaw.nodeKind === 'element') ? '.XML' : '.JSON';
                        var docURI =  directory + match.index + ext;
-                       xdmp.documentInsert(docURI, saveDoc, null, collection);
+                       xdmp.documentInsert(docURI, saveDoc, xdmp.defaultPermissions(), collection);
                   })
                   .result();
     return true;
