@@ -46,6 +46,7 @@ ml.init.database <- function(host = "localhost", port = "8000", adminuser = "adm
   }
   suppressWarnings(closeAllConnections())
   # need to store the current version of rfml
+  rfmlVer <- as.character(packageVersion("rfml"))
   initDate <- as.character(Sys.Date())
   # Need to post a config document that can used to verify against
   mlURL <- paste(mlHost, "/v1/resources/rfml.check", sep="")
