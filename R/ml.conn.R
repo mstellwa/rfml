@@ -17,7 +17,8 @@ ml.connect <- function(host = "localhost", port = "8000",
   # We encrypt the password before storing it in the list
   # The key is stored in a package specific enviroment, created in the defs-pkg.R file
   RSAkey <- PKI::PKI.genRSAkey(2048)
-  .rfmlEnv$key <- RSAkey
+  keyInd <- length(.rfmlEnv$key) + 1L
+  .rfmlEnv$key <- c(.rfmlEnv$key, RSAkey)
   enc_pwd <- PKI::PKI.encrypt(charToRaw(password), RSAkey)
   mlHost <- paste("http://", host, ":", port, sep="")
 
@@ -31,5 +32,12 @@ ml.connect <- function(host = "localhost", port = "8000",
   .rfmlEnv$dbOk <- TRUE
   .rfmlEnv$conn <- list("host" = host, "port" = port, "username" = username,
                "password"= enc_pwd)
+  mlConn <- new("ml.conn")
+  mlConn@.id <- keyInd
+  mlConn@.host<-host
+  mlConn@.port<-port
+  mlConn@.username <- username
+  mlConn@.password <- enc_pwd
+  return(mlConn)
 
 }

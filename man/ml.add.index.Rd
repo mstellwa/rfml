@@ -7,7 +7,7 @@
 ml.add.index(x, scalarType = "string",
   collation = "http://marklogic.com/collation/", namespaceUri = "",
   database = "Documents", host = "", port = "8002", adminuser = "",
-  password = "")
+  password = "", conn = NA)
 }
 \arguments{
 \item{x}{a ml.data.frame field that the index will be created on}
@@ -20,13 +20,15 @@ ml.add.index(x, scalarType = "string",
 
 \item{database}{The name of the database to create the index in. "Documents" is default.}
 
-\item{host}{The hostname or ipadress of the MarkLogic Manage server. Default is the same as used for ml.connect.}
+\item{host}{The hostname or ipadress of the MarkLogic Manage server. Default is the same as used for conn}
 
 \item{port}{The port number of the MarkLogic Manage server. 8002 is used default}
 
-\item{adminuser}{The username of a user that have rights to create index. Default is the same as used for ml.connect.}
+\item{adminuser}{The username of a user that have rights to create index. Default is the same as used for conn}
 
-\item{password}{The password. Default is the same as used for ml.connect.}
+\item{password}{The password. Default is the same as used for conn.}
+
+\item{conn}{A ml.conn with a connection to a MarkLoic server}
 }
 \value{
 The function will raise a error if something goes wrong.

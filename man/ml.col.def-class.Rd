@@ -24,6 +24,8 @@ An S4 class to represent a ml.col.def.
 
 \item{\code{.format}}{character}
 
+\item{\code{.xmlns}}{character}
+
 \item{\code{.aggType}}{character}
 }}
 

@@ -4,19 +4,27 @@
 
 # A package specific enviroment, used to store the RSA key and connection info
 .rfmlEnv <- new.env()
-# name of transformations used
-.rfmlEnv$mlTransforms <- c("rfmlTransform", "rfmlLm", "rfmlStat", "rfmlSummary", "rfmlCor")
-# name of options used
-.rfmlEnv$mlOptions <- c("rfml")
-.rfmlEnv$mlDefaultOption <- "rfml"
+.rfmlEnv$key <- list()
 # name of libs used
 .rfmlEnv$mlLibs <- c("rfmlUtilities", "xml2json")
 # name of exstentions used
 .rfmlEnv$mlExts <- c("rfml.dframe", "rfml.lm", "rfml.stat", "rfml.matrix", "rfml.collection", "rfml.arules")
 
+#' An S4 class to represent a ml.connection.
+#'
+setClass("ml.conn",
+         slots=c( .id="integer",
+                  .host="character",
+                  .port="character",
+                  .mlversion="character",
+                  .username="character",
+                  .password="raw")
+         )
+
 #' An S4 class to represent a ml.data.frame.
 #'
 #' @slot .name A string with the internal name for the ml.data.frame
+#' @slot .conn The ml.conn object that was created with ml.connect
 #' @slot .queryArgs A list with parameters used to query MarkLogic Server
 #' @slot .start A integer with the index of the first result to get
 #' @slot .nrows A integer with the number of rows in the result
@@ -26,10 +34,12 @@
 #' @slot .col.org_name A character vector with the original names of fields in the source documents
 #' @slot .col.org_xpath A character vector with the xpath to the original names in the source documents
 #' @slot .col.format A character vector withthe  source document format XML/JSON
+#' @slot .col.xmlns A character vector with the namespace for the source document
 #' @slot .col.defs  A list of \link{ml.col.def-class} added fields
 setClass("ml.data.frame",
          slots=c(
            .name="character",
+           .conn="ml.conn",
            .queryArgs="list", # parameters used to query ML
            .start="integer", # the index of the first result to get
            .nrows="integer",  # the number of rows in the result or maximum number or result to get
@@ -39,6 +49,7 @@ setClass("ml.data.frame",
            .col.org_name = "character", # name of field in source document
            .col.org_xpath = "character",# xpath in the source document
            .col.format = "character", # source document format XML/JSON
+           .col.xmlns = "character", # the namespace for the source document
            .col.defs = "list" # added columns
           )
     )
@@ -52,6 +63,7 @@ setClass("ml.data.frame",
 #' @slot .data_type A string with the data type of the field
 #' @slot .org_name A character string with the original names of field
 #' @slot .format  character
+#' @slot .xmlns  character
 #' @slot .aggType character
 setClass("ml.col.def",
          slots=c(.expr="character",
@@ -61,6 +73,17 @@ setClass("ml.col.def",
                  .data_type = "character",
                  .org_name = "character",
                  .format = "character",
+                 .xmlns = "character",
                  .aggType="character"
                 )
          )
+
+# setClass("ml.ts",
+#          slots=c(
+#            .start="integer", # the index of the first result to get
+#            .end="integer",  # the number of rows in the result or maximum number or result to get
+#            .frequency="integer",
+#            .queryArgs="list", # parameters used to query ML
+#            .field="character" # field used in Time series
+#          )
+# )

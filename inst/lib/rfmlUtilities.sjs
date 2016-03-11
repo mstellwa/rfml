@@ -16,7 +16,7 @@ function isNumeric(n) {
 * If fieldDef if true it will onnly return the fieldname and datatype,
 * else it will return fieldname and value
 ************************************************************************/
-function flattenJsonObject(obj, flatJson, prefix, fieldDef, orgFormat, path) {
+function flattenJsonObject(obj, flatJson, prefix, fieldDef, orgFormat, path, docNs) {
   var orgFormat = typeof orgFormat !== 'undefined' ?  orgFormat : "";
   var path = typeof path !== 'undefined' ?  path : "";
 
@@ -24,10 +24,10 @@ function flattenJsonObject(obj, flatJson, prefix, fieldDef, orgFormat, path) {
    if (Array.isArray(obj[key])) {
      var jsonArray = obj[key];
      if (jsonArray.length < 1) continue;
-     flatJson = flattenJsonArray(jsonArray, flatJson, key, fieldDef,orgFormat, path + '/'+ key);
+     flatJson = flattenJsonArray(jsonArray, flatJson, key, fieldDef,orgFormat, path + '/'+ key, docNs);
    } else if (obj[key] !== null && typeof obj[key] === 'object') {
      var jsonObject = obj[key];
-      flatJson = flattenJsonObject(jsonObject, flatJson, key + 1, fieldDef,orgFormat, path + '/'+ key);
+      flatJson = flattenJsonObject(jsonObject, flatJson, key + 1, fieldDef,orgFormat, path + '/'+ key, docNs);
    } else {
      var value = obj[key];
      if (value !== null) {
@@ -40,7 +40,7 @@ function flattenJsonObject(obj, flatJson, prefix, fieldDef, orgFormat, path) {
            flatJson[prefix + key] = {"fieldType":isNumeric(obj[key]) ? 'number' : 'string',
                                      "fieldDef":prefix + key, "orgField": key,
                                      "orgPath" : path + '/' + key,
-                                     "orgFormat":orgFormat};
+                                     "orgFormat":orgFormat, "xmlns": docNs};
          };
        } else {
          flatJson[prefix + key] = isNumeric(obj[key]) ?  parseFloat(obj[key]) : obj[key];
@@ -56,7 +56,7 @@ function flattenJsonObject(obj, flatJson, prefix, fieldDef, orgFormat, path) {
 * If fieldDef if true it will onnly return the fieldname and datatype,
 * else it will return fieldname and value
 ************************************************************************/
-function flattenJsonArray(obj, flatJson, prefix, fieldDef, orgFormat, path) {
+function flattenJsonArray(obj, flatJson, prefix, fieldDef, orgFormat, path, docNs) {
   var orgFormat = typeof orgFormat !== 'undefined' ?  orgFormat : "";
   var path = typeof path !== 'undefined' ?  path : "";
   var length = obj.length;
@@ -64,10 +64,10 @@ function flattenJsonArray(obj, flatJson, prefix, fieldDef, orgFormat, path) {
    if (Array.isArray(obj[i])) {
      var jsonArray = obj[i];
      if (jsonArray.length < 1) continue;
-     flatJson = flattenJsonArray(jsonArray, flatJson, prefix + i,fieldDef,orgFormat,path);
+     flatJson = flattenJsonArray(jsonArray, flatJson, prefix + i,fieldDef,orgFormat,path, docNs);
     } else if (obj[i] !== null && typeof obj[i] === 'object') {
        var jsonObject = obj[i];
-       flatJson = flattenJsonObject(jsonObject, flatJson, prefix + (i + 1),fieldDef,orgFormat,path);
+       flatJson = flattenJsonObject(jsonObject, flatJson, prefix + (i + 1),fieldDef,orgFormat,path, docNs);
    } else {
      var value = obj[i];
      if (value !== null) {
@@ -78,7 +78,7 @@ function flattenJsonArray(obj, flatJson, prefix, fieldDef, orgFormat, path) {
            };
          } else {
            flatJson[prefix + i] = {"fieldType":isNumeric(obj[i]) ? 'number' : 'string', "fieldDef":prefix + i, "orgField": prefix,
-                                    "orgPath" : path,"orgFormat":orgFormat };
+                                    "orgPath" : path,"orgFormat":orgFormat, "xmlns": docNs};
          };
        } else {
          flatJson[prefix + i] = isNumeric(obj[i]) ?  parseFloat(obj[i]) : obj[i]
@@ -119,7 +119,7 @@ function getFlatResult(docRaw, docFormat, searchRelatedVals, addFields, extrFiel
   var flatDoc = {};
   /*  Add search related fields */
   flatDoc = searchRelatedVals;
-  flatDoc = flattenJsonObject(resultContent, flatDoc, "", false, "", "");
+  flatDoc = flattenJsonObject(resultContent, flatDoc, "", false, "", "", "");
   /* Add user defined fields */
   for (var field in addFields) {
     var fieldName = field;
@@ -299,7 +299,14 @@ function getMatrixResult(whereQuery, pageStart,getRows, relevanceScores, docUri,
                            case 'element':
                              orgFormat = 'XML';
                              var xmlContent = xdmp.unquote(docRaw.toString()).next().value;
-                             var x2js = new xml2json.X2JS();
+                             var nsArr = xmlContent.xpath('./*/namespace::*/data()').toArray();
+                             var xmlns = '';
+                             for (var i = 0; i < nsArr.length; i++) {
+                               if (nsArr[i] == "http://www.w3.org/XML/1998/namespace") {
+                                 continue;
+                               }
+                               xmlns = nsArr[i];
+                             }                             var x2js = new xml2json.X2JS();
                              var resultContent = x2js.xml2json( xmlContent );
                              break;
                            case 'object':
@@ -310,7 +317,7 @@ function getMatrixResult(whereQuery, pageStart,getRows, relevanceScores, docUri,
                              return;
                          };
                          //getFlatResult(docRaw, docRaw.nodeKind, searchRelatedVals, addFields, extrFields);
-                         docFields = flattenJsonObject(resultContent, docFields, "", true, orgFormat,"");
+                         docFields = flattenJsonObject(resultContent, docFields, "", true, orgFormat,"",xmlns);
 
                    })
                    .result();
@@ -338,6 +345,14 @@ function getMatrixResult(whereQuery, pageStart,getRows, relevanceScores, docUri,
        case "XML":
          var x2js = new xml2json.X2JS();
          resultContent = x2js.xml2json( result );
+         var nsArr = result.xpath('./*/namespace::*/data()').toArray();
+         var xmlns = '';
+         for (var i = 0; i < nsArr.length; i++) {
+           if (nsArr[i] == "http://www.w3.org/XML/1998/namespace") {
+             continue;
+           }
+           xmlns = nsArr[i];
+         }
          break;
        case "JSON":
          resultContent = result.toObject();
@@ -345,7 +360,7 @@ function getMatrixResult(whereQuery, pageStart,getRows, relevanceScores, docUri,
        default:
          continue;
      };
-     docFields =  flattenJsonObject(resultContent, docFields, "", true, result.documentFormat, "");
+     docFields =  flattenJsonObject(resultContent, docFields, "", true, result.documentFormat, "",xmlns);
    };
    var dfInfoDoc = {
      "ctsQuery": whereQuery,
@@ -394,7 +409,6 @@ function getMatrixResult(whereQuery, pageStart,getRows, relevanceScores, docUri,
      queries = queries +1;
      if (Array.isArray(collections)) {
        var collParams = [];
-       collectionQuery = 'cts.collectionQuery(['
        for (var i = 0; i < collections.length; i++) {
          collParams.push(collections[i]);
        }
@@ -409,7 +423,6 @@ function getMatrixResult(whereQuery, pageStart,getRows, relevanceScores, docUri,
      queries = queries +1;
       if (Array.isArray(directory)) {
        var dirParams = [];
-       directoryQuery = 'cts.directoryQuery(['
        for (var i = 0; i < directory.length; i++) {
          dirParams.push(directory[i]);
        }
@@ -430,7 +443,14 @@ function getMatrixResult(whereQuery, pageStart,getRows, relevanceScores, docUri,
       queries = queries +1;
        var ctsFieldQuery = [];
        for (var field in fieldQuery) {
-         ctsFieldQuery.push(cts.orQuery([cts.elementValueQuery(xs.QName(field), fieldQuery[field].value),cts.jsonPropertyValueQuery(field, fieldQuery[field].value)]));
+         switch(fieldQuery[field].operator) {
+           case "==":
+             ctsFieldQuery.push(cts.orQuery([cts.elementValueQuery(fn.QName((fieldQuery[field].xmlns != "NA") ? fieldQuery[field].xmlns : "",field), fieldQuery[field].value),cts.jsonPropertyValueQuery(field, fieldQuery[field].value)]));
+             break;
+           default:
+             ctsFieldQuery.push(cts.orQuery([cts.elementRangeQuery(fn.QName((fieldQuery[field].xmlns != "NA") ? fieldQuery[field].xmlns : "",field),fieldQuery[field].operator, fieldQuery[field].value),
+                                            cts.jsonPropertyRangeQuery(field,fieldQuery[field].operator, fieldQuery[field].value)]));
+         }
        };
    };
 
@@ -449,7 +469,7 @@ function getMatrixResult(whereQuery, pageStart,getRows, relevanceScores, docUri,
    };
   return (andQuery) ? cts.andQuery([ctsQuery,ctsFieldQuery,collectionQuery,directoryQuery]) : ctsQuery;
  }
-
+ 
 exports.fields2array = fields2array;
 exports.getMatrixResult = getMatrixResult;
 exports.getCtsQuery = getCtsQuery;

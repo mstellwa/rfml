@@ -4,9 +4,11 @@
 \alias{ml.load.sample.data}
 \title{Load sample data set into MarkLogic server}
 \usage{
-ml.load.sample.data(dataSet = "baskets", name = "")
+ml.load.sample.data(conn, dataSet = "baskets", name = "")
 }
 \arguments{
+\item{conn}{A ml.conn with a connection to a MarkLoic server}
+
 \item{dataSet}{Which dataset to upload, "baskets"}
 
 \item{name}{The name of the object. The data will be added to a collection with that name. If not provided the dataSet name is used.}

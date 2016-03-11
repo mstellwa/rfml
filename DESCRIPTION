@@ -1,11 +1,14 @@
 Package: rfml
 Type: Package
-Title: MarkLogic Server in-database analytics for R
-Version: 0.0.0.9000
-Date: 2015-12-15
-Author: Mats Stellwall [aut, cre]
-Authors@R: person("Mats", "Stellwall", email = "mats.stellwall@gmail.com",
-                  role = c("aut", "cre"))
+Title: MarkLogic Server in-Database Analytics for R
+Version: 0.1.0
+Authors@R: c(person("Mats", "Stellwall", email = "mats.stellwall@gmail.com",
+                  role = c("aut", "cre")),
+           person("Abdulla", "Abdurakhmanov",role = "ctb",
+                  comment = "Code in xml2json.sjs is from https://code.google.com/p/x2js/"))
+Author: Mats Stellwall [aut, cre],
+        Abdulla Abdurakhmanov [ctb]
+Maintainer: Mats Stellwall <mats.stellwall@gmail.com>
 Description: Functionality required to efficiently use R with MarkLogic Server.
     Many basic and complex R operations are pushed down into the database, which
     removes the main memory boundary of R and allows to make full use of MarkLogic

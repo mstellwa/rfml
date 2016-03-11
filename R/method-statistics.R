@@ -43,7 +43,7 @@ setMethod(f="cor", signature=c(x="ml.col.def",y="ml.col.def"),
               stop("Can only use columns of number type")
             }
             fields <- "{"
-            fields <- paste(fields, '"',x@.name , '":{"fieldDef":"',x@.expr ,'","orgField":"', x@.org_name, '","orgFormat":"', x@.format , '"},"', y@.name, '":{"fieldDef":"',y@.expr, '","orgField":"', y@.org_name, '","orgFormat":"', y@.format ,'"}' ,sep='')
+            fields <- paste(fields, '"',x@.name , '":{"fieldDef":"',x@.expr ,'","orgField":"', x@.org_name, '","orgFormat":"', x@.format, '","xmlns":"', x@.xmlns , '"},"', y@.name, '":{"fieldDef":"',y@.expr, '","orgField":"', y@.org_name, '","orgFormat":"', y@.format, '","xmlns":"', y@.xmlns ,'"}' ,sep='')
             fields <- paste(fields, '}', sep='')
             func <- '{"index":"cts.correlation", "noindex": "math.correlation"}'
             return(.ml.stat.func(x@.parent, fields, func))
@@ -146,7 +146,7 @@ setMethod(f="cov", signature=c(x="ml.col.def",y="ml.col.def"),
             }
 
             fields <- "{"
-            fields <- paste(fields, '"',x@.name , '":{"fieldDef":"',x@.expr ,'","orgField":"', x@.org_name, '","orgFormat":"', x@.format , '"},"', y@.name, '":{"fieldDef":"',y@.expr, '","orgField":"', y@.org_name, '","orgFormat":"', y@.format ,'"}' ,sep='')
+            fields <- paste(fields, '"',x@.name , '":{"fieldDef":"',x@.expr ,'","orgField":"', x@.org_name, '","orgFormat":"', x@.format, '","xmlns":"', x@.xmlns , '"},"', y@.name, '":{"fieldDef":"',y@.expr, '","orgField":"', y@.org_name, '","orgFormat":"', y@.format, '","xmlns":"', y@.xmlns ,'"}' ,sep='')
             fields <- paste(fields, '}', sep='')
             func <- '{"index":"cts.covariance", "noindex": "math.covariance"}'
             return(.ml.stat.func(x@.parent, fields, func))
@@ -184,7 +184,7 @@ cov.pop <- function(x,y) {
   }
 
   fields <- "{"
-  fields <- paste(fields, '"',x@.name , '":{"fieldDef":"',x@.expr ,'","orgField":"', x@.org_name, '","orgFormat":"', x@.format , '"},"', y@.name, '":{"fieldDef":"',y@.expr, '","orgField":"', y@.org_name, '","orgFormat":"', y@.format ,'"}' ,sep='')
+  fields <- paste(fields, '"',x@.name , '":{"fieldDef":"',x@.expr ,'","orgField":"', x@.org_name, '","orgFormat":"', x@.format, '","xmlns":"', x@.xmlns, '"},"', y@.name, '":{"fieldDef":"',y@.expr, '","orgField":"', y@.org_name, '","orgFormat":"', y@.format, '","xmlns":"', y@.xmlns ,'"}' ,sep='')
   fields <- paste(fields, '}', sep='')
   func <- '{"index":"cts.covarianceP", "noindex": "math.covarianceP"}'
 
@@ -224,7 +224,7 @@ setMethod(f="var", signature=c(x="ml.col.def"),
             }
 
             fields <- "{"
-            fields <- paste(fields, '"',x@.name , '":{"fieldDef":"',x@.expr ,'","orgField":"', x@.org_name, '","orgFormat":"', x@.format ,'"}' ,sep='')
+            fields <- paste(fields, '"',x@.name , '":{"fieldDef":"',x@.expr ,'","orgField":"', x@.org_name, '","orgFormat":"', x@.format, '","xmlns":"', x@.xmlns ,'"}' ,sep='')
             fields <- paste(fields, '}', sep='')
             func <- '{"index":"cts.variance", "noindex": "math.variance"}'
 
@@ -263,7 +263,7 @@ var.pop <- function(x,na.rm = FALSE ) {
   }
 
   fields <- "{"
-  fields <- paste(fields, '"',x@.name , '":{"fieldDef":"',x@.expr ,'","orgField":"', x@.org_name, '","orgFormat":"', x@.format ,'"}' ,sep='')
+  fields <- paste(fields, '"',x@.name , '":{"fieldDef":"',x@.expr ,'","orgField":"', x@.org_name, '","orgFormat":"', x@.format, '","xmlns":"', x@.xmlns ,'"}' ,sep='')
   fields <- paste(fields, '}', sep='')
   func <- '{"index":"cts.varianceP", "noindex": "math.varianceP"}'
   return(.ml.stat.func(x@.parent, fields, func))
@@ -304,7 +304,7 @@ setMethod(f="sd", signature=c(x="ml.col.def"),
             }
 
             fields <- "{"
-            fields <- paste(fields, '"',x@.name , '":{"fieldDef":"',x@.expr ,'","orgField":"', x@.org_name, '","orgFormat":"', x@.format ,'"}' ,sep='')
+            fields <- paste(fields, '"',x@.name , '":{"fieldDef":"',x@.expr ,'","orgField":"', x@.org_name, '","orgFormat":"', x@.format, '","xmlns":"', x@.xmlns ,'"}' ,sep='')
             fields <- paste(fields, '}', sep='')
             func <- '{"index":"cts.stddev", "noindex": "math.stddev"}'
 
@@ -340,7 +340,7 @@ sd.pop <- function(x) {
   }
 
   fields <- "{"
-  fields <- paste(fields, '"',x@.name , '":{"fieldDef":"',x@.expr ,'","orgField":"', x@.org_name, '","orgFormat":"', x@.format ,'"}' ,sep='')
+  fields <- paste(fields, '"',x@.name , '":{"fieldDef":"',x@.expr ,'","orgField":"', x@.org_name, '","orgFormat":"', x@.format, '","xmlns":"', x@.xmlns ,'"}' ,sep='')
   fields <- paste(fields, '}', sep='')
   func <- '{"index":"cts.stddevP", "noindex": "math.stddevP"}'
   return(.ml.stat.func(x@.parent, fields, func))
@@ -376,7 +376,7 @@ setMethod(f="median", signature=c(x="ml.col.def"),
             }
 
             fields <- "{"
-            fields <- paste(fields, '"',x@.name , '":{"fieldDef":"',x@.expr ,'","orgField":"', x@.org_name, '","orgFormat":"', x@.format ,'"}' ,sep='')
+            fields <- paste(fields, '"',x@.name , '":{"fieldDef":"',x@.expr ,'","orgField":"', x@.org_name, '","orgFormat":"', x@.format, '","xmlns":"', x@.xmlns ,'"}' ,sep='')
             fields <- paste(fields, '}', sep='')
             func <- '{"index":"cts.median", "noindex": "math.median"}'
             return(.ml.stat.func(x@.parent, fields, func))
@@ -412,7 +412,7 @@ setMethod(f="mean", signature=c(x="ml.col.def"),
             }
 
             fields <- "{"
-            fields <- paste(fields, '"',x@.name , '":{"fieldDef":"',x@.expr ,'","orgField":"', x@.org_name, '","orgFormat":"', x@.format ,'"}' ,sep='')
+            fields <- paste(fields, '"',x@.name , '":{"fieldDef":"',x@.expr ,'","orgField":"', x@.org_name, '","orgFormat":"', x@.format, '","xmlns":"', x@.xmlns ,'"}' ,sep='')
             fields <- paste(fields, '}', sep='')
             func <- '{"index":"cts.avgAggregate", "noindex": "fn.avg"}'
             return(.ml.stat.func(x@.parent, fields, func))
@@ -448,7 +448,7 @@ setMethod(f="sum", signature=c(x="ml.col.def"),
             }
 
             fields <- "{"
-            fields <- paste(fields, '"',x@.name , '":{"fieldDef":"',x@.expr ,'","orgField":"', x@.org_name, '","orgFormat":"', x@.format ,'"}' ,sep='')
+            fields <- paste(fields, '"',x@.name , '":{"fieldDef":"',x@.expr ,'","orgField":"', x@.org_name, '","orgFormat":"', x@.format, '","xmlns":"', x@.xmlns ,'"}' ,sep='')
             fields <- paste(fields, '}', sep='')
             func <- '{"index":"cts.sumAggregate", "noindex": "fn.sum"}'
 
@@ -485,7 +485,7 @@ setMethod(f="max", signature=c(x="ml.col.def"),
             }
 
             fields <- "{"
-            fields <- paste(fields, '"',x@.name , '":{"fieldDef":"',x@.expr ,'","orgField":"', x@.org_name, '","orgFormat":"', x@.format ,'"}' ,sep='')
+            fields <- paste(fields, '"',x@.name , '":{"fieldDef":"',x@.expr ,'","orgField":"', x@.org_name, '","orgFormat":"', x@.format, '","xmlns":"', x@.xmlns ,'"}' ,sep='')
             fields <- paste(fields, '}', sep='')
             func <- '{"index":"cts.max", "noindex": "fn.max"}'
             return(.ml.stat.func(x@.parent, fields, func))
@@ -521,7 +521,7 @@ setMethod(f="min", signature=c(x="ml.col.def"),
             }
 
             fields <- "{"
-            fields <- paste(fields, '"',x@.name , '":{"fieldDef":"',x@.expr ,'","orgField":"', x@.org_name, '","orgFormat":"', x@.format ,'"}' ,sep='')
+            fields <- paste(fields, '"',x@.name , '":{"fieldDef":"',x@.expr ,'","orgField":"', x@.org_name, '","orgFormat":"', x@.format, '","xmlns":"', x@.xmlns ,'"}' ,sep='')
             fields <- paste(fields, '}', sep='')
             func <- '{"index":"cts.min", "noindex": "fn.min"}'
             return(.ml.stat.func(x@.parent, fields, func))
@@ -537,7 +537,7 @@ percentile <- function(x, p) {
   }
 
   fields <- "{"
-  fields <- paste(fields, '"',x@.name , '":{"fieldDef":"',x@.expr ,'","orgField":"', x@.org_name, '","orgFormat":"', x@.format ,'"}' ,sep='')
+  fields <- paste(fields, '"',x@.name , '":{"fieldDef":"',x@.expr ,'","orgField":"', x@.org_name, '","orgFormat":"', x@.format, '","xmlns":"', x@.xmlns ,'"}' ,sep='')
   fields <- paste(fields, '}', sep='')
   func <- '{"index":"cts.percentile", "noindex": "math.percentile"}'
   return(.ml.stat.func(x@.parent, fields, func))

@@ -14,7 +14,7 @@
 
   # get libraries, we only look under /ext/rfml/ and support javascript (.sjs)
   mlURL <- paste(mlHost, "/v1/ext/rfml/?format=json", sep="")
-  response <- GET(mlURL, authenticate(username, password, type="digest"))
+  response <- GET(mlURL, authenticate(username, password, type="digest"), accept_json())
   status_code <- response$status_code
   rContent <- content(response)
   if (status_code != 200){
@@ -44,7 +44,7 @@
   }
   # get extensions, we only look under /ext/rfml/ and support javascript (.sjs)
   mlURL <- paste(mlHost, "/v1/config/resources?format=json", sep="")
-  response <- GET(mlURL, authenticate(username, password, type="digest"))
+  response <- GET(mlURL, authenticate(username, password, type="digest"), accept_json())
   status_code <- response$status_code
   rContent <- content(response)
   if (status_code != 200){
@@ -79,7 +79,7 @@
   lib <- upload_file(file, "application/vnd.marklogic-javascript")
   mlURL <- paste(mlHost, "/v1/ext/rfml/", mlLibFile, sep="")
   # add or replace search options to the database
-  response <- PUT(mlURL, authenticate(username, password, type="digest"), body=lib)
+  response <- PUT(mlURL, authenticate(username, password, type="digest"), body=lib, accept_json())
   status_code <- response$status_code
   if (status_code != 201 && status_code != 204) {
     rContent <- content(response)
@@ -100,7 +100,7 @@
   mlLibFile <- paste(mlLibName, ".sjs", sep='')
   mlURL <- paste(mlHost, "/v1/ext/rfml/", mlLibFile, sep="")
   # add or replace search options to the database
-  response <- DELETE(mlURL, authenticate(username, password, type="digest"))
+  response <- DELETE(mlURL, authenticate(username, password, type="digest"), accept_json())
 
   if (response$status_code != 204) {
 
@@ -124,7 +124,7 @@
   #  'http://localhost:8004/v1/config/resources/example'
   mlURL <- paste(mlHost, "/v1/config/resources/", mlExtName, sep="")
   # add or replace search options to the database
-  response <- PUT(mlURL, authenticate(username, password, type="digest"), body=ext)
+  response <- PUT(mlURL, authenticate(username, password, type="digest"), body=ext, accept_json())
   status_code <- response$status_code
   if (status_code != 201 && status_code != 204) {
     rContent <- content(response)
@@ -145,7 +145,7 @@
   ##mlLibFile <- paste(mlLibName, ".sjs", sep='')
   mlURL <- paste(mlHost, "/v1/config/resources/", mlExtName, sep="")
   # add or replace search options to the database
-  response <- DELETE(mlURL, authenticate(username, password, type="digest"))
+  response <- DELETE(mlURL, authenticate(username, password, type="digest"), accept_json())
 
   if (response$status_code != 204) {
 
@@ -164,12 +164,13 @@
 }
 .get.ml.data <- function(mlDf, nrows=0, searchOption=NULL) {
 
-  key <- .rfmlEnv$key
-  password <- rawToChar(PKI::PKI.decrypt(.rfmlEnv$conn$password, key))
-  username <- .rfmlEnv$conn$username
+  conn <- mlDf@.conn
+  key <- .rfmlEnv$key[[conn@.id]]
+  password <- rawToChar(PKI::PKI.decrypt(conn@.password, key))
+  username <- conn@.username
   queryComArgs <- mlDf@.queryArgs
 
-  mlHost <- paste("http://", .rfmlEnv$conn$host, ":", .rfmlEnv$conn$port, sep="")
+  mlHost <- paste("http://", conn@.host, ":", conn@.port, sep="")
   mlSearchURL <- paste(mlHost, "/v1/resources/rfml.dframe", sep="")
   if (is.null(searchOption)) {
     mlOptions <- .rfmlEnv$mlDefaultOption
@@ -237,13 +238,13 @@
 # Internal used function that inserts data.frame data into MarkLogic.
 # Each line is added as a document, put in a collection named after
 # myCollection value
-.insert.ml.data <- function(myData, myCollection, format, directory) {
+.insert.ml.data <- function(conn, myData, myCollection, format, directory) {
 
   # get connection imformation
-  key <- .rfmlEnv$key
-  password <- rawToChar(PKI::PKI.decrypt(.rfmlEnv$conn$password, key))
-  username <- .rfmlEnv$conn$username
-  mlHost <- paste("http://", .rfmlEnv$conn$host, ":", .rfmlEnv$conn$port, sep="")
+  key <- .rfmlEnv$key[[conn@.id]]
+  password <- rawToChar(PKI::PKI.decrypt(conn@.password, key))
+  username <- conn@.username
+  mlHost <- paste("http://", conn@.host, ":", conn@.port, sep="")
 
   mlPostURL <- paste(mlHost, "/v1/documents", sep="")
 
@@ -262,25 +263,29 @@
   } else {
     stop("Unkown format")
   }
-  response <- POST(mlPostURL,  body = upload_file(bodyFile, type = "multipart/mixed; boundary=BOUNDARY"), authenticate(username, password, type="digest"), encode = "multipart")
+
+  response <- POST(mlPostURL,  body = upload_file(bodyFile, type = "multipart/mixed; boundary=BOUNDARY"), authenticate(username, password, type="digest"), encode = "multipart", accept_json())
+  #suppressWarnings(closeAllConnections())
   suppressWarnings(unlink(bodyFile))
+
+  # message(bodyFile)
   if(response$status_code != 200) {
     rContent <- content(response, as = "text")
     errorMsg <- paste("statusCode: ",rContent, sep="")
     stop(paste("Ops, something went wrong.", errorMsg))
   }
-  suppressWarnings(closeAllConnections())
+
   return(rfmlCollection)
 
 }
 # Internal used function that deletes data created by as.ml.data.frame.
 .delete.ml.data <- function(myData, directory) {
-
+  conn <- myData@.conn
   # get connection imformation
-  key <- .rfmlEnv$key
-  password <- rawToChar(PKI::PKI.decrypt(.rfmlEnv$conn$password, key))
-  username <- .rfmlEnv$conn$username
-  mlHost <- paste("http://", .rfmlEnv$conn$host, ":", .rfmlEnv$conn$port, sep="")
+  key <- .rfmlEnv$key[[conn@.id]]
+  password <- rawToChar(PKI::PKI.decrypt(conn@.password, key))
+  username <- conn@.username
+  mlHost <- paste("http://", .rfmlEnv$conn$host, ":", conn@.port, sep="")
 
   mlDelURL <- paste(mlHost, "/v1/resources/rfml.dframe", sep="")
 
@@ -308,12 +313,13 @@
 }
 # executes a statistic function
 .ml.stat.func <- function(mlDf, fields, func) {
-  key <- .rfmlEnv$key
-  password <- rawToChar(PKI::PKI.decrypt(.rfmlEnv$conn$password, key))
-  username <- .rfmlEnv$conn$username
+  conn <- mlDf@.conn
+  key <- .rfmlEnv$key[[conn@.id]]
+  password <- rawToChar(PKI::PKI.decrypt(conn@.password, key))
+  username <- conn@.username
   queryComArgs <- mlDf@.queryArgs
 
-  mlHost <- paste("http://", .rfmlEnv$conn$host, ":", .rfmlEnv$conn$port, sep="")
+  mlHost <- paste("http://", conn@.host, ":", conn@.port, sep="")
   mlSearchURL <- paste(mlHost, "/v1/resources/rfml.stat", sep="")
   nPageLength <- mlDf@.nrows
   queryArgs <- c(queryComArgs, 'rs:pageLength'=nPageLength, 'rs:statfunc'=func,'rs:fields'=fields)
@@ -331,15 +337,13 @@
 
 # Get data for the summary function
 .ml.matrix <- function(mlDf, matrixfunc) {
-
-  key <- .rfmlEnv$key
-  password <- rawToChar(PKI::PKI.decrypt(.rfmlEnv$conn$password, key))
-  username <- .rfmlEnv$conn$username
-  #dframe <- mlDf@.name
-  #query <- mlDf@.ctsQuery
+  conn <- mlDf@.conn
+  key <- .rfmlEnv$key[[conn@.id]]
+  password <- rawToChar(PKI::PKI.decrypt(conn@.password, key))
+  username <- conn@.username
   queryComArgs <- mlDf@.queryArgs
 
-  mlHost <- paste("http://", .rfmlEnv$conn$host, ":", .rfmlEnv$conn$port, sep="")
+  mlHost <- paste("http://", conn@.host, ":", conn@.port, sep="")
   mlSearchURL <- paste(mlHost, "/v1/resources/rfml.matrix", sep="")
   # if (is.null(searchOption)) {
   mlOptions <- .rfmlEnv$mlDefaultOption
@@ -388,12 +392,13 @@
 
 # executes a Moving Average function
 .ml.movavg.func <- function(mlTs, fields, func, n) {
-  key <- .rfmlEnv$key
-  password <- rawToChar(PKI::PKI.decrypt(.rfmlEnv$conn$password, key))
-  username <- .rfmlEnv$conn$username
+  conn <- mlTs@.conn
+  key <- .rfmlEnv$key[[conn@.id]]
+  password <- rawToChar(PKI::PKI.decrypt(conn@.password, key))
+  username <- conn@.username
   queryComArgs <- mlTs@.queryArgs
 
-  mlHost <- paste("http://", .rfmlEnv$conn$host, ":", .rfmlEnv$conn$port, sep="")
+  mlHost <- paste("http://", conn@.host, ":", conn@.port, sep="")
   mlSearchURL <- paste(mlHost, "/v1/resources/rfml.movavg", sep="")
   nPageLength <- mlTs@.nrows
   queryArgs <- c(queryComArgs, 'rs:pageLength'=nPageLength, 'rs:avgfunc'=func,'rs:fields'=fields)
@@ -425,7 +430,7 @@
 
   # start loop
   for (i in 1:nrow(data)) {
-    bodyText <- c(bodyText,boundary,contentType, paste("Content-Disposition: inline;extension=xml;directory=", directory,sep=""), "")
+    bodyText <- c(bodyText,boundary,contentType, paste("Content-Disposition: attachment;filename=",directory,row.names(data[i,]), ".xml" ,sep=""), "")
     myXml <- xmlTree()
     myXml$addTag(name, close=FALSE)
     for (j in names(data)) {
@@ -437,13 +442,15 @@
   }
   bodyText <- c(bodyText, "--BOUNDARY--", "")
   # add it
-  multipartBody <- tempfile()
-  writeLines(bodyText, multipartBody, sep='\r\n')
-  # remove the file after upload
-  #unlink(multipartBody)
-  return(multipartBody)
-  # start loop
-
+  tf <- tempfile()
+  multipartBody <- file(tf, open = "wb")
+  #writeLines(text = bodyText, con = multipartBody
+  # need to have CRLF no matter of which platform it is running on...
+  writeLines(text = bodyText, con = multipartBody, sep="\r\n")
+  close(multipartBody)
+  #writeBin(bodyText, multipartBody)
+  #message(tf)
+  return(tf)
 
 }
 
@@ -461,12 +468,12 @@
   if (is.data.frame(data)) {
     # start loop
     for (i in 1:nrow(data)) {
-      bodyText <- c(bodyText,boundary,contentType, paste("Content-Disposition: inline;extension=json;directory=", directory,sep=""), "")
+      bodyText <- c(bodyText,boundary,contentType, paste('Content-Disposition: attachment;filename="',directory,row.names(data[i,]), '.json"', sep=""), "")
       jsonData <- toJSON(data[i,])
       # need to remove the [ ] in the doc, before sending it
       jsonData <- gsub("\\]", "", gsub("\\[", "", jsonData))
 
-      bodyText <- c(bodyText, jsonData)
+      bodyText <- c(bodyText,jsonData)
     }
   } else if (is.character(data)) {
     uploadFiles <- list.files(system.file(data, package = "rfml"))
@@ -483,7 +490,13 @@
   }
   bodyText <- c(bodyText, "--BOUNDARY--", "")
   # add it
-  multipartBody <- tempfile()
-  writeLines(bodyText, multipartBody, sep='\r\n')
-  return(multipartBody)
+  tf <- tempfile()
+  multipartBody <- file(tf, open = "wb")
+  #writeLines(text = bodyText, con = multipartBody
+  # need to have CRLF no matter of which platform it is running on...
+  writeLines(text = bodyText, con = multipartBody, sep="\r\n")
+  close(multipartBody)
+  #writeBin(bodyText, multipartBody)
+  #message(tf)
+  return(tf)
 }

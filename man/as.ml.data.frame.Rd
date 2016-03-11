@@ -4,9 +4,11 @@
 \alias{as.ml.data.frame}
 \title{Upload a data.frame object data to MarkLogic server.}
 \usage{
-as.ml.data.frame(x, name, format = "json", directory = "")
+as.ml.data.frame(conn, x, name, format = "json", directory = "")
 }
 \arguments{
+\item{conn}{A ml.conn object that has a valid connection to a MarkLogic Server}
+
 \item{x}{a Data Frame or ml.data.frame object.}
 
 \item{name}{The name of the object.}

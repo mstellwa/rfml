@@ -11,6 +11,7 @@ function getFreqItemSets(itemField, whereQuery, supp, totTrans ,minlen, maxlen) 
     var elementRefs = [];
     for (var j = 1; j <= i; j++) {
     	elementRefs.push(cts.elementReference(xs.QName(itemField)));
+      //fn.QName((fieldQuery[field].xmlns != "NA") ? fieldQuery[field].xmlns : "",field)
     };
     var itemSet = cts.valueTuples(elementRefs, 'ordered', whereQuery);
     var itemSetFreq = [];

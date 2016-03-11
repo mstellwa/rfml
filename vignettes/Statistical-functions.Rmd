@@ -4,7 +4,7 @@ author: "Mats Stellwall"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteIndexEntry{Statistical functions}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -84,3 +84,4 @@ cor(mlIris)
 # Petal.Length    0.8717538  -0.4284401    1.0000000   0.9628654
 # Petal.Width     0.8179411  -0.3661259    0.9628654   1.0000000
 ```
+For more examples how how to use the package see the help.

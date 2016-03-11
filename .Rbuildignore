@@ -2,3 +2,4 @@
 ^\.Rproj\.user$
 ^\.travis\.yml$
 shared
+^cran-comments\.md$

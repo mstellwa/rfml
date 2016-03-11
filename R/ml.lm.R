@@ -17,12 +17,13 @@
 #' @export
 ml.lm <- function(form, mlDf) {
 
-  key <- .rfmlEnv$key
-  password <- rawToChar(PKI::PKI.decrypt(.rfmlEnv$conn$password, key))
-  username <- .rfmlEnv$conn$username
+  conn <- mlDf@.conn
+  key <- .rfmlEnv$key[[conn@.id]]
+  password <- rawToChar(PKI::PKI.decrypt(conn@.password, key))
+  username <- conn@.username
   queryComArgs <- mlDf@.queryArgs
 
-  mlHost <- paste("http://", .rfmlEnv$conn$host, ":", .rfmlEnv$conn$port, sep="")
+  mlHost <- paste("http://", conn@.host, ":", conn@.port, sep="")
   mlSearchURL <- paste(mlHost, "/v1/resources/rfml.lm", sep="")
   nPageLength <- mlDf@.nrows
   queryArgs <- c(queryComArgs, 'rs:pageLength'=nPageLength)

@@ -4,13 +4,18 @@
 \alias{ml.data.frame}
 \title{Creates a ml.data.frame object}
 \usage{
-ml.data.frame(query = "", fieldFilter = "", collection = c(),
-  directory = c(), relevanceScores = FALSE, docUri = FALSE)
+ml.data.frame(conn, query = "", fieldFilter = "", ns = "NA",
+  collection = c(), directory = c(), relevanceScores = FALSE,
+  docUri = FALSE)
 }
 \arguments{
+\item{conn}{A ml.conn}
+
 \item{query}{The query string used to define the result.}
 
-\item{fieldFilter}{Field level filtering. Currently only the == operator are supported. Multiple field filters are separated by ,}
+\item{fieldFilter}{Field level filtering. Multiple field filters are separated by , See details for limitations.}
+
+\item{ns}{A character with the namespace URI to be used with fieldFilter, default is none}
 
 \item{collection}{A list of collection URI:s to filter on.}
 
@@ -25,10 +30,17 @@ A ml.data.frame object.
 }
 \description{
 This function creates an object of ml.data.frame, it is based on a search done using
-the provided query, collection and/or directory parameters.
+the provided query, collection, directory and/or fiedlFilter parameters. For fieldFilter
+parameter see details section.
 The operations that can be applied onto this class of objects are very
 similar to those of data.frame. No real data is loaded into R. The data transfered
 between MarkLogic Server and R is minimized.
+}
+\details{
+When using fieldFilter all comparison operators can be used. But in order to use
+the ">"  "<"  "!=" "<=" ">=" operators there muset exist a element range index on the source field for
+the fieldotherwise a error will be raised. "==" operator will always work since it does
+not depend of range indexes.
 }
 \examples{
 \dontrun{

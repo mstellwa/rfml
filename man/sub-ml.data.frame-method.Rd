@@ -14,15 +14,21 @@
 
 \item{...}{Not used.}
 
-\item{drop}{Not implemented yet.}
+\item{drop}{Not used.}
 }
 \value{
 A ml.data.frame object is returned
 }
 \description{
 Extract subset of columns and/or rows of a ml.data.frame. When extracting rows a ml.col.def
-referense can be used with only the equal (==) comparsion operator or a search text.
+referense can be used or a search text. See details for limitations when using a reference.
 The row filtering will be used togheter with the existing query of the ml.data.frame
+}
+\details{
+When extracting rows using ml.col.def all comparison operators can be used. But in order to use
+the ">"  "<"  "!=" "<=" ">=" operators there muset exist a element range index on the source field for
+the ml.col.def refrence otherwise a error will be raised. "==" operator will always work since it does
+not depend of range indexes.
 }
 \examples{
 \dontrun{

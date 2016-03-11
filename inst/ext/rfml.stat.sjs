@@ -37,7 +37,7 @@ function getStat(context, params) {
       if (strParams.length > 1) {
         strParams = strParams + ',';
       };
-      var addParam = (orgFields[i].format == 'XML') ? 'cts.elementReference(xs.QName("' + orgFields[i].name +'"))' : 'cts.jsonPropertyReference("' + orgFields[i].name + '")';
+      var addParam = (orgFields[i].format == 'XML') ? 'cts.elementReference(fn.QName("'(orgFields[i].xmlns != "NA") ? forgFields[i].xmlns : "" + '","'   + orgFields[i].name +'"))' : 'cts.jsonPropertyReference("' + orgFields[i].name + '")';
       strParams = strParams + addParam;
 
     }

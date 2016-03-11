@@ -106,6 +106,7 @@ ml.clear.database <- function(host = "localhost", port = "8000", adminuser = "ad
 #'  }
 #' To remove the sample use the \link{rm.ml.data.frame} on the returned ml.data.frame object.
 #'
+#' @param conn A ml.conn with a connection to a MarkLoic server
 #' @param dataSet Which dataset to upload, "baskets"
 #' @param name The name of the object. The data will be added to a collection with that name. If not provided the dataSet name is used.
 #' @return A ml.data.frame object pointing to the uploaded dataset.
@@ -115,8 +116,10 @@ ml.clear.database <- function(host = "localhost", port = "8000", adminuser = "ad
 #'  mlBaskets <- ml.load.sample.data("baskets")
 #' }
 #' @export
-ml.load.sample.data <- function(dataSet = "baskets", name = "") {
-
+ml.load.sample.data <- function(conn, dataSet = "baskets", name = "") {
+  if (class(conn) != "ml.conn" || missing(conn)) {
+    stop("Need a valid ml.conn object. Use ml.connect to create one.")
+  }
   if (dataSet == "baskets") {
     dataFolder <- "extdata/baskets"
     collection <- "baskets"
@@ -126,8 +129,8 @@ ml.load.sample.data <- function(dataSet = "baskets", name = "") {
   if (nchar(name) > 0) {
     collection <- name
   }
-  suppressWarnings(rfmlCollection <- .insert.ml.data(dataFolder, collection, "json", ""))
-  return(ml.data.frame(collection=c(rfmlCollection)));
+  suppressWarnings(rfmlCollection <- .insert.ml.data(conn, dataFolder, collection, "json", ""))
+  return(ml.data.frame(conn, collection=c(rfmlCollection)));
 }
 #' Creates or updates a Range element index.
 #'
@@ -147,15 +150,23 @@ ml.load.sample.data <- function(dataSet = "baskets", name = "") {
 #' @param collation For scalarType = string, you can use a different collation than the default. Default is "http://marklogic.com/collation/"
 #' @param namespaceUri The namespace URI of the XML element, if JSON ignore. Default is empty.
 #' @param database The name of the database to create the index in. "Documents" is default.
-#' @param host The hostname or ipadress of the MarkLogic Manage server. Default is the same as used for ml.connect.
+#' @param host The hostname or ipadress of the MarkLogic Manage server. Default is the same as used for conn
 #' @param port The port number of the MarkLogic Manage server. 8002 is used default
-#' @param adminuser The username of a user that have rights to create index. Default is the same as used for ml.connect.
-#' @param password The password. Default is the same as used for ml.connect.
+#' @param adminuser The username of a user that have rights to create index. Default is the same as used for conn
+#' @param password The password. Default is the same as used for conn.
+#' @param conn A ml.conn with a connection to a MarkLoic server
 #' @return The function will raise a error if something goes wrong.
 #' @export
 ml.add.index <- function(x, scalarType= "string", collation = "http://marklogic.com/collation/",
                          namespaceUri = "",database = "Documents", host = "", port = "8002",
-                         adminuser = "", password = "") {
+                         adminuser = "", password = "", conn = NA) {
+  if (class(conn) != "ml.conn" || missing(conn)) {
+    hasConn <- FALSE
+  } else {
+    hasConn <- TRUE
+  }
+
+  # Need to check that either database etc is set or there is a valid conn object...
   if (!is.ml.col.def(x)) {
     stop("x needs to be a ml.col.def object!")
   }
@@ -163,18 +174,31 @@ ml.add.index <- function(x, scalarType= "string", collation = "http://marklogic.
   if (nchar(adminuser) > 0) {
     username <- adminuser
   } else {
-    username <- .rfmlEnv$conn$username
+    if (!hasConn) {
+      stop("You need to provide a username value or a valid ml.conn object for the conn parameter")
+    } else {
+      username <- conn@.username
+    }
   }
   if (nchar(password) > 0) {
     pwd <- password
   } else {
-    key <- .rfmlEnv$key
-    pwd <- rawToChar(PKI::PKI.decrypt(.rfmlEnv$conn$password, key))
+    if (!hasConn) {
+      stop("You need to provide a password value or a valid ml.conn object for the conn parameter")
+    } else {
+      key <- .rfmlEnv$key[[conn@.id]]
+      pwd <- rawToChar(PKI::PKI.decrypt(conn@.password, key))
+    }
   }
   if (nchar(host) > 0) {
     mlhost <- host
   } else {
-    mlhost <- .rfmlEnv$conn$host
+    if (!hasConn) {
+      stop("You need to provide a host value or a valid ml.conn object for the conn parameter")
+    } else {
+      mlhost <- conn@.host
+    }
+
   }
 
   # general URL, used as basis for all

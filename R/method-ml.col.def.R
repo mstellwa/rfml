@@ -77,7 +77,12 @@ setMethod("Arith", signature(e1="ml.col.def",e2="ml.col.def"), function(e1, e2) 
     # we only use string and number, so if they are not same we fall back to string
     dataType = "string"
   }
-  return(new(Class="ml.col.def",.expr=paste('(',as.ml.col.def(eval(e1)),.Generic,as.ml.col.def(eval(e2)),')',sep=''),.data_type=dataType,.parent=e1@.parent,.type="expr",.aggType=aggType(e1,e2)));
+  return(new(Class="ml.col.def",
+             .expr=paste('(',as.ml.col.def(eval(e1)),.Generic,as.ml.col.def(eval(e2)),')',sep=''),
+             .data_type=dataType,
+             .parent=e1@.parent,
+             .type="expr",
+             .aggType=aggType(e1,e2)));
 })
 
 #' @rdname arith
@@ -117,7 +122,8 @@ setMethod("Compare", signature(e1="ml.col.def", e2="ANY"), function(e1, e2) {
                      '":{"value":"',e2,
                      '","operator":"',.Generic,
                      '","orgPath":"',mlDf@.col.org_xpath[i],
-                     '","orgFormat":"',mlDf@.col.format[i],'"}}',sep='')
+                     '","orgFormat":"',mlDf@.col.format[i],
+                     '","xmlns":"',mlDf@.col.xmlns[i], '"}}',sep='')
   return(new(Class="ml.col.def",
              .expr=fieldQuery,
              .data_type="string",

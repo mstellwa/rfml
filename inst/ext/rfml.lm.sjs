@@ -21,16 +21,17 @@ function getLm(context, params) {
     /* Get the orginal name of the flatten fields */
     var orgFields = [];
     for (var field in fields) {
-      orgFields.push({"name": fields[field].orgField, "format": fields[field].orgFormat});
+      orgFields.push({"name": fields[field].orgField, "format": fields[field].orgFormat, "xmlns":fields[field].xmlns });
      }
   }
   /* test with cts.linearModel first, we can only handle element range indexes ,
     if we get error try math that does not require range indexes */
   try {
     var lm =  cts.linearModel(
-                [(orgFields[0].format == "XML") ? cts.elementReference(xs.QName(orgFields[0].name)) : cts.jsonPropertyReference(orgFields[0].name),
-                 (orgFields[1].format == "XML") ? cts.elementReference(xs.QName(orgFields[1].name)) : cts.jsonPropertyReference(orgFields[1].name)]
+                [(orgFields[0].format == "XML") ? cts.elementReference(fn.QName((orgFields[0].xmlns != "NA") ? forgFields[0].xmlns : "",orgFields[0].name)) : cts.jsonPropertyReference(orgFields[0].name),
+                 (orgFields[1].format == "XML") ? cts.elementReference(fn.QName((orgFields[1].xmlns != "NA") ? forgFields[1].xmlns : "",orgFields[1].name)) : cts.jsonPropertyReference(orgFields[1].name)]
                       ,null,whereQuery);
+
   } catch(err) {
     var lmArray = rfmlUtilities.fields2array(whereQuery, 1,getRows, fields);
     var lm =  math.linearModel(lmArray);

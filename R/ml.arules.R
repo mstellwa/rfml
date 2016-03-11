@@ -30,13 +30,13 @@ ml.arules <- function(data, itemField, support = 0.5, confidence = 0.8, maxlen =
     stop("arules is needed for this function to work. Please install it.",
          call. = FALSE)
   }
-
-  key <- .rfmlEnv$key
-  password <- rawToChar(PKI::PKI.decrypt(.rfmlEnv$conn$password, key))
-  username <- .rfmlEnv$conn$username
+  conn <- data@.conn
+  key <- .rfmlEnv$key[[conn@.id]]
+  password <- rawToChar(PKI::PKI.decrypt(conn@.password, key))
+  username <- conn@.username
   queryComArgs <- data@.queryArgs
 
-  mlHost <- paste("http://", .rfmlEnv$conn$host, ":", .rfmlEnv$conn$port, sep="")
+  mlHost <- paste("http://", conn@.host, ":", conn@.port, sep="")
   mlSearchURL <- paste(mlHost, "/v1/resources/rfml.arules", sep="")
 
   queryArgs <- c(queryComArgs, 'rs:supp'=support, 'rs:conf'=confidence, 'rs:maxlen'=maxlen, 'rs:target'=target)

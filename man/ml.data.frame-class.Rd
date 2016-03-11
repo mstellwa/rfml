@@ -12,6 +12,8 @@ An S4 class to represent a ml.data.frame.
 \describe{
 \item{\code{.name}}{A string with the internal name for the ml.data.frame}
 
+\item{\code{.conn}}{The ml.conn object that was created with ml.connect}
+
 \item{\code{.queryArgs}}{A list with parameters used to query MarkLogic Server}
 
 \item{\code{.start}}{A integer with the index of the first result to get}
@@ -29,6 +31,8 @@ An S4 class to represent a ml.data.frame.
 \item{\code{.col.org_xpath}}{A character vector with the xpath to the original names in the source documents}
 
 \item{\code{.col.format}}{A character vector withthe  source document format XML/JSON}
+
+\item{\code{.col.xmlns}}{A character vector with the namespace for the source document}
 
 \item{\code{.col.defs}}{A list of \link{ml.col.def-class} added fields}
 }}

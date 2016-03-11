@@ -1,13 +1,21 @@
 #' Creates a ml.data.frame object
 #'
 #' This function creates an object of ml.data.frame, it is based on a search done using
-#' the provided query, collection and/or directory parameters.
+#' the provided query, collection, directory and/or fiedlFilter parameters. For fieldFilter
+#' parameter see details section.
 #' The operations that can be applied onto this class of objects are very
 #' similar to those of data.frame. No real data is loaded into R. The data transfered
 #' between MarkLogic Server and R is minimized.
 #'
+#' When using fieldFilter all comparison operators can be used. But in order to use
+#' the ">"  "<"  "!=" "<=" ">=" operators there muset exist a element range index on the source field for
+#' the fieldotherwise a error will be raised. "==" operator will always work since it does
+#' not depend of range indexes.
+#'
+#' @param conn A ml.conn
 #' @param query The query string used to define the result.
-#' @param fieldFilter Field level filtering. Currently only the == operator are supported. Multiple field filters are separated by ,
+#' @param fieldFilter Field level filtering. Multiple field filters are separated by , See details for limitations.
+#' @param ns A character with the namespace URI to be used with fieldFilter, default is none
 #' @param collection A list of collection URI:s to filter on.
 #' @param directory A list of directory URI:s to filter on.
 #' @param relevanceScores TRUE/FALSE. If the result attributes score, confidence and fitness should be included. Default is FALSE
@@ -25,19 +33,24 @@
 #'  mlIris <- ml.data.frame(fieldFilter = "Species == setosa")
 #' }
 #' @export
-ml.data.frame <- function (query="", fieldFilter="", collection = c(), directory = c(), relevanceScores = FALSE, docUri = FALSE)
+ml.data.frame <- function (conn, query="", fieldFilter="", ns = "NA", collection = c(), directory = c(), relevanceScores = FALSE, docUri = FALSE)
 {
-  if (length(.rfmlEnv$conn) != 4) {
-    stop("Need create a connection object. Use ml.connect first.")
+  # if (length(.rfmlEnv$conn) != 4) {
+  #   stop("Need create a connection object. Use ml.connect first.")
+  # }
+
+  if (class(conn) != "ml.conn" || missing(conn)) {
+    stop("Need a valid ml.conn object. Use ml.connect to create one.")
   }
   # get data from ML
   # we need to create a "unique" name for the frame that we use to save the resultset
   dframe <- format(Sys.time(),"%Y%m%d%H%M%S")
-  key <- .rfmlEnv$key
-  password <- rawToChar(PKI::PKI.decrypt(.rfmlEnv$conn$password, key))
-  username <- .rfmlEnv$conn$username
+  # need to check that the key exits...
+  key <- .rfmlEnv$key[[conn@.id]]
+  password <- rawToChar(PKI::PKI.decrypt(conn@.password, key))
+  username <- conn@.username
 
-  mlHost <- paste("http://", .rfmlEnv$conn$host, ":", .rfmlEnv$conn$port, sep="")
+  mlHost <- paste("http://", conn@.host, ":", conn@.port, sep="")
   mlSearchURL <- paste(mlHost, "/v1/resources/rfml.dframe", sep="")
   nPageLength=30
 
@@ -51,16 +64,23 @@ ml.data.frame <- function (query="", fieldFilter="", collection = c(), directory
     fieldExprs <- unlist(strsplit(fieldFilter, ",", fixed = TRUE))
     fieldQuery <- "{"
     for (i in 1:length(fieldExprs)) {
-      fieldExpr <- unlist(strsplit(fieldExprs[i], "==", fixed = TRUE))
+      # get the values on both side of the operator
+      fieldExpr <- unlist(strsplit(fieldExprs[i], "==|>|<|!=", perl = TRUE))
       if (length(fieldExpr) != 2) {
-        stop("Only == is a supported operator for a fieldFilter!")
+        stop("Need to provide a valid expression")
       }
+      # get the operator
+      opMatch <- regexpr("==|>|<|!=", fieldExprs[i],perl = TRUE)
+      opIndex <- opMatch[[1]]
+      opLength <- attr(opMatch, "match.length")
+      op <- trimws(substr(fieldExprs[i], opIndex, opIndex+opLength))
       if (i > 1) {
         fieldQuery <- paste(fieldQuery, ',', sep='')
       }
       fieldQuery <- paste(fieldQuery, '"', trimws(fieldExpr[1]),
                           '":{"value":"',trimws(fieldExpr[2]),
-                          '","operator":"==","orgPath":"","orgFormat":""}',sep='')
+                          '","operator":"', op ,'","orgPath":"","orgFormat":"","xmlns":"',
+                          ns, '"}',sep='')
     }
     fieldQuery <- paste(fieldQuery, '}', sep='')
     queryComArgs <- c(queryComArgs,  'rs:fieldQuery'=fieldQuery)
@@ -107,6 +127,7 @@ ml.data.frame <- function (query="", fieldFilter="", collection = c(), directory
 
   res <- new("ml.data.frame")
   res@.name <- dframe
+  res@.conn <- conn
   res@.queryArgs <- queryComArgs
   res@.nrows <- as.integer(rContent$nrows)
   res@.start <- 1L
@@ -117,18 +138,25 @@ ml.data.frame <- function (query="", fieldFilter="", collection = c(), directory
   fieldOrgNames <- c()
   fieldOrgXPaths <- c()
   fieldFormat <- c()
+  fieldXmlns <- c()
   for (i in 1:length(fieldList)) {
     fieldNames[i] <-  as.character(attributes(fieldList[i]))
     fieldTypes[i] <- fieldList[[i]]$fieldType
     fieldOrgNames[i] <- fieldList[[i]]$orgField
     fieldOrgXPaths[i] <- fieldList[[i]]$orgPath
     fieldFormat[i] <- fieldList[[i]]$orgFormat
+    if (!is.null(fieldList[[i]]$xmlns)) {
+      fieldXmlns[i] <- fieldList[[i]]$xmlns
+    }
   }
   res@.col.name <- fieldNames
   res@.col.data_type <- fieldTypes
   res@.col.org_name <- fieldOrgNames
   res@.col.org_xpath <- fieldOrgXPaths
   res@.col.format <- fieldFormat
+  if (!is.null(fieldXmlns)) {
+    res@.col.xmlns <- fieldXmlns
+  }
   res@.col.defs <- list()
   return(res);
 
@@ -158,6 +186,7 @@ setMethod("as.data.frame", signature(x="ml.data.frame"),
 #' the username and the name parameter, for example /rfml/admin/iris/.
 #' The documents will belong to a collection named "name".
 #'
+#' @param conn A ml.conn object that has a valid connection to a MarkLogic Server
 #' @param x a Data Frame or ml.data.frame object.
 #' @param name The name of the object.
 #' @param format The format od the documents that is created, json or XML. Default is json
@@ -171,10 +200,14 @@ setMethod("as.data.frame", signature(x="ml.data.frame"),
 #'  mlIris <- as.ml.data.frame(iris, "iris")
 #' }
 #' @export
-as.ml.data.frame <- function (x, name, format = "json", directory = "") {
+as.ml.data.frame <- function (conn, x, name, format = "json", directory = "") {
+
+  if (class(conn) != "ml.conn" || missing(conn)) {
+    stop("Need a valid ml.conn object. Use ml.connect to create one.")
+  }
 
   if (is.data.frame(x)) {
-    suppressWarnings(rfmlCollection <- .insert.ml.data(x, name, format, directory))
+    suppressWarnings(rfmlCollection <- .insert.ml.data(conn, x, name, format, directory))
   } else if (is.ml.data.frame(x)) {
     #stop("Only objects of ml.data.frame type are supported!")
 
@@ -183,7 +216,7 @@ as.ml.data.frame <- function (x, name, format = "json", directory = "") {
   }
 
   # create a ml.data.frame object based on a collection search
-  return(ml.data.frame(collection=c(rfmlCollection)));
+  return(ml.data.frame(conn, collection=c(rfmlCollection)));
 }
 
 #' Remove the data of a ml.data.frame object in MarkLogic server database.
@@ -219,13 +252,18 @@ rm.ml.data.frame <- function(x, directory = "" ){
 #' Extract subsets of a ml.data.frame
 #'
 #' Extract subset of columns and/or rows of a ml.data.frame. When extracting rows a ml.col.def
-#' referense can be used with only the equal (==) comparsion operator or a search text.
+#' referense can be used or a search text. See details for limitations when using a reference.
 #' The row filtering will be used togheter with the existing query of the ml.data.frame
+#'
+#' When extracting rows using ml.col.def all comparison operators can be used. But in order to use
+#' the ">"  "<"  "!=" "<=" ">=" operators there muset exist a element range index on the source field for
+#' the ml.col.def refrence otherwise a error will be raised. "==" operator will always work since it does
+#' not depend of range indexes.
 #'
 #' @param x a ml.data.frame from which to extract element(s).
 #' @param i,j Indices specifying elements to extract. Indices are 'numeric' or 'character' vectors or empty (missing) or 'NULL'.
 #' @param ... Not used.
-#' @param drop Not implemented yet.
+#' @param drop Not used.
 #' @return A ml.data.frame object is returned
 #' @examples
 #' \dontrun{
@@ -323,6 +361,7 @@ setMethod("[", signature(x = "ml.data.frame"),
                 x@.col.org_name <- x@.col.org_name[cols]
                 x@.col.org_xpath <- x@.col.org_xpath[cols]
                 x@.col.format <- x@.col.format[cols]
+                x@.col.xmlns <- x@.col.xmlns[cols]
                 # need to check if selected column is part of .col.defs
                 colDefs <- list()
                 if (length(x@.col.defs) > 0) {
