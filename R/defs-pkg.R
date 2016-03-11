@@ -8,7 +8,7 @@
 # name of libs used
 .rfmlEnv$mlLibs <- c("rfmlUtilities", "xml2json")
 # name of exstentions used
-.rfmlEnv$mlExts <- c("rfml.dframe", "rfml.lm", "rfml.stat", "rfml.matrix", "rfml.collection", "rfml.arules")
+.rfmlEnv$mlExts <- c("rfml.dframe", "rfml.lm", "rfml.stat", "rfml.matrix", "rfml.collection", "rfml.arules", "rfml.check")
 
 #' An S4 class to represent a ml.connection.
 #'

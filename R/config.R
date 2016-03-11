@@ -46,7 +46,21 @@ ml.init.database <- function(host = "localhost", port = "8000", adminuser = "adm
   }
   suppressWarnings(closeAllConnections())
   # need to store the current version of rfml
-  # packageVersion("rfml")
+  initDate <- as.character(Sys.Date())
+  # Need to post a config document that can used to verify against
+  mlURL <- paste(mlHost, "/v1/resources/rfml.check", sep="")
+  queryArgs <- list('rs:rfmlVersion'=rfmlVer, 'rs:initDate'=initDate)
+  response <- PUT(mlURL,query = queryArgs, authenticate(adminuser, password, type="digest"), accept_xml())
+  status_code <- response$status_code
+  if (status_code != 204) {
+    rContent <- content(response)
+    errorMsg <- paste("statusCode: ",
+                      rContent$errorResponse$statusCode,
+                      ", status: ", rContent$errorResponse$status,
+                      ", message: ", rContent$errorResponse$message, sep="")
+    stop(paste("Ops, something went wrong.", errorMsg))
+  }
+
   message(paste(host, ":", port, " is now ready for use with rfml",sep=""))
 }
 

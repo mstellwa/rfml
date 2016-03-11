@@ -7,68 +7,14 @@
 # it will add a warning
 .check.database <- function(mlHost, username, password) {
 
-  # name of libs used
-  mlLibs <- .rfmlEnv$mlLibs
-
-  mlExts <- .rfmlEnv$mlExts
-
-  # get libraries, we only look under /ext/rfml/ and support javascript (.sjs)
-  mlURL <- paste(mlHost, "/v1/ext/rfml/?format=json", sep="")
-  response <- GET(mlURL, authenticate(username, password, type="digest"), accept_json())
-  status_code <- response$status_code
+  mlURL <- paste(mlHost, "/v1/resources/rfml.check", sep="")
+  response <- GET(mlURL,authenticate(username, password, type="digest"), accept_json())
   rContent <- content(response)
-  if (status_code != 200){
-    # something else went wrong, could be wrong user etc
-    errorMsg <- paste("statusCode: ",
-                      rContent$errorResponse$statusCode,
-                      ", status: ", rContent$errorResponse$status,
-                      ", message: ", rContent$errorResponse$message, sep="")
-    stop(paste("Ops, something went wrong.", errorMsg))
-    return(FALSE)
-  } else if (length(rContent$assets) == 0) {
+  if (response$status_code != 200){
     return(FALSE)
   }
-  libs <- rContent$assets
-  nbrFound <- 0
-  # fix libs rfmlUtilities -> /ext/rfml/rfmlUtilities.sjs
-  for (i in 1:length(mlLibs)) {
-    mlLibs[i] <- paste("/ext/rfml/", mlLibs[i], ".sjs", sep="")
-  }
-  for (i in 1:length(libs)) {
-    if (libs[[i]]$asset %in% mlLibs) {
-      nbrFound <- nbrFound + 1
-    }
-  }
-  if (nbrFound != length(mlLibs)) {
-    return(FALSE)
-  }
-  # get extensions, we only look under /ext/rfml/ and support javascript (.sjs)
-  mlURL <- paste(mlHost, "/v1/config/resources?format=json", sep="")
-  response <- GET(mlURL, authenticate(username, password, type="digest"), accept_json())
-  status_code <- response$status_code
-  rContent <- content(response)
-  if (status_code != 200){
-    # something else went wrong, could be wrong user etc
-    errorMsg <- paste("statusCode: ",
-                      rContent$errorResponse$statusCode,
-                      ", status: ", rContent$errorResponse$status,
-                      ", message: ", rContent$errorResponse$message, sep="")
-    stop(paste("Ops, something went wrong.", errorMsg))
-    return(FALSE)
-  } else if (length(rContent$resources$resource) == 0) {
-    return(FALSE)
-  }
-  exts <- rContent$resources$resource
-  nbrFound <- 0
-  for (i in 1:length(exts)) {
-    if (exts[[i]]$name %in% mlExts) {
-      nbrFound <- nbrFound + 1
-    }
-  }
-  if (nbrFound != length(mlExts)) {
-    return(FALSE)
-  }
-  return(TRUE)
+  curRfmlVer <- as.character(packageVersion("rfml"))
+  return(curRfmlVer == rContent$rfmlVersion)
 }
 
 # internal function to add rest interface used
