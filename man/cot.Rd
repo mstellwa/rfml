@@ -7,7 +7,7 @@
 cot(x)
 }
 \arguments{
-\item{x}{a \link{ml.data.frame} field.}
+\item{x}{an \link{ml.col.def-class} object.}
 }
 \value{
 The cotangent of x.

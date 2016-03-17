@@ -9,7 +9,7 @@ ml.data.frame(conn, query = "", fieldFilter = "", ns = "NA",
   docUri = FALSE)
 }
 \arguments{
-\item{conn}{A \link{ml.conn} object created by \link{ml.connect}}
+\item{conn}{A \link{ml.conn-class} object created by \link{ml.connect}}
 
 \item{query}{The query string used to define the result, see details for more information about syntax.}
 

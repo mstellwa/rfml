@@ -1,8 +1,8 @@
 
 ############## General ######################
-#' Prints information of a \link{ml.col.def} object.
+#' Prints information of a \link{ml.col.def-class} object.
 #'
-#' @param x an \link{ml.col.def} object
+#' @param x an \link{ml.col.def-class} object
 #' @export
 setMethod("print", signature(x="ml.col.def"),
           function (x) {
@@ -12,9 +12,9 @@ setMethod("print", signature(x="ml.col.def"),
                       "\nUse this to define new columns on a ml.data.frame using the $ operator. To select a subset of a ml.data.frame, use bldf[] notation. "),"\n")
           }
 )
-#' Prints information of a \link{ml.col.def}
+#' Prints information of a \link{ml.col.def-class}
 #'
-#' @param object an \link{ml.col.def} object
+#' @param object an \link{ml.col.def-class} object
 #' @export
 setMethod("show", signature(object="ml.col.def"),
           function (object) {
@@ -24,12 +24,12 @@ setMethod("show", signature(object="ml.col.def"),
                       ,"\nUse this to define new columns on a ml.data.frame using the $ operator. To select a subset of a ml.data.frame, use bldf[] notation. "),"\n")
           }
 )
-#' Check if an object is of type \link{ml.col.def}
+#' Check if an object is of type \link{ml.col.def-class}
 #'
-#' This function checks if the input is of type \link{ml.col.def}.
+#' This function checks if the input is of type \link{ml.col.def-class}.
 #'
 #' @param x The input can be of any type.
-#' @return True if it is a \link{ml.col.def}. False otherwise.
+#' @return True if it is a \link{ml.col.def-class}. False otherwise.
 #' @export
 is.ml.col.def <-
   function(x) {
@@ -53,7 +53,7 @@ as.ml.col.def <- function(x) {
 ################ Arithmetic operators ############################
 #' Arithmetic Operators
 #'
-#' @param e1,e2 numeric vectors or string or \link{ml.col.def} object.
+#' @param e1,e2 numeric vectors or string or \link{ml.col.def-class} object.
 #' @name arith
 NULL
 
@@ -105,7 +105,7 @@ setMethod("Arith", signature(e1="ANY", e2="ml.col.def"), function(e1, e2) {
 #'
 #' Relational operators used for field level filtering of a \link{ml.data.frame} object.
 #'
-#' @param e1 an \link{ml.col.def} object.
+#' @param e1 an \link{ml.col.def-class} object.
 #' @param e2 any object
 #' @export
 setMethod("Compare", signature(e1="ml.col.def", e2="ANY"), function(e1, e2) {
@@ -141,7 +141,7 @@ setMethod("Compare", signature(e1="ml.col.def", e2="ANY"), function(e1, e2) {
 #' Only abs, acos, asin, atan, ceiling, cos, cosh, exp, floor, log, log10 ,
 #' tan, tanh, sqrt, sin, sinh and trunc is currently supported.
 #'
-#' @param x an \link{ml.col.def} object.
+#' @param x an \link{ml.col.def-class} object.
 #' @export
 setMethod("Math",signature(x='ml.col.def'),function (x) {
 
@@ -173,7 +173,7 @@ setMethod("Math",signature(x='ml.col.def'),function (x) {
 #'
 #' Returns the cotangent of x.
 #'
-#' @param x a \link{ml.data.frame} field.
+#' @param x an \link{ml.col.def-class} object.
 #' @return The cotangent of x.
 #' @export
 cot <- function (x) {
@@ -187,7 +187,7 @@ cot <- function (x) {
 #' Returns numeric expression converted from radians to degrees. The function is applied
 #' when the result is returned to the client.
 #'
-#' @param x a \link{ml.data.frame} field.
+#' @param x an \link{ml.col.def-class} object.
 #' @return numeric expression converted from radians to degrees.
 #' @export
 degrees <- function (x) {
@@ -201,7 +201,7 @@ degrees <- function (x) {
 #' Returns numeric expression converted from degrees to radians. The function is applied
 #' when the result is returned to the client.
 #'
-#' @param x a \link{ml.data.frame} field.
+#' @param x an \link{ml.col.def-class} object.
 #' @return numeric expression converted from degrees to radians.
 #' @export
 radians <- function (x) {
@@ -212,24 +212,24 @@ radians <- function (x) {
 
 
 ################ Casting operators ############################
-#' Cast a \link{ml.col.def} expresion to numeric.
+#' Cast a \link{ml.col.def-class} expresion to numeric.
 #'
-#' This function will add a function to cast the expresion of the \link{ml.col.def} to
+#' This function will add a function to cast the expresion of the \link{ml.col.def-class} to
 #' a numeric value. The cast will be done when the result is returned to the client.
 #'
-#' @param  x an \link{ml.col.def} object
+#' @param  x an \link{ml.col.def-class} object.
 #' @export
 setMethod('as.numeric',signature(x="ml.col.def"),function (x) {
   #checkLogical(F,x);
   return(new(Class="ml.col.def",.exor=paste('Number(',as.ml.col.def(eval(x)),')',sep=''),.parent=x@.parent,.data_type="number",.type="expr",.aggType=aggType(x)));
 })
 
-#' Cast a \link{ml.col.def} expresion to string
+#' Cast a \link{ml.col.def-class} expresion to string
 #'
-#' This function will add a function to cast the expresion of the \link{ml.col.def} to
+#' This function will add a function to cast the expresion of the \link{ml.col.def-class} to
 #' a string value. The cast will be done when the result is returned to the client.
 #'
-#' @param  x an \link{ml.col.def} object
+#' @param  x an \link{ml.col.def-class} object
 #' @export
 #' @export
 setMethod('as.character',signature(x="ml.col.def"),function (x) {
@@ -237,12 +237,12 @@ setMethod('as.character',signature(x="ml.col.def"),function (x) {
   return(new(Class="ml.col.def",.expr=paste('String(',as.ml.col.def(x),')',sep=''),.parent=x@.parent,.data_type="string",.type="expr",.aggType=aggType(x)));
 })
 
-#' Cast a \link{ml.col.def} expresion to integer
+#' Cast a \link{ml.col.def-class} expresion to integer
 #'
-#' This function will add a function to cast the expresion of the \link{ml.col.def} to
+#' This function will add a function to cast the expresion of the \link{ml.col.def-class} to
 #' a integer value. The cast will be done when the result is returned to the client.
 #'
-#' @param  x an \link{ml.col.def} object
+#' @param  x an \link{ml.col.def-class} object
 #' @export
 setMethod('as.integer',signature(x="ml.col.def"),function (x) {
 

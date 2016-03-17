@@ -3,14 +3,14 @@
 \docType{methods}
 \name{print,ml.col.def-method}
 \alias{print,ml.col.def-method}
-\title{Prints information of a \link{ml.col.def} object.}
+\title{Prints information of a \link{ml.col.def-class} object.}
 \usage{
 \S4method{print}{ml.col.def}(x)
 }
 \arguments{
-\item{x}{an \link{ml.col.def} object}
+\item{x}{an \link{ml.col.def-class} object}
 }
 \description{
-Prints information of a \link{ml.col.def} object.
+Prints information of a \link{ml.col.def-class} object.
 }
 

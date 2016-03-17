@@ -3,15 +3,15 @@
 \docType{methods}
 \name{as.character,ml.col.def-method}
 \alias{as.character,ml.col.def-method}
-\title{Cast a \link{ml.col.def} expresion to string}
+\title{Cast a \link{ml.col.def-class} expresion to string}
 \usage{
 \S4method{as.character}{ml.col.def}(x)
 }
 \arguments{
-\item{x}{an \link{ml.col.def} object}
+\item{x}{an \link{ml.col.def-class} object}
 }
 \description{
-This function will add a function to cast the expresion of the \link{ml.col.def} to
+This function will add a function to cast the expresion of the \link{ml.col.def-class} to
 a string value. The cast will be done when the result is returned to the client.
 }
 

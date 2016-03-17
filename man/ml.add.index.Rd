@@ -28,7 +28,7 @@ ml.add.index(x, scalarType = "string",
 
 \item{password}{The password. Default is the same as used for conn.}
 
-\item{conn}{A \link{ml.conn} with a connection to a MarkLoic server. Optional.}
+\item{conn}{A \link{ml.conn-class} with a connection to a MarkLoic server. Optional.}
 }
 \value{
 The function will raise a error if something goes wrong.

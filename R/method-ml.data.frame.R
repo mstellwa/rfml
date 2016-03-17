@@ -18,7 +18,7 @@
 #'
 #' @seealso \code{\link[rfml]{as.data.frame}} for pulling data, \code{\link{as.ml.data.frame}} for uploading data, \code{\link{rm.ml.data.frame}} for delete uploaded data
 #'
-#' @param conn A \link{ml.conn} object created by \link{ml.connect}
+#' @param conn A \link{ml.conn-class} object created by \link{ml.connect}
 #' @param query The query string used to define the result, see details for more information about syntax.
 #' @param fieldFilter Field level filtering. Multiple field filters are separated by , See details for limitations.
 #' @param ns A character with the namespace URI to be used with fieldFilter, default is none

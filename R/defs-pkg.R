@@ -30,7 +30,7 @@ setClass("ml.conn",
 #' An S4 class to represent a ml.data.frame.
 #'
 #' @slot .name A string with the internal name for the ml.data.frame
-#' @slot .conn The \link{ml.conn} object that was created with ml.connect
+#' @slot .conn The \link{ml.conn-class} object that was created with ml.connect
 #' @slot .queryArgs A list with parameters used to query MarkLogic Server
 #' @slot .start A integer with the index of the first result to get
 #' @slot .nrows A integer with the number of rows in the result

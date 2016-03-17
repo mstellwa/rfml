@@ -129,7 +129,7 @@ ml.clear.database <- function(host = "localhost", port = "8000", adminuser = "ad
 #'  }
 #' To remove the sample use the \link{rm.ml.data.frame} on the returned ml.data.frame object.
 #'
-#' @param conn A \link{ml.conn} with a connection to a MarkLoic server
+#' @param conn A \link{ml.conn-class} with a connection to a MarkLoic server
 #' @param dataSet Which dataset to upload, "baskets"
 #' @param name The name of the object. The data will be added to a collection with that name. If not provided the dataSet name is used.
 #' @return A \link{ml.data.frame} object pointing to the uploaded dataset.
@@ -177,7 +177,7 @@ ml.load.sample.data <- function(conn, dataSet = "baskets", name = "") {
 #' @param port The port number of the MarkLogic Manage server. 8002 is used default
 #' @param adminuser The username of a user that have rights to create index. Default is the same as used for conn
 #' @param password The password. Default is the same as used for conn.
-#' @param conn A \link{ml.conn} with a connection to a MarkLoic server. Optional.
+#' @param conn A \link{ml.conn-class} with a connection to a MarkLoic server. Optional.
 #' @return The function will raise a error if something goes wrong.
 #' @export
 ml.add.index <- function(x, scalarType= "string", collation = "http://marklogic.com/collation/",

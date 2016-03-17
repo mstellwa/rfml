@@ -7,7 +7,7 @@
 ml.load.sample.data(conn, dataSet = "baskets", name = "")
 }
 \arguments{
-\item{conn}{A \link{ml.conn} with a connection to a MarkLoic server}
+\item{conn}{A \link{ml.conn-class} with a connection to a MarkLoic server}
 
 \item{dataSet}{Which dataset to upload, "baskets"}
 

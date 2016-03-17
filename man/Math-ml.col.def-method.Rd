@@ -8,7 +8,7 @@
 \S4method{Math}{ml.col.def}(x)
 }
 \arguments{
-\item{x}{an \link{ml.col.def} object.}
+\item{x}{an \link{ml.col.def-class} object.}
 }
 \description{
 Mathematical functions that can be used on \link{ml.data.frame} fields. The function is applied

@@ -3,15 +3,15 @@
 \docType{methods}
 \name{as.integer,ml.col.def-method}
 \alias{as.integer,ml.col.def-method}
-\title{Cast a \link{ml.col.def} expresion to integer}
+\title{Cast a \link{ml.col.def-class} expresion to integer}
 \usage{
 \S4method{as.integer}{ml.col.def}(x)
 }
 \arguments{
-\item{x}{an \link{ml.col.def} object}
+\item{x}{an \link{ml.col.def-class} object}
 }
 \description{
-This function will add a function to cast the expresion of the \link{ml.col.def} to
+This function will add a function to cast the expresion of the \link{ml.col.def-class} to
 a integer value. The cast will be done when the result is returned to the client.
 }
 
