@@ -17,17 +17,21 @@ ml.init.database(host = "localhost", port = "8000", adminuser = "admin",
 \item{password}{The password admin is default.}
 }
 \value{
-The function will raise a error...
+Nothing if success or raise a error.
 }
 \description{
 The function installs \href{http://docs.marklogic.com/guide/rest-dev/extensions}{REST extensions} and
-modules needed to use the package. You only needed to run it once for each database.
+modules needed to use the package againts a MarkLogic Server database. The function needs to be executed once
+for each database that is going to be used with rfml. It also creates a document, /rfml/rfmlInfo.json, that
+stores the version of the rfml package and the date the database are initiated.
 }
 \details{
 The database must have a \href{http://docs.marklogic.com/guide/admin/http}{REST server}
 and a \href{http://docs.marklogic.com/guide/admin/databases#id_38484}{module database}.
+It also adds a document, /rfml/rfmlInfo.json, that stores the version of the rfml
+package and the date the database are initiated.
 
-The user that is used for the login must have the  rest-admin role,
+The user that is used for the function need to have the rest-admin role,
 or at least the following privileges:
 \itemize{
  \item http://marklogic.com/xdmp/privileges/rest-admin

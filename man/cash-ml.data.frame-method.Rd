@@ -3,12 +3,12 @@
 \docType{methods}
 \name{$,ml.data.frame-method}
 \alias{$,ml.data.frame-method}
-\title{Returns a ml.data.frame object field as a \link{ml.col.def-class}}
+\title{Returns a \link{ml.data.frame} field as a \link{ml.col.def-class}}
 \usage{
 \S4method{$}{ml.data.frame}(x, name)
 }
 \arguments{
-\item{x}{an ml.data.frame object}
+\item{x}{an \link{ml.data.frame} object}
 
 \item{name}{field name}
 }
@@ -16,6 +16,6 @@
 \link{ml.col.def-class} object
 }
 \description{
-Returns a ml.data.frame object field as a \link{ml.col.def-class}
+Returns a \link{ml.data.frame} field as a \link{ml.col.def-class}
 }
 

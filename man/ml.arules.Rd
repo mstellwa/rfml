@@ -8,7 +8,7 @@ ml.arules(data, itemField, support = 0.5, confidence = 0.8, maxlen = 5,
   target = "rules")
 }
 \arguments{
-\item{data}{an ml.data.frame object}
+\item{data}{an \link{ml.data.frame} object}
 
 \item{itemField}{a ml.data.frame field which is the field that the itemsets will be created of. The underlying field needs to have a Range Index defined.}
 
@@ -25,9 +25,9 @@ Returns an object of class rules or itemsets.
 }
 \description{
 Mine frequent itemsets or association rules using MarkLogic Server built in Range Index functions.
-The function require that there is a Range Index on the underlying field of itemField. It will return
-a object that is of class rules or itemsets defined in the arules package. It will need the arules package
-installed.
+The function require that there is a Range Index on the underlying field of itemField, a range indexe can
+be created with the \link{ml.add.index} function. It will return a object that is of class rules or itemsets
+as defined in the arules package. It will need the arules package installed.
 }
 \details{
 The frequent itemset and association rules extraction method is using the same method as the Apriori
@@ -35,7 +35,7 @@ algorithm by first identify all 1-n itemsets that satisfy the support threshold 
 extract rules that satisfy the confidence threshold.
 
 It is depended on that there are a Range Index on the underlying field for the itemField.
-Information about the name of the field can be shown by mlDataFrame$itemField, where mlDataFrame
+Information about the name of the field can be shown by \code{mlDataFrame$itemField}, where mlDataFrame
 is a ml.data.frame object and itemField is the name of the field.
 }
 

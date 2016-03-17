@@ -28,22 +28,22 @@ ml.add.index(x, scalarType = "string",
 
 \item{password}{The password. Default is the same as used for conn.}
 
-\item{conn}{A ml.conn with a connection to a MarkLoic server}
+\item{conn}{A \link{ml.conn} with a connection to a MarkLoic server. Optional.}
 }
 \value{
 The function will raise a error if something goes wrong.
 }
 \description{
 The function creates or updates a \href{http://docs.marklogic.com/guide/concepts/indexing#id_51573}{range element index}
-on the underlying element/property of a ml.data.frame field.
+on the underlying element/property of a \link{ml.data.frame} field.
 The user that is used for the login needs the manage-admin role, or the following privilege:
 \itemize{
  \item http://marklogic.com/xdmp/privileges/manage-admin
  }
 }
 \details{
-The function only creates and updates range index on a XML element or JSON property based on the ml.data.frame field.
-Information about the field can be shown by mlDataFrame$itemField, where mlDataFrame is a ml.data.frame object
+The function only creates and updates range index on a XML element or JSON property based on the \link{ml.data.frame} field.
+Information about the field can be shown by \code{mlDataFrame$itemField}, where mlDataFrame is a \link{ml.data.frame} object
 and itemField is the name of the field. Indexes created with this function will always have range-value-positions equal true.
 }
 

@@ -16,9 +16,9 @@ To use Linear Regression
 ```R
 library(rfml)
 # connect to source database
-ml.connect()
+mlLocal <- ml.connect()
 # Create a ml.data.frame based on iris, you can upload the iris data set using as.ml.data.frame
-mlIris <- ml.data.frame(collection = "iris")
+mlIris <- ml.data.frame(mlLocal, collection = "iris")
 # create a linear model
 lm <- ml.lm(Sepal.Length~Sepal.Width, mlIris)
 # print the model
@@ -46,11 +46,11 @@ In order to use it there need to exists range index on the element/property that
 ```R
 library(rfml)
 # connect to source database
-ml.connect()
+mlLocal <- ml.connect()
 # Upload provided sample data
-mlBaskets <- ml.load.sample.data("baskets", "baskets")
+mlBaskets <- ml.load.sample.data(mlLocal, "baskets", "baskets")
 # create a index on the productName field in the database rfml, using the same connection infromation as ml.connect
-ml.add.index(x = mlBaskets$lineItem1productName, scalarType = "string", database = "rfml")
+ml.add.index(x = mlBaskets$lineItem1productName, scalarType = "string", database = "rfml", conn = mlLocal)
 # ==>
 # Range element index created on productName
 ```

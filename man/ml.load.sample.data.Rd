@@ -7,14 +7,14 @@
 ml.load.sample.data(conn, dataSet = "baskets", name = "")
 }
 \arguments{
-\item{conn}{A ml.conn with a connection to a MarkLoic server}
+\item{conn}{A \link{ml.conn} with a connection to a MarkLoic server}
 
 \item{dataSet}{Which dataset to upload, "baskets"}
 
 \item{name}{The name of the object. The data will be added to a collection with that name. If not provided the dataSet name is used.}
 }
 \value{
-A ml.data.frame object pointing to the uploaded dataset.
+A \link{ml.data.frame} object pointing to the uploaded dataset.
 }
 \description{
 The function uploads a sample data set to MarkLogic Server and returns a ml.data.frame object.
@@ -26,8 +26,8 @@ To remove the sample use the \link{rm.ml.data.frame} on the returned ml.data.fra
 }
 \examples{
 \dontrun{
- ml.connect()
- mlBaskets <- ml.load.sample.data("baskets")
+ locConn <- ml.connect()
+ mlBaskets <- ml.load.sample.data(locConn, "baskets")
 }
 }
 

@@ -17,11 +17,12 @@ ml.clear.database(host = "localhost", port = "8000", adminuser = "admin",
 \item{password}{The password admin is default.}
 }
 \value{
-The function will raise a error...
+Nothing if success otherwise it will raise an error.
 }
 \description{
 The function removes the \href{http://docs.marklogic.com/guide/rest-dev/extensions}{REST extensions} and
-modules added with the \link{ml.init.database} function.
+modules added with the \link{ml.init.database} function. It also removes the document, /rfml/rfmlInfo.json,
+that stores the version of the rfml package and the date the database are initiated.
 }
 \details{
 The user that is used for the login must have the  rest-admin role, or the following privileges:

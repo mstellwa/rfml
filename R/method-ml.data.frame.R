@@ -1,19 +1,25 @@
-#' Creates a ml.data.frame object
+#' Creates a \link{ml.data.frame} object
 #'
-#' This function creates an object of ml.data.frame, it is based on a search done using
-#' the provided query, collection, directory and/or fiedlFilter parameters. For fieldFilter
-#' parameter see details section.
-#' The operations that can be applied onto this class of objects are very
-#' similar to those of data.frame. No real data is loaded into R. The data transfered
-#' between MarkLogic Server and R is minimized.
+#' A ml.data.frame object is an abstraction layer of data stored in a MarkLogic Server database. It is created based
+#' on the provided query, collection, directory and/or fiedlFilter parameters. For query and fieldFilter
+#' parameters see details section. It present data in MarkLogic Server in a tabular format.
+#' The ml.data.frame object enables many of the operations that can be used with a data.frame object.
 #'
-#' When using fieldFilter all comparison operators can be used. But in order to use
-#' the ">"  "<"  "!=" "<=" ">=" operators there muset exist a element range index on the source field for
-#' the fieldotherwise a error will be raised. "==" operator will always work since it does
-#' not depend of range indexes.
+#' The query parameter are using the \href{http://docs.marklogic.com/guide/search-dev/string-query}{string search grammar}
+#' for searching for data, all of the syntax is supported except contstraints. This enables searches such as
+#' "dog AND cat"  or "dog NEAR cat". The search is always done on all fields in the data, for a more precise search
+#' use the fieldFilter.
 #'
-#' @param conn A ml.conn
-#' @param query The query string used to define the result.
+#' fieldFilter enables filtering on a specific field using comparison operators can be used. For
+#' the ">"  "<"  "!=" "<=" ">=" operators there muset exist a
+#' \href{http://docs.marklogic.com/guide/admin/range_index#id_93351}{element range index}
+#' on the source field or a error will be raised, element range index can be created using the \link{ml.add.index}
+#' function. "==" operator will always work since it does not depend of range indexes.
+#'
+#' @seealso \code{\link[rfml]{as.data.frame}} for pulling data, \code{\link{as.ml.data.frame}} for uploading data, \code{\link{rm.ml.data.frame}} for delete uploaded data
+#'
+#' @param conn A \link{ml.conn} object created by \link{ml.connect}
+#' @param query The query string used to define the result, see details for more information about syntax.
 #' @param fieldFilter Field level filtering. Multiple field filters are separated by , See details for limitations.
 #' @param ns A character with the namespace URI to be used with fieldFilter, default is none
 #' @param collection A list of collection URI:s to filter on.
@@ -24,13 +30,13 @@
 #' @examples
 #' \dontrun{
 #'  library(rfml)
-#'  ml.connect()
+#'  localConn <- ml.connect()
 #'  # create a ml.data.frame based on a search
-#'  mlIris <- ml.data.frame("setosa")
+#'  mlIris <- ml.data.frame(localConn, "setosa")
 #'  # using search and collection filtering
-#'  mlIris <- ml.data.frame("setosa", collection = "iris")
+#'  mlIris <- ml.data.frame(localConn, "setosa", collection = "iris")
 #'  # using field filter
-#'  mlIris <- ml.data.frame(fieldFilter = "Species == setosa")
+#'  mlIris <- ml.data.frame(localConn, fieldFilter = "Species == setosa")
 #' }
 #' @export
 ml.data.frame <- function (conn, query="", fieldFilter="", ns = "NA", collection = c(), directory = c(), relevanceScores = FALSE, docUri = FALSE)
@@ -165,11 +171,22 @@ ml.data.frame <- function (conn, query="", fieldFilter="", ns = "NA", collection
 ################ Generic methods for upload and download of data ############################
 
 ################ as.data.frame ############################
-#' Pull data from MarkLogic server based on a \link{ml.data.frame} and return it as a data.frame
+#' Pull data from MarkLogic server based on a \link{ml.data.frame} object and return it as a data.frame.
 #'
-#' @param x a  ml.data.frame object
+#' @param x a  \link{ml.data.frame} object
 #' @param max.rows maximum rows to return. Default all rows.
 #' @param ... Not used.
+#' @examples
+#' \dontrun{
+#'  library(rfml)
+#'  localConn <- ml.connect()
+#'  # create a ml.data.frame based on a search
+#'  mlIris <- ml.data.frame(localConn, "setosa")
+#'  lIris <- as.data.frame(mlIris)
+#'  }
+#' @aliases as.data.frame
+#' @seealso \code{\link{ml.data.frame}}, \code{\link{as.ml.data.frame}} for uploading data, \code{\link{rm.ml.data.frame}} for delete uploaded data
+#' @concept array
 #' @export
 setMethod("as.data.frame", signature(x="ml.data.frame"),
           function (x, max.rows=NULL, ...) {
@@ -179,14 +196,17 @@ setMethod("as.data.frame", signature(x="ml.data.frame"),
             result <- return(.get.ml.data(x,max.rows))
           }
 )
-#' Upload a data.frame object data to MarkLogic server.
+#' Upload data in a data.frame object or create data based on a \link{ml.data.frame} object
 #'
-#' The function will upload the data within a data.frame object to MarkLogic Server or create new documents
-#' in MarkLogic Server based on a ml.data.frame object.
+#' The function will upload the data within a data.frame object or create data in MarkLogic Server
+#' based on a \link{ml.data.frame} object. Data created based on \link{ml.data.frame} will be flat and
+#' fields will have the same names as in the .col.name slot. See details for more information about how
+#' data is created.
 #'
-#' When documents are created they will have a Document URI that is bulid based on the string rfml, the rowname if a data.frame or a counter
-#' if it is a ml.data.frame, the loged in username  and name parameter, for example /rfml/admin/iris/.
-#' The documents will belong to a collection named "name".
+#' When data is uploaded or created it will be stored as json documents default, the format parameter controls, and
+#' Document URIs, the identifier of a document, is generated based on the string "rfml", the rowname if a data.frame
+#' or a counter if it is a ml.data.frame, the loged in username and the name parameter, for example /rfml/admin/iris/.
+#' The documents will also belong to a collection named after tne name parameter.
 #'
 #' @param conn A ml.conn object that has a valid connection to a MarkLogic Server
 #' @param x a Data Frame or ml.data.frame object.
@@ -201,6 +221,8 @@ setMethod("as.data.frame", signature(x="ml.data.frame"),
 #'  # create a ml.data.frame based on the iris data set
 #'  mlIris <- as.ml.data.frame(iris, "iris")
 #' }
+#' @seealso \code{\link{ml.data.frame}}, \code{\link[rfml]{as.data.frame}} for pulling data, \code{\link{rm.ml.data.frame}} for delete uploaded data
+#' @concept array
 #' @export
 as.ml.data.frame <- function (conn, x, name, format = "json", directory = "") {
 
@@ -232,10 +254,10 @@ as.ml.data.frame <- function (conn, x, name, format = "json", directory = "") {
 #' @return A ml.data.frame object.
 #' @examples
 #' \dontrun{
-#'  library(rfml)
-#'  ml.connect("localhost", "8000", "admin", "admin")
-#'  mlIrisNew <- save.ml.data.frame(mlIris, "newiris")
+#'  rm.ml.data.frame(mlIris)
 #' }
+#' @seealso \code{\link{ml.data.frame}}, \code{\link{as.ml.data.frame}} for uploading data, \code{\link[rfml]{as.data.frame}} for pulling data
+#' @concept array
 #' @export
 rm.ml.data.frame <- function(x, directory = "" ){
   if (!is.ml.data.frame(x)) {
@@ -254,13 +276,15 @@ rm.ml.data.frame <- function(x, directory = "" ){
 #' Extract subsets of a ml.data.frame
 #'
 #' Extract subset of columns and/or rows of a ml.data.frame. When extracting rows a ml.col.def
-#' referense can be used or a search text. See details for limitations when using a reference.
+#' referense can be used or a search text, see \link{ml.data.frame} for query string grammar.
+#' See details for limitations when using a reference.
 #' The row filtering will be used togheter with the existing query of the ml.data.frame
 #'
-#' When extracting rows using ml.col.def all comparison operators can be used. But in order to use
-#' the ">"  "<"  "!=" "<=" ">=" operators there muset exist a element range index on the source field for
-#' the ml.col.def refrence otherwise a error will be raised. "==" operator will always work since it does
-#' not depend of range indexes.
+#' When extracting rows using ml.col.def comparison operators can be used. For
+#' the ">"  "<"  "!=" "<=" ">=" operators there muset exist a
+#' \href{http://docs.marklogic.com/guide/admin/range_index#id_93351}{element range index}
+#' on the source field or a error will be raised, element range index can be created using the \link{ml.add.index}
+#' function. "==" operator will always work since it does not depend of range indexes.
 #'
 #' @param x a ml.data.frame from which to extract element(s).
 #' @param i,j Indices specifying elements to extract. Indices are 'numeric' or 'character' vectors or empty (missing) or 'NULL'.
@@ -270,9 +294,9 @@ rm.ml.data.frame <- function(x, directory = "" ){
 #' @examples
 #' \dontrun{
 #'  library(rfml)
-#'  ml.connect()
+#'  localConn <- ml.connect()
 #'  # create a ml.data.frame based on the iris data set
-#'  mlIris <- as.ml.data.frame(iris, "iris")
+#'  mlIris <- as.ml.data.frame(localConn, iris, "iris")
 #'  # select first three columns
 #'  mlIris2 <- mlIris[1:3]
 #'  # same
@@ -286,6 +310,7 @@ rm.ml.data.frame <- function(x, directory = "" ){
 #'  # select all columns for all rows with "setosa" in any column
 #'  mlIris2 <- mlIris["setosa",]
 #' }
+#' @concept array
 #' @export
 setMethod("[", signature(x = "ml.data.frame"),
           function (x, i, j,..., drop=NA)
@@ -382,9 +407,9 @@ setMethod("[", signature(x = "ml.data.frame"),
 )
 
 ################ $ ############################
-#' Returns a ml.data.frame object field as a \link{ml.col.def-class}
+#' Returns a \link{ml.data.frame} field as a \link{ml.col.def-class}
 #'
-#' @param x an ml.data.frame object
+#' @param x an \link{ml.data.frame} object
 #' @param name field name
 #' @return \link{ml.col.def-class} object
 #' @export
@@ -413,7 +438,7 @@ setMethod("$", signature(x = "ml.data.frame"),
           }
 )
 ################ $<- ############################
-#' Adds a new ml.data.frame object field as a \link{ml.col.def-class}
+#' Adds a new ml.data.frame field as a \link{ml.col.def-class}
 #'
 #' The fields  only exists within the object and are not created at the database side.
 #'
@@ -424,9 +449,9 @@ setMethod("$", signature(x = "ml.data.frame"),
 #' @examples
 #' \dontrun{
 #'  library(rfml)
-#'  ml.connect()
+#'  locConn <- ml.connect()
 #'  # create a ml.data.frame based on the iris data set
-#'  mlIris <- as.ml.data.frame(iris, "iris")
+#'  mlIris <- as.ml.data.frame(locConn, iris, "iris")
 #'  # create a field based on an existing
 #'  mlIris$newField <- mlIris$Petal.Width
 #'  # create a field based calculation on existing
@@ -468,7 +493,7 @@ setMethod("$<-", signature(x = "ml.data.frame"),
 
 #' Check if an object is of type ml.data.frame
 #'
-#' This function checks if the input is of type ml.data.frame.
+#' This function checks if the input is of type \link{ml.data.frame}.
 #'
 #' @param x The input can be of any type.
 #' @return True if it is a ml.data.frame object. False otherwise.
@@ -478,7 +503,7 @@ is.ml.data.frame <-
     return(inherits(x, "ml.data.frame"))
   }
 ################ dim ############################
-#' Dimensions of an ml.data.frame object
+#' Dimensions of an \link{ml.data.frame} object
 #'
 #' @param x an ml.data.frame object
 #' @export
@@ -488,7 +513,7 @@ setMethod("dim", signature(x="ml.data.frame"),
           }
 )
 ################ colnames ############################
-#' Column Names of an ml.data.frame object
+#' Column Names of an \link{ml.data.frame} object
 #'
 #' @param x an ml.data.frame object
 #' @export
@@ -496,7 +521,7 @@ setMethod("colnames", signature(x="ml.data.frame"),
           function(x) { x@.col.name }
 )
 ################ head ############################
-#' Return the First Part of an ml.data.frame
+#' Return the First Part of an \link{ml.data.frame}
 #'
 #' @param x an ml.data.frame object
 #' @param n a single integer. The number of rows to return, default is 6
@@ -522,7 +547,7 @@ setMethod("head", signature(x="ml.data.frame"),
 
 ################ Basic ml.data.frame functions and methods ############################
 ################ print ############################
-#' Prints information of a ml.data.frame object
+#' Prints information of a \link{ml.data.frame} object
 #'
 #' @param x an ml.data.frame object
 #' @export
@@ -532,7 +557,7 @@ setMethod("print", signature(x="ml.data.frame"),
           }
 )
 ################ show ############################
-#' Prints information of a ml.data.frame object
+#' Prints information of a \link{ml.data.frame} object
 #'
 #' @param object an ml.data.frame object
 #' @export
@@ -543,7 +568,7 @@ setMethod("show", signature(object="ml.data.frame"),
 )
 
 ################ names ############################
-#' Shows field names of a ml.data.frame object
+#' Shows field names of a \link{ml.data.frame} object
 #'
 #' @param x an ml.data.frame object
 #' @export

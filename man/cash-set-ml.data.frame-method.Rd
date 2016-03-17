@@ -3,7 +3,7 @@
 \docType{methods}
 \name{$<-,ml.data.frame-method}
 \alias{$<-,ml.data.frame-method}
-\title{Adds a new ml.data.frame object field as a \link{ml.col.def-class}}
+\title{Adds a new ml.data.frame field as a \link{ml.col.def-class}}
 \usage{
 \S4method{$}{ml.data.frame}(x, name) <- value
 }
@@ -23,9 +23,9 @@ The fields  only exists within the object and are not created at the database si
 \examples{
 \dontrun{
  library(rfml)
- ml.connect()
+ locConn <- ml.connect()
  # create a ml.data.frame based on the iris data set
- mlIris <- as.ml.data.frame(iris, "iris")
+ mlIris <- as.ml.data.frame(locConn, iris, "iris")
  # create a field based on an existing
  mlIris$newField <- mlIris$Petal.Width
  # create a field based calculation on existing

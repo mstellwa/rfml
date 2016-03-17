@@ -21,9 +21,13 @@ The function will also delete the x object form tne R environment.
 }
 \examples{
 \dontrun{
- library(rfml)
- ml.connect("localhost", "8000", "admin", "admin")
- mlIrisNew <- save.ml.data.frame(mlIris, "newiris")
+ rm.ml.data.frame(mlIris)
 }
+}
+\seealso{
+\code{\link{ml.data.frame}}, \code{\link{as.ml.data.frame}} for uploading data, \code{\link[rfml]{as.data.frame}} for pulling data
+}
+\concept{
+array
 }
 

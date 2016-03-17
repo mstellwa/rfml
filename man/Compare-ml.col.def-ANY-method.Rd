@@ -8,11 +8,11 @@
 \S4method{Compare}{ml.col.def,ANY}(e1, e2)
 }
 \arguments{
-\item{e1}{an ml.col.def object.}
+\item{e1}{an \link{ml.col.def} object.}
 
 \item{e2}{any object}
 }
 \description{
-Relational Operators
+Relational operators used for field level filtering of a \link{ml.data.frame} object.
 }
 

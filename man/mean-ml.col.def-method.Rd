@@ -16,13 +16,13 @@
 The mean
 }
 \description{
-Returns the mean of a ml.data.frame field.
+Returns the mean of a \link{ml.data.frame} field.
 }
 \examples{
 \dontrun{
- ml.connect()
+ locConn <- ml.connect()
  # create a ml.data.frame based on a search
- mlIris <- ml.data.frame(collection = "iris")
+ mlIris <- ml.data.frame(locConn, collection = "iris")
  # mean
  mean(mlIris$Sepal.Length)
 }

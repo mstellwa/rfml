@@ -8,9 +8,11 @@
 \S4method{Math}{ml.col.def}(x)
 }
 \arguments{
-\item{x}{an ml.col.def object.}
+\item{x}{an \link{ml.col.def} object.}
 }
 \description{
+Mathematical functions that can be used on \link{ml.data.frame} fields. The function is applied
+when the result is returned to the client.
 Only abs, acos, asin, atan, ceiling, cos, cosh, exp, floor, log, log10 ,
 tan, tanh, sqrt, sin, sinh and trunc is currently supported.
 }

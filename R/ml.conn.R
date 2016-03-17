@@ -4,11 +4,11 @@
 #' @param port Port number of the MarkLogic http server. 8000 is used default
 #' @param username Username. admin is default.
 #' @param password Password admin is default.
-#' @return Nothing if sucess, otherwise an error.
+#' @return A ml.conn object.
 #' @examples
 #' \dontrun{
 #' library(rfml)
-#' ml.connect("localhost","8000", "admin", "admin")
+#' locConn <- ml.connect("localhost","8000", "admin", "admin")
 #'}
 #' @export
 ml.connect <- function(host = "localhost", port = "8000",

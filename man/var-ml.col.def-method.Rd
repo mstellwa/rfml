@@ -16,7 +16,7 @@
 The sample variance
 }
 \description{
-Returns the sample variance of two variables, ml.data.frame fields.
+Returns the sample variance of a \link{ml.data.frame} field.
 }
 \details{
 The function returns a empty value if the number of rows of the ml.data.frame
@@ -25,9 +25,9 @@ that x belongs to is less than 2.
 \examples{
 \dontrun{
  library(rfml)
- ml.connect()
+ locConn <- ml.connect()
  # create a ml.data.frame based on a search
- mlIris <- ml.data.frame(collection = "iris")
+ mlIris <- ml.data.frame(locConn, collection = "iris")
  # return the variance
  var(mlIris$Sepal.Length)
 }

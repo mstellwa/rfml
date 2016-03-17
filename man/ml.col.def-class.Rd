@@ -20,12 +20,12 @@ An S4 class to represent a ml.col.def.
 
 \item{\code{.data_type}}{A string with the data type of the field}
 
-\item{\code{.org_name}}{A character string with the original names of field}
+\item{\code{.org_name}}{A string with the original names of field}
 
-\item{\code{.format}}{character}
+\item{\code{.format}}{A string with the format of the source field}
 
-\item{\code{.xmlns}}{character}
+\item{\code{.xmlns}}{A string with the namespace of the source field}
 
-\item{\code{.aggType}}{character}
+\item{\code{.aggType}}{A string}
 }}
 

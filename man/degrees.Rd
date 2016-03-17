@@ -7,12 +7,13 @@
 degrees(x)
 }
 \arguments{
-\item{x}{a ml.data.frame field.}
+\item{x}{a \link{ml.data.frame} field.}
 }
 \value{
 numeric expression converted from radians to degrees.
 }
 \description{
-Returns numeric expression converted from radians to degrees.
+Returns numeric expression converted from radians to degrees. The function is applied
+when the result is returned to the client.
 }
 

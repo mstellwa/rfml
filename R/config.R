@@ -1,12 +1,16 @@
 #' Set up a MarkLogic database for use with rfml.
 #'
 #' The function installs \href{http://docs.marklogic.com/guide/rest-dev/extensions}{REST extensions} and
-#' modules needed to use the package. You only needed to run it once for each database.
+#' modules needed to use the package againts a MarkLogic Server database. The function needs to be executed once
+#' for each database that is going to be used with rfml. It also creates a document, /rfml/rfmlInfo.json, that
+#' stores the version of the rfml package and the date the database are initiated.
 #'
 #' The database must have a \href{http://docs.marklogic.com/guide/admin/http}{REST server}
 #' and a \href{http://docs.marklogic.com/guide/admin/databases#id_38484}{module database}.
+#' It also adds a document, /rfml/rfmlInfo.json, that stores the version of the rfml
+#' package and the date the database are initiated.
 #'
-#' The user that is used for the login must have the  rest-admin role,
+#' The user that is used for the function need to have the rest-admin role,
 #' or at least the following privileges:
 #' \itemize{
 #'  \item http://marklogic.com/xdmp/privileges/rest-admin
@@ -18,7 +22,7 @@
 #' @param port The port number of the MarkLogic http server. 8000 is used default
 #' @param adminuser The username of a user that have rights to install options. admin is default.
 #' @param password The password admin is default.
-#' @return The function will raise a error...
+#' @return Nothing if success or raise a error.
 #' @examples
 #' \dontrun{
 #' ml.init.database("localhost", "8000", "admin", "admin")
@@ -45,13 +49,13 @@ ml.init.database <- function(host = "localhost", port = "8000", adminuser = "adm
     }
   }
   suppressWarnings(closeAllConnections())
-  # need to store the current version of rfml
+  # need to store the current version of rfml in a document in the database that is used for checks...
   rfmlVer <- as.character(packageVersion("rfml"))
   initDate <- as.character(Sys.Date())
   # Need to post a config document that can used to verify against
   mlURL <- paste(mlHost, "/v1/resources/rfml.check", sep="")
   queryArgs <- list('rs:rfmlVersion'=rfmlVer, 'rs:initDate'=initDate)
-  response <- PUT(mlURL,query = queryArgs, authenticate(adminuser, password, type="digest"), accept_xml())
+  response <- PUT(mlURL,query = queryArgs, authenticate(adminuser, password, type="digest"), accept_json())
   status_code <- response$status_code
   if (status_code != 204) {
     rContent <- content(response)
@@ -68,7 +72,8 @@ ml.init.database <- function(host = "localhost", port = "8000", adminuser = "adm
 #' Remove all rfml internal files in a MarkLogic database.
 #'
 #' The function removes the \href{http://docs.marklogic.com/guide/rest-dev/extensions}{REST extensions} and
-#' modules added with the \link{ml.init.database} function.
+#' modules added with the \link{ml.init.database} function. It also removes the document, /rfml/rfmlInfo.json,
+#' that stores the version of the rfml package and the date the database are initiated.
 #'
 #' The user that is used for the login must have the  rest-admin role, or the following privileges:
 #' \itemize{
@@ -81,7 +86,7 @@ ml.init.database <- function(host = "localhost", port = "8000", adminuser = "adm
 #' @param port The port number of the MarkLogic http server. 8000 is used default
 #' @param adminuser The username of a user that have rights to install options. admin is default.
 #' @param password The password admin is default.
-#' @return The function will raise a error...
+#' @return Nothing if success otherwise it will raise an error.
 #' @examples
 #' \dontrun{
 #' ml.clear.database("localhost", "8000", "admin", "admin")
@@ -95,7 +100,9 @@ ml.clear.database <- function(host = "localhost", port = "8000", adminuser = "ad
   mlLibs <- .rfmlEnv$mlLibs
   # name of exts used
   mlExts <- .rfmlEnv$mlExts
-
+  # remove the document with rfml info first while we still have the exstention left...
+  mlURL <- paste(mlHost, "/v1/resources/rfml.check", sep="")
+  response <- DELETE(mlURL, authenticate(adminuser, password, type="digest"), accept_json())
 
   for (i in 1:length(mlLibs)) {
     # install the needed module library
@@ -110,6 +117,7 @@ ml.clear.database <- function(host = "localhost", port = "8000", adminuser = "ad
       message(paste("REST extension ",  mlExts[i]," is removed from ", host, ":", port, sep=""))
     }
   }
+
   message(paste(host, ":", port, " cleared of rfml specific files",sep=""))
 }
 #' Load sample data set into MarkLogic server
@@ -121,14 +129,14 @@ ml.clear.database <- function(host = "localhost", port = "8000", adminuser = "ad
 #'  }
 #' To remove the sample use the \link{rm.ml.data.frame} on the returned ml.data.frame object.
 #'
-#' @param conn A ml.conn with a connection to a MarkLoic server
+#' @param conn A \link{ml.conn} with a connection to a MarkLoic server
 #' @param dataSet Which dataset to upload, "baskets"
 #' @param name The name of the object. The data will be added to a collection with that name. If not provided the dataSet name is used.
-#' @return A ml.data.frame object pointing to the uploaded dataset.
+#' @return A \link{ml.data.frame} object pointing to the uploaded dataset.
 #' @examples
 #' \dontrun{
-#'  ml.connect()
-#'  mlBaskets <- ml.load.sample.data("baskets")
+#'  locConn <- ml.connect()
+#'  mlBaskets <- ml.load.sample.data(locConn, "baskets")
 #' }
 #' @export
 ml.load.sample.data <- function(conn, dataSet = "baskets", name = "") {
@@ -150,14 +158,14 @@ ml.load.sample.data <- function(conn, dataSet = "baskets", name = "") {
 #' Creates or updates a Range element index.
 #'
 #' The function creates or updates a \href{http://docs.marklogic.com/guide/concepts/indexing#id_51573}{range element index}
-#' on the underlying element/property of a ml.data.frame field.
+#' on the underlying element/property of a \link{ml.data.frame} field.
 #' The user that is used for the login needs the manage-admin role, or the following privilege:
 #' \itemize{
 #'  \item http://marklogic.com/xdmp/privileges/manage-admin
 #'  }
 #'
-#' The function only creates and updates range index on a XML element or JSON property based on the ml.data.frame field.
-#' Information about the field can be shown by mlDataFrame$itemField, where mlDataFrame is a ml.data.frame object
+#' The function only creates and updates range index on a XML element or JSON property based on the \link{ml.data.frame} field.
+#' Information about the field can be shown by \code{mlDataFrame$itemField}, where mlDataFrame is a \link{ml.data.frame} object
 #' and itemField is the name of the field. Indexes created with this function will always have range-value-positions equal true.
 #'
 #' @param x a ml.data.frame field that the index will be created on
@@ -169,12 +177,13 @@ ml.load.sample.data <- function(conn, dataSet = "baskets", name = "") {
 #' @param port The port number of the MarkLogic Manage server. 8002 is used default
 #' @param adminuser The username of a user that have rights to create index. Default is the same as used for conn
 #' @param password The password. Default is the same as used for conn.
-#' @param conn A ml.conn with a connection to a MarkLoic server
+#' @param conn A \link{ml.conn} with a connection to a MarkLoic server. Optional.
 #' @return The function will raise a error if something goes wrong.
 #' @export
 ml.add.index <- function(x, scalarType= "string", collation = "http://marklogic.com/collation/",
                          namespaceUri = "",database = "Documents", host = "", port = "8002",
                          adminuser = "", password = "", conn = NA) {
+
   if (class(conn) != "ml.conn" || missing(conn)) {
     hasConn <- FALSE
   } else {
@@ -274,5 +283,4 @@ ml.add.index <- function(x, scalarType= "string", collation = "http://marklogic.
     stop(paste("Ops, something went wrong.", errorMsg, "\n body: ", indexJson))
   }
   message(paste("Range element index created on ", localname,sep=""))
-  #return(indexJson)
 }

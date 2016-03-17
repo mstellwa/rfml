@@ -15,7 +15,7 @@
 \S4method{Arith}{ANY,ml.col.def}(e1, e2)
 }
 \arguments{
-\item{e1, e2}{numeric vectors or string or ml.col.def object.}
+\item{e1, e2}{numeric vectors or string or \link{ml.col.def} object.}
 }
 \description{
 Arithmetic Operators

@@ -1,7 +1,7 @@
 ################ Correlation ############################
 #' Correlation
 #'
-#' Returns the Pearson correlation coefficient of two variables, ml.data.frame fields.
+#' Returns the Pearson correlation coefficient of two variables, \link{ml.data.frame} fields.
 #'
 #' The function eliminates all pairs for which either the first element or the second
 #' element is empty. After the elimination, if the length of the input is less than 2,
@@ -17,9 +17,9 @@
 #' @examples
 #' \dontrun{
 #'  library(rfml)
-#'  ml.connect()
+#'  locConn <- ml.connect()
 #'  # create a ml.data.frame based on a search
-#'  mlIris <- ml.data.frame(collection = "iris")
+#'  mlIris <- ml.data.frame(locConn, collection = "iris")
 #'  # return the correlation
 #'  cor(mlIris$Sepal.Length, mlIris$Petal.Length)
 #' }
@@ -52,7 +52,7 @@ setMethod(f="cor", signature=c(x="ml.col.def",y="ml.col.def"),
 ################ Correlation Matrix ############################
 #' Correlation Matrix
 #'
-#' Returns the Pearson correlation coefficient matrix of all numeric fields in a ml.data.frame
+#' Returns the Pearson correlation coefficient matrix of all numeric fields in a \link{ml.data.frame}
 #'
 #' The function eliminates all fields pairs for which either the first element or the second
 #' element is empty. After the elimination, if the length of the input is less than 2,
@@ -68,9 +68,9 @@ setMethod(f="cor", signature=c(x="ml.col.def",y="ml.col.def"),
 #' @examples
 #' \dontrun{
 #'  library(rfml)
-#'  ml.connect()
+#'  locConn <- ml.connect()
 #'  # create a ml.data.frame based on a search
-#'  mlIris <- ml.data.frame(collection = "iris")
+#'  mlIris <- ml.data.frame(locConn, collection = "iris")
 #'  # return the correlation matrix
 #'  cor(mlIris)
 #' }
@@ -105,7 +105,7 @@ setMethod(f="cor", signature=c(x="ml.data.frame"),
 ################ Covariance ############################
 #' Covariance
 #'
-#' Returns the sample covariance of two variables, ml.data.frame fields.
+#' Returns the sample covariance of two variables, \link{ml.data.frame} fields.
 #'
 #'The function eliminates all pairs for which either the first element or the second
 #'element is empty. After the elimination, if the length of the input is less than 2,
@@ -119,9 +119,9 @@ setMethod(f="cor", signature=c(x="ml.data.frame"),
 #' @examples
 #' \dontrun{
 #'  library(rfml)
-#'  ml.connect()
+#'  locConn <- ml.connect()
 #'  # create a ml.data.frame based on a search
-#'  mlIris <- ml.data.frame(collection = "iris")
+#'  mlIris <- ml.data.frame(locConn,collection = "iris")
 #'  # return the Covariance
 #'  cov(mlIris$Sepal.Length, mlIris$Petal.Length)
 #' }
@@ -155,7 +155,7 @@ setMethod(f="cov", signature=c(x="ml.col.def",y="ml.col.def"),
 ################ Population Covariance ############################
 #' Population Covariance
 #'
-#' Returns the population covariance of two variables, ml.data.frame fields.
+#' Returns the population covariance of two variables, \link{ml.data.frame} fields.
 #'
 #' The function eliminates all pairs for which either the first element or the
 #' second element is empty. After the elimination, if the length of the input is 0,
@@ -167,9 +167,9 @@ setMethod(f="cov", signature=c(x="ml.col.def",y="ml.col.def"),
 #' @examples
 #' \dontrun{
 #'  library(rfml)
-#'  ml.connect()
+#'  locConn <- ml.connect()
 #'  # create a ml.data.frame based on a search
-#'  mlIris <- ml.data.frame(collection = "iris")
+#'  mlIris <- ml.data.frame(locConn, collection = "iris")
 #'  # return the population covariance
 #'  cov.pop(mlIris$Sepal.Length, mlIris$Petal.Length)
 #' }
@@ -193,7 +193,7 @@ cov.pop <- function(x,y) {
 ################ Variance ############################
 #' Variance
 #'
-#' Returns the sample variance of two variables, ml.data.frame fields.
+#' Returns the sample variance of a \link{ml.data.frame} field.
 #'
 #' The function returns a empty value if the number of rows of the ml.data.frame
 #' that x belongs to is less than 2.
@@ -204,9 +204,9 @@ cov.pop <- function(x,y) {
 #' @examples
 #' \dontrun{
 #'  library(rfml)
-#'  ml.connect()
+#'  locConn <- ml.connect()
 #'  # create a ml.data.frame based on a search
-#'  mlIris <- ml.data.frame(collection = "iris")
+#'  mlIris <- ml.data.frame(locConn, collection = "iris")
 #'  # return the variance
 #'  var(mlIris$Sepal.Length)
 #' }
@@ -234,7 +234,7 @@ setMethod(f="var", signature=c(x="ml.col.def"),
 ################ Population Variance ############################
 #' Population variance
 #'
-#' Returns the population variance of two variables, ml.data.frame fields.
+#' Returns the population variance of of a \link{ml.data.frame} field.
 #'
 #' The function returns a empty value if the number of rows of the ml.data.frame
 #' that x belongs to is less than 2.
@@ -245,11 +245,11 @@ setMethod(f="var", signature=c(x="ml.col.def"),
 #' @examples
 #' \dontrun{
 #'  library(rfml)
-#'  ml.connect()
+#'  locConn <- ml.connect()
 #'  # create a ml.data.frame based on a search
-#'  mlIris <- ml.data.frame(collection = "iris")
+#'  mlIris <- ml.data.frame(locConn, collection = "iris")
 #'  # population variance
-#'  var.pop(mlDf$orderLines1quantityOrdered)
+#'  var.pop(mlIris$Sepal.Length)
 #' }
 #' @export
 var.pop <- function(x,na.rm = FALSE ) {
@@ -271,7 +271,7 @@ var.pop <- function(x,na.rm = FALSE ) {
 ################ Standard Deviation ############################
 #' Standard Deviation
 #'
-#' Returns the sample standard deviation of two variables, ml.data.frame fields.
+#' Returns the sample standard deviation of a \link{ml.data.frame} field.
 #'
 #' The function returns a empty value if the number of rows of the ml.data.frame
 #' that x belongs to is less than 2.
@@ -282,9 +282,9 @@ var.pop <- function(x,na.rm = FALSE ) {
 #' @examples
 #' \dontrun{
 #'  library(rfml)
-#'  ml.connect()
+#'  locConn <- ml.connect()
 #'  # create a ml.data.frame based on a search
-#'  mlIris <- ml.data.frame(collection = "iris")
+#'  mlIris <- ml.data.frame(locConn, collection = "iris")
 #'  # standard deviation
 #'  sd(mlIris$Sepal.Length)
 #' }
@@ -323,9 +323,9 @@ setMethod(f="sd", signature=c(x="ml.col.def"),
 #' @examples
 #' \dontrun{
 #'  library(rfml)
-#'  ml.connect()
+#'  locConn <- ml.connect()
 #'  # create a ml.data.frame based on a search
-#'  mlIris <- ml.data.frame(collection = "iris")
+#'  mlIris <- ml.data.frame(locConn, collection = "iris")
 #'  # standard deviation
 #'  sd.pop(mlIris$Sepal.Length)
 #' }
@@ -349,16 +349,16 @@ sd.pop <- function(x) {
 ################ Median ############################
 #' Median
 #'
-#' Returns the median of a ml.data.frame field.
+#' Returns the median of a \link{ml.data.frame} field.
 #'
 #' @param x a ml.data.frame field.
 #' @param na.rm not currently used.
 #' @return The median
 #' @examples
 #' \dontrun{
-#'  ml.connect()
+#'  locConn <- ml.connect()
 #'  # create a ml.data.frame based on a search
-#'  mlIris <- ml.data.frame(collection = "iris")
+#'  mlIris <- ml.data.frame(locConn, collection = "iris")
 #'  # median
 #'  median(mlIris$Sepal.Length)
 #' }
@@ -385,16 +385,16 @@ setMethod(f="median", signature=c(x="ml.col.def"),
 ################ Mean ############################
 #' Mean
 #'
-#' Returns the mean of a ml.data.frame field.
+#' Returns the mean of a \link{ml.data.frame} field.
 #'
 #' @param x a ml.data.frame field.
 #' @param na.rm not currently used.
 #' @return The mean
 #' @examples
 #' \dontrun{
-#'  ml.connect()
+#'  locConn <- ml.connect()
 #'  # create a ml.data.frame based on a search
-#'  mlIris <- ml.data.frame(collection = "iris")
+#'  mlIris <- ml.data.frame(locConn, collection = "iris")
 #'  # mean
 #'  mean(mlIris$Sepal.Length)
 #' }
@@ -421,16 +421,16 @@ setMethod(f="mean", signature=c(x="ml.col.def"),
 ################ Sum ############################
 #' Sum
 #'
-#' Returns the sum of a ml.data.frame field.
+#' Returns the sum of a \link{ml.data.frame} field.
 #'
 #' @param x a ml.data.frame field.
 #' @param na.rm not currently used.
 #' @return The sum
 #' @examples
 #' \dontrun{
-#'  ml.connect()
+#'  locConn <- ml.connect()
 #'  # create a ml.data.frame based on a search
-#'  mlIris <- ml.data.frame(collection = "iris")
+#'  mlIris <- ml.data.frame(locConn, collection = "iris")
 #'  # sum
 #'  sum(mlIris$Sepal.Length)
 #' }
@@ -458,16 +458,16 @@ setMethod(f="sum", signature=c(x="ml.col.def"),
 ################ Max ############################
 #' Max
 #'
-#' Returns the maximum value of a ml.data.frame field.
+#' Returns the maximum value of a \link{ml.data.frame} field.
 #'
 #' @param x a ml.data.frame field.
 #' @param na.rm not currently used.
 #' @return The maximum value
 #' @examples
 #' \dontrun{
-#'  ml.connect()
+#'  locConn <- ml.connect()
 #'  # create a ml.data.frame based on a search
-#'  mlIris <- ml.data.frame(collection = "iris")
+#'  mlIris <- ml.data.frame(locConn, collection = "iris")
 #'  # max
 #'  max(mlIris$Sepal.Length)
 #' }

@@ -10,8 +10,14 @@
 # name of exstentions used
 .rfmlEnv$mlExts <- c("rfml.dframe", "rfml.lm", "rfml.stat", "rfml.matrix", "rfml.collection", "rfml.arules", "rfml.check")
 
-#' An S4 class to represent a ml.connection.
+#' An S4 class to represent a connection to a MarkLogic Server Database
 #'
+#' @slot .id A integer with the connection number.
+#' @slot .host A string with the MarkLogic Server hostname or ip-adress
+#' @slot .port A string with the port number to the HTTP server for the MarkLogic Databse used
+#' @slot .mlversion A string with the version of the MarkLogic Server
+#' @slot .username A string with username
+#' @slot .password Encrypted password
 setClass("ml.conn",
          slots=c( .id="integer",
                   .host="character",
@@ -24,7 +30,7 @@ setClass("ml.conn",
 #' An S4 class to represent a ml.data.frame.
 #'
 #' @slot .name A string with the internal name for the ml.data.frame
-#' @slot .conn The ml.conn object that was created with ml.connect
+#' @slot .conn The \link{ml.conn} object that was created with ml.connect
 #' @slot .queryArgs A list with parameters used to query MarkLogic Server
 #' @slot .start A integer with the index of the first result to get
 #' @slot .nrows A integer with the number of rows in the result
@@ -61,10 +67,10 @@ setClass("ml.data.frame",
 #' @slot .type A string with the type of field
 #' @slot .name A string with name of the field
 #' @slot .data_type A string with the data type of the field
-#' @slot .org_name A character string with the original names of field
-#' @slot .format  character
-#' @slot .xmlns  character
-#' @slot .aggType character
+#' @slot .org_name A string with the original names of field
+#' @slot .format A string with the format of the source field
+#' @slot .xmlns A string with the namespace of the source field
+#' @slot .aggType A string
 setClass("ml.col.def",
          slots=c(.expr="character",
                  .parent="ml.data.frame",

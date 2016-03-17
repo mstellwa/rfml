@@ -2,7 +2,7 @@
 % Please edit documentation in R/method-ml.col.def.R
 \name{is.ml.col.def}
 \alias{is.ml.col.def}
-\title{Check if an object is of type ml.col.def}
+\title{Check if an object is of type \link{ml.col.def}}
 \usage{
 is.ml.col.def(x)
 }
@@ -10,9 +10,9 @@ is.ml.col.def(x)
 \item{x}{The input can be of any type.}
 }
 \value{
-True if it is a ml.col.def. False otherwise.
+True if it is a \link{ml.col.def}. False otherwise.
 }
 \description{
-This function checks if the input is of type ml.col.def.
+This function checks if the input is of type \link{ml.col.def}.
 }
 

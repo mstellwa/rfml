@@ -21,7 +21,7 @@
 The sample covariance
 }
 \description{
-Returns the sample covariance of two variables, ml.data.frame fields.
+Returns the sample covariance of two variables, \link{ml.data.frame} fields.
 }
 \details{
 The function eliminates all pairs for which either the first element or the second
@@ -31,9 +31,9 @@ the function returns the empty sequence.
 \examples{
 \dontrun{
  library(rfml)
- ml.connect()
+ locConn <- ml.connect()
  # create a ml.data.frame based on a search
- mlIris <- ml.data.frame(collection = "iris")
+ mlIris <- ml.data.frame(locConn,collection = "iris")
  # return the Covariance
  cov(mlIris$Sepal.Length, mlIris$Petal.Length)
 }

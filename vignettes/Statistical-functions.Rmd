@@ -20,9 +20,9 @@ Example of field level functions:
 ```R
 library(rfml)
 
-ml.connect()
+mlLocal <- ml.connect()
 # Create a ml.data.frame based on iris, you can upload the iris data set using as.ml.data.frame
-mlIris <- ml.data.frame(collection = "iris")
+mlIris <- ml.data.frame(mlLocal, collection = "iris")
 
 # Pearson correlation
 cor(mlIris$Sepal.Length, mlIris$Petal.Length)
@@ -54,9 +54,9 @@ Example using summary:
 ```R
 library(rfml)
 
-ml.connect()
+mlLocal <- ml.connect()
 # Create a ml.data.frame based on iris, you can upload the iris data set using as.ml.data.frame
-mlIris <- ml.data.frame(collection = "iris")
+mlIris <- ml.data.frame(mlLocal, collection = "iris")
 
 summary(mlIris)
 # ====>
@@ -72,9 +72,9 @@ Example using correlation:
 ```R
 library(rfml)
 
-ml.connect()
+mlLocal <- ml.connect()
 # Create a ml.data.frame based on iris, you can upload the iris data set using as.ml.data.frame
-mlIris <- ml.data.frame(collection = "iris")
+mlIris <- ml.data.frame(mlLocal, collection = "iris")
 
 cor(mlIris)
 # ====>

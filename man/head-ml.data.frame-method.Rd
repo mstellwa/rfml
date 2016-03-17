@@ -3,7 +3,7 @@
 \docType{methods}
 \name{head,ml.data.frame-method}
 \alias{head,ml.data.frame-method}
-\title{Return the First Part of an ml.data.frame}
+\title{Return the First Part of an \link{ml.data.frame}}
 \usage{
 \S4method{head}{ml.data.frame}(x, n = 6, ...)
 }
@@ -15,6 +15,6 @@
 \item{...}{not used}
 }
 \description{
-Return the First Part of an ml.data.frame
+Return the First Part of an \link{ml.data.frame}
 }
 

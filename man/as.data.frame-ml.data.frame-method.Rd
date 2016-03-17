@@ -2,19 +2,35 @@
 % Please edit documentation in R/method-ml.data.frame.R
 \docType{methods}
 \name{as.data.frame,ml.data.frame-method}
+\alias{as.data.frame}
 \alias{as.data.frame,ml.data.frame-method}
-\title{Pull data from MarkLogic server based on a \link{ml.data.frame} and return it as a data.frame}
+\title{Pull data from MarkLogic server based on a \link{ml.data.frame} object and return it as a data.frame.}
 \usage{
 \S4method{as.data.frame}{ml.data.frame}(x, max.rows = NULL, ...)
 }
 \arguments{
-\item{x}{a  ml.data.frame object}
+\item{x}{a  \link{ml.data.frame} object}
 
 \item{max.rows}{maximum rows to return. Default all rows.}
 
 \item{...}{Not used.}
 }
 \description{
-Pull data from MarkLogic server based on a \link{ml.data.frame} and return it as a data.frame
+Pull data from MarkLogic server based on a \link{ml.data.frame} object and return it as a data.frame.
+}
+\examples{
+\dontrun{
+ library(rfml)
+ localConn <- ml.connect()
+ # create a ml.data.frame based on a search
+ mlIris <- ml.data.frame(localConn, "setosa")
+ lIris <- as.data.frame(mlIris)
+ }
+}
+\seealso{
+\code{\link{ml.data.frame}}, \code{\link{as.ml.data.frame}} for uploading data, \code{\link{rm.ml.data.frame}} for delete uploaded data
+}
+\concept{
+array
 }
 

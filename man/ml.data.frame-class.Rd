@@ -12,7 +12,7 @@ An S4 class to represent a ml.data.frame.
 \describe{
 \item{\code{.name}}{A string with the internal name for the ml.data.frame}
 
-\item{\code{.conn}}{The ml.conn object that was created with ml.connect}
+\item{\code{.conn}}{The \link{ml.conn} object that was created with ml.connect}
 
 \item{\code{.queryArgs}}{A list with parameters used to query MarkLogic Server}
 

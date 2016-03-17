@@ -17,7 +17,7 @@ ml.connect(host = "localhost", port = "8000", username = "admin",
 \item{password}{Password admin is default.}
 }
 \value{
-Nothing if sucess, otherwise an error.
+A ml.conn object.
 }
 \description{
 Creates a connection to a MarkLogic REST server.
@@ -25,7 +25,7 @@ Creates a connection to a MarkLogic REST server.
 \examples{
 \dontrun{
 library(rfml)
-ml.connect("localhost","8000", "admin", "admin")
+locConn <- ml.connect("localhost","8000", "admin", "admin")
 }
 }
 

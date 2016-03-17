@@ -3,7 +3,7 @@
 \docType{methods}
 \name{dim,ml.data.frame-method}
 \alias{dim,ml.data.frame-method}
-\title{Dimensions of an ml.data.frame object}
+\title{Dimensions of an \link{ml.data.frame} object}
 \usage{
 \S4method{dim}{ml.data.frame}(x)
 }
@@ -11,6 +11,6 @@
 \item{x}{an ml.data.frame object}
 }
 \description{
-Dimensions of an ml.data.frame object
+Dimensions of an \link{ml.data.frame} object
 }
 

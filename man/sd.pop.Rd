@@ -18,9 +18,9 @@ Returns the sample standard deviation of a population.
 \examples{
 \dontrun{
  library(rfml)
- ml.connect()
+ locConn <- ml.connect()
  # create a ml.data.frame based on a search
- mlIris <- ml.data.frame(collection = "iris")
+ mlIris <- ml.data.frame(locConn, collection = "iris")
  # standard deviation
  sd.pop(mlIris$Sepal.Length)
 }

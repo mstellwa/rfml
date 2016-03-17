@@ -2,7 +2,7 @@
 % Please edit documentation in R/method-ml.data.frame.R
 \name{as.ml.data.frame}
 \alias{as.ml.data.frame}
-\title{Upload a data.frame object data to MarkLogic server.}
+\title{Upload data in a data.frame object or create data based on a \link{ml.data.frame} object}
 \usage{
 as.ml.data.frame(conn, x, name, format = "json", directory = "")
 }
@@ -21,13 +21,16 @@ as.ml.data.frame(conn, x, name, format = "json", directory = "")
 A ml.data.frame object.
 }
 \description{
-The function will upload the data within a data.frame object to MarkLogic Server or create new documents
-in MarkLogic Server based on a ml.data.frame object.
+The function will upload the data within a data.frame object or create data in MarkLogic Server
+based on a \link{ml.data.frame} object. Data created based on \link{ml.data.frame} will be flat and
+fields will have the same names as in the .col.name slot. See details for more information about how
+data is created.
 }
 \details{
-When documents are created they will have a Document URI that is bulid based on the string rfml, the rowname if a data.frame or a counter
-if it is a ml.data.frame, the loged in username  and name parameter, for example /rfml/admin/iris/.
-The documents will belong to a collection named "name".
+When data is uploaded or created it will be stored as json documents default, the format parameter controls, and
+Document URIs, the identifier of a document, is generated based on the string "rfml", the rowname if a data.frame
+or a counter if it is a ml.data.frame, the loged in username and the name parameter, for example /rfml/admin/iris/.
+The documents will also belong to a collection named after tne name parameter.
 }
 \examples{
 \dontrun{
@@ -36,5 +39,11 @@ The documents will belong to a collection named "name".
  # create a ml.data.frame based on the iris data set
  mlIris <- as.ml.data.frame(iris, "iris")
 }
+}
+\seealso{
+\code{\link{ml.data.frame}}, \code{\link[rfml]{as.data.frame}} for pulling data, \code{\link{rm.ml.data.frame}} for delete uploaded data
+}
+\concept{
+array
 }
 

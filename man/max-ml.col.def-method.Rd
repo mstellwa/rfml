@@ -16,13 +16,13 @@
 The maximum value
 }
 \description{
-Returns the maximum value of a ml.data.frame field.
+Returns the maximum value of a \link{ml.data.frame} field.
 }
 \examples{
 \dontrun{
- ml.connect()
+ locConn <- ml.connect()
  # create a ml.data.frame based on a search
- mlIris <- ml.data.frame(collection = "iris")
+ mlIris <- ml.data.frame(locConn, collection = "iris")
  # max
  max(mlIris$Sepal.Length)
 }

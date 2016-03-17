@@ -2,16 +2,16 @@
 % Please edit documentation in R/method-ml.data.frame.R
 \name{ml.data.frame}
 \alias{ml.data.frame}
-\title{Creates a ml.data.frame object}
+\title{Creates a \link{ml.data.frame} object}
 \usage{
 ml.data.frame(conn, query = "", fieldFilter = "", ns = "NA",
   collection = c(), directory = c(), relevanceScores = FALSE,
   docUri = FALSE)
 }
 \arguments{
-\item{conn}{A ml.conn}
+\item{conn}{A \link{ml.conn} object created by \link{ml.connect}}
 
-\item{query}{The query string used to define the result.}
+\item{query}{The query string used to define the result, see details for more information about syntax.}
 
 \item{fieldFilter}{Field level filtering. Multiple field filters are separated by , See details for limitations.}
 
@@ -29,29 +29,36 @@ ml.data.frame(conn, query = "", fieldFilter = "", ns = "NA",
 A ml.data.frame object.
 }
 \description{
-This function creates an object of ml.data.frame, it is based on a search done using
-the provided query, collection, directory and/or fiedlFilter parameters. For fieldFilter
-parameter see details section.
-The operations that can be applied onto this class of objects are very
-similar to those of data.frame. No real data is loaded into R. The data transfered
-between MarkLogic Server and R is minimized.
+A ml.data.frame object is an abstraction layer of data stored in a MarkLogic Server database. It is created based
+on the provided query, collection, directory and/or fiedlFilter parameters. For query and fieldFilter
+parameters see details section. It present data in MarkLogic Server in a tabular format.
+The ml.data.frame object enables many of the operations that can be used with a data.frame object.
 }
 \details{
-When using fieldFilter all comparison operators can be used. But in order to use
-the ">"  "<"  "!=" "<=" ">=" operators there muset exist a element range index on the source field for
-the fieldotherwise a error will be raised. "==" operator will always work since it does
-not depend of range indexes.
+The query parameter are using the \href{http://docs.marklogic.com/guide/search-dev/string-query}{string search grammar}
+for searching for data, all of the syntax is supported except contstraints. This enables searches such as
+"dog AND cat"  or "dog NEAR cat". The search is always done on all fields in the data, for a more precise search
+use the fieldFilter.
+
+fieldFilter enables filtering on a specific field using comparison operators can be used. For
+the ">"  "<"  "!=" "<=" ">=" operators there muset exist a
+\href{http://docs.marklogic.com/guide/admin/range_index#id_93351}{element range index}
+on the source field or a error will be raised, element range index can be created using the \link{ml.add.index}
+function. "==" operator will always work since it does not depend of range indexes.
 }
 \examples{
 \dontrun{
  library(rfml)
- ml.connect()
+ localConn <- ml.connect()
  # create a ml.data.frame based on a search
- mlIris <- ml.data.frame("setosa")
+ mlIris <- ml.data.frame(localConn, "setosa")
  # using search and collection filtering
- mlIris <- ml.data.frame("setosa", collection = "iris")
+ mlIris <- ml.data.frame(localConn, "setosa", collection = "iris")
  # using field filter
- mlIris <- ml.data.frame(fieldFilter = "Species == setosa")
+ mlIris <- ml.data.frame(localConn, fieldFilter = "Species == setosa")
 }
+}
+\seealso{
+\code{\link[rfml]{as.data.frame}} for pulling data, \code{\link{as.ml.data.frame}} for uploading data, \code{\link{rm.ml.data.frame}} for delete uploaded data
 }
 

@@ -13,6 +13,6 @@ is.ml.data.frame(x)
 True if it is a ml.data.frame object. False otherwise.
 }
 \description{
-This function checks if the input is of type ml.data.frame.
+This function checks if the input is of type \link{ml.data.frame}.
 }
 

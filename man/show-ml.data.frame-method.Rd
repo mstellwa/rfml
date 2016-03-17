@@ -3,7 +3,7 @@
 \docType{methods}
 \name{show,ml.data.frame-method}
 \alias{show,ml.data.frame-method}
-\title{Prints information of a ml.data.frame object}
+\title{Prints information of a \link{ml.data.frame} object}
 \usage{
 \S4method{show}{ml.data.frame}(object)
 }
@@ -11,6 +11,6 @@
 \item{object}{an ml.data.frame object}
 }
 \description{
-Prints information of a ml.data.frame object
+Prints information of a \link{ml.data.frame} object
 }
 

@@ -21,21 +21,23 @@ A ml.data.frame object is returned
 }
 \description{
 Extract subset of columns and/or rows of a ml.data.frame. When extracting rows a ml.col.def
-referense can be used or a search text. See details for limitations when using a reference.
+referense can be used or a search text, see \link{ml.data.frame} for query string grammar.
+See details for limitations when using a reference.
 The row filtering will be used togheter with the existing query of the ml.data.frame
 }
 \details{
-When extracting rows using ml.col.def all comparison operators can be used. But in order to use
-the ">"  "<"  "!=" "<=" ">=" operators there muset exist a element range index on the source field for
-the ml.col.def refrence otherwise a error will be raised. "==" operator will always work since it does
-not depend of range indexes.
+When extracting rows using ml.col.def comparison operators can be used. For
+the ">"  "<"  "!=" "<=" ">=" operators there muset exist a
+\href{http://docs.marklogic.com/guide/admin/range_index#id_93351}{element range index}
+on the source field or a error will be raised, element range index can be created using the \link{ml.add.index}
+function. "==" operator will always work since it does not depend of range indexes.
 }
 \examples{
 \dontrun{
  library(rfml)
- ml.connect()
+ localConn <- ml.connect()
  # create a ml.data.frame based on the iris data set
- mlIris <- as.ml.data.frame(iris, "iris")
+ mlIris <- as.ml.data.frame(localConn, iris, "iris")
  # select first three columns
  mlIris2 <- mlIris[1:3]
  # same
@@ -49,5 +51,8 @@ not depend of range indexes.
  # select all columns for all rows with "setosa" in any column
  mlIris2 <- mlIris["setosa",]
 }
+}
+\concept{
+array
 }
 

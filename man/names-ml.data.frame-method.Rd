@@ -3,7 +3,7 @@
 \docType{methods}
 \name{names,ml.data.frame-method}
 \alias{names,ml.data.frame-method}
-\title{Shows field names of a ml.data.frame object}
+\title{Shows field names of a \link{ml.data.frame} object}
 \usage{
 \S4method{names}{ml.data.frame}(x)
 }
@@ -11,6 +11,6 @@
 \item{x}{an ml.data.frame object}
 }
 \description{
-Shows field names of a ml.data.frame object
+Shows field names of a \link{ml.data.frame} object
 }
 

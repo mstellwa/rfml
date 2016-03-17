@@ -16,13 +16,13 @@
 The median
 }
 \description{
-Returns the median of a ml.data.frame field.
+Returns the median of a \link{ml.data.frame} field.
 }
 \examples{
 \dontrun{
- ml.connect()
+ locConn <- ml.connect()
  # create a ml.data.frame based on a search
- mlIris <- ml.data.frame(collection = "iris")
+ mlIris <- ml.data.frame(locConn, collection = "iris")
  # median
  median(mlIris$Sepal.Length)
 }
