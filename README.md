@@ -13,7 +13,7 @@ In order to use rfml you need a REST server, with a module database, for the Mar
 
 You can install:
 
-* the latest released version from CRAN with (NOT CURRENTLY SUPPORTED)
+* the latest released version from CRAN with
 ```R
 install.packages("rfml")
 ```

@@ -5,5 +5,10 @@
 * win-builder (devel and release)
 
 ## R CMD check results
-There where no ERRORs, NOTEs or WARNNINGs.
+There where no ERRORs or WARNNINGs. 
 
+There was 1 NOTE.
+
+* checking CRAN incoming feasibility ... NOTE
+Maintainer: ‘Mats Stellwall <mats.stellwall@gmail.com>’
+New submission
