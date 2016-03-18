@@ -1,8 +1,8 @@
 context("method-statistics")
 
-myConn <- ml.connect(port = "8088")
-
 test_that("Statistics field based methods", {
+  skip_on_cran()
+  myConn <- ml.connect(port = "8088")
   mlIris <- as.ml.data.frame(myConn, iris, "iris-test")
   expect_equal(cor(mlIris$Sepal.Length, mlIris$Petal.Length), 0.871753775886583)
   expect_equal(cov(mlIris$Sepal.Length, mlIris$Petal.Length), 1.27431543624161)
@@ -20,6 +20,8 @@ test_that("Statistics field based methods", {
 })
 
 test_that("Statistics ml.data.frame based methods", {
+  skip_on_cran()
+  myConn <- ml.connect(port = "8088")
   mlIris <- as.ml.data.frame(myConn, iris, "iris-test")
   irisCor <- cor(mlIris)
   expect_equal(nrow(irisCor), 4)

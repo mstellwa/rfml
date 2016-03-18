@@ -7,5 +7,7 @@
 #' @import jsonlite
 #' @import XML
 #' @import methods
+#' @import utils
+#' @import stats
 NULL
 

@@ -13,7 +13,7 @@ ml.collection.info(conn, collection)
 }
 \description{
 The function extracts the structure of the documents belonging to a collection
-based on a sample.
+based on a sample it also estimates the number of documents that belongs to the collection.
 }
 \examples{
 \dontrun{

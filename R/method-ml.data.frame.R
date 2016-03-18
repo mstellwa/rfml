@@ -311,8 +311,9 @@ rm.ml.data.frame <- function(x, directory = "" ){
 #'  mlIris2 <- mlIris["setosa",]
 #' }
 #' @concept array
+#' @aliases [,ml.data.frame-method
 #' @export
-setMethod("[", signature(x = "ml.data.frame"),
+setMethod("[", c(x = "ml.data.frame", i="ANY", j="ANY"),
           function (x, i, j,..., drop=NA)
           {
             colArg <- NULL
@@ -529,9 +530,9 @@ setMethod("colnames", signature(x="ml.data.frame"),
 #' @export
 setMethod("head", signature(x="ml.data.frame"),
           function(x, n = 6, ...) {
-            if (length(.rfmlEnv$conn) != 4) {
-              stop("Need create a connection object. Use ml.connect first.")
-            }
+            #if (length(x@.conn) != 4) {
+            #  stop("Need create a connection object. Use ml.connect first.")
+            #}
             if (n >= 0) {
               return(.get.ml.data(x,n))
             } else {

@@ -29,7 +29,7 @@ ml.lm <- function(form, mlDf) {
   queryArgs <- c(queryComArgs, 'rs:pageLength'=nPageLength)
 
   #
-  #addIntercept <- attr(terms(form, keep.order=T, data=data.frame(x=1)), "intercept")
+
   isResponse <- attr(terms(form, keep.order=T, data=data.frame(x=1)), "response")
   vars <- all.vars(form)
   if (length(vars) != 2) {

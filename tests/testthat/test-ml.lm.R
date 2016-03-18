@@ -1,8 +1,8 @@
 context("ml.lm")
 
-myConn <- ml.connect(port = "8088")
-
 test_that("lm works", {
+  skip_on_cran()
+  myConn <- ml.connect(port = "8088")
   mlIris <- as.ml.data.frame(myConn, iris, "iris-test")
   lm <- ml.lm(Sepal.Length~Sepal.Width, mlIris)
   expect_match(lm$intercept, "6.52")

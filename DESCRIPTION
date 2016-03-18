@@ -7,12 +7,9 @@ Authors@R: c(person("Mats", "Stellwall", email = "mats.stellwall@gmail.com",
            person("Abdulla", "Abdurakhmanov",role = "ctb",
                   comment = "Code in xml2json.sjs is from https://code.google.com/p/x2js/"))
 Author: Mats Stellwall [aut, cre],
-        Abdulla Abdurakhmanov [ctb]
+        Abdulla Abdurakhmanov [ctb] (Code in xml2json.sjs is from https://code.google.com/p/x2js/)
 Maintainer: Mats Stellwall <mats.stellwall@gmail.com>
-Description: Functionality required to efficiently use R with MarkLogic Server.
-    Many basic and complex R operations are pushed down into the database, which
-    removes the main memory boundary of R and allows to make full use of MarkLogic
-    server.
+Description: Functionality required to efficiently use R with MarkLogic Server. Many basic and complex R operations are pushed down into the database, which removes the main memory boundary of R and allows to make full use of MarkLogic server. In order to use the package you need a MarkLogic Server installation with minimum version 8.
 URL: https://github.com/mstellwa/rfml
 BugReports: https://github.com/mstellwa/rfml/issues
 License: GPL-3

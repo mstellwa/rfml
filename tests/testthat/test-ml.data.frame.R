@@ -1,8 +1,8 @@
 context("ml.data.frame")
 
-myConn <- ml.connect(port = "8088")
-
 test_that("can create and delete a ml.data.frame based on iris dataset using json format", {
+   skip_on_cran()
+   myConn <- ml.connect(port = "8088")
    mlIris <- as.ml.data.frame(myConn, iris, "iris-test", format = "json")
    expect_is(mlIris, "ml.data.frame")
    expect_true(is.ml.data.frame(mlIris))
@@ -11,6 +11,8 @@ test_that("can create and delete a ml.data.frame based on iris dataset using jso
  })
 
 test_that("can create and delete a ml.data.frame based on iris dataset using xml format", {
+  skip_on_cran()
+  myConn <- ml.connect(port = "8088")
   mlIris <- as.ml.data.frame(myConn, iris, "iris-test", format = "XML")
   expect_is(mlIris, "ml.data.frame")
   expect_true(is.ml.data.frame(mlIris))
@@ -19,6 +21,8 @@ test_that("can create and delete a ml.data.frame based on iris dataset using xml
 })
 
 test_that("can create a ml.data.frame based on search", {
+  skip_on_cran()
+  myConn <- ml.connect(port = "8088")
    mlIris <- as.ml.data.frame(myConn, iris, "iris-test")
    mlIris2 <- ml.data.frame(myConn, collection = "iris-test")
    expect_is(mlIris2, "ml.data.frame")
@@ -35,6 +39,8 @@ test_that("can create a ml.data.frame based on search", {
 })
 
 test_that("can create a ml.data.frame based on fieldQuery", {
+  skip_on_cran()
+  myConn <- ml.connect(port = "8088")
   mlIris <- as.ml.data.frame(myConn, iris, "iris-test")
   mlIris2 <- ml.data.frame(myConn, fieldFilter = "Species == virginica", collection = "iris-test")
   expect_equal(mlIris2@.nrows, 50)
@@ -53,6 +59,8 @@ test_that("can create a ml.data.frame based on fieldQuery", {
 })
 
 test_that("can create new fields on a ml.data.frame", {
+  skip_on_cran()
+  myConn <- ml.connect(port = "8088")
   mlIris <- as.ml.data.frame(myConn,iris, "iris-test")
   mlIris$SepLength <- mlIris$Sepal.Length
   expect_is(mlIris$SepLength, "ml.col.def")
@@ -74,6 +82,8 @@ test_that("can create new fields on a ml.data.frame", {
   rm.ml.data.frame(mlIris)
 })
 test_that("sub select on a ml.data.frame", {
+  skip_on_cran()
+  myConn <- ml.connect(port = "8088")
   mlIris <- as.ml.data.frame(myConn, iris, "iris-test")
   mlIris2 <- mlIris[1:3]
   expect_equal(length(mlIris2@.col.name), 3)
@@ -96,6 +106,8 @@ test_that("sub select on a ml.data.frame", {
 })
 
 test_that("can create data based on a ml.data.frame", {
+  skip_on_cran()
+  myConn <- ml.connect(port = "8088")
   mlIris <- as.ml.data.frame(myConn, iris, "iris-test")
   mlIris$SepLength <- mlIris$Sepal.Length
   mlIris$SepLength10 <- mlIris$Sepal.Length * 10

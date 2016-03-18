@@ -1,8 +1,8 @@
 context("ml.arules")
 
-myConn <- ml.connect(port = "8088")
-
 test_that("ml.arules works", {
+  skip_on_cran()
+  myConn <- ml.connect(port = "8088")
   mlBaskets <- ml.load.sample.data(myConn, "baskets", "baskets-test")
   db <- "rfml"
   expect_message(ml.add.index(x = mlBaskets$lineItem1productName, scalarType = "string", database =  db, conn = myConn), "Range element index created on productName")

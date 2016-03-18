@@ -111,8 +111,13 @@
 .get.ml.data <- function(mlDf, nrows=0, searchOption=NULL) {
 
   conn <- mlDf@.conn
+
+  if (length(.rfmlEnv$key) < conn@.id) {
+    stop("Need a valid connection. Use ml.connection to create one!")
+  }
   key <- .rfmlEnv$key[[conn@.id]]
-  password <- rawToChar(PKI::PKI.decrypt(conn@.password, key))
+  password <- tryCatch(rawToChar(PKI::PKI.decrypt(conn@.password, key))
+                       , error = function(err) stop("Need a valid connection. Use ml.connection to create one!"))
   username <- conn@.username
   queryComArgs <- mlDf@.queryArgs
 
