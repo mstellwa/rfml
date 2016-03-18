@@ -356,22 +356,11 @@
 
   mlHost <- paste("http://", conn@.host, ":", conn@.port, sep="")
   mlSearchURL <- paste(mlHost, "/v1/resources/rfml.matrix", sep="")
-  # if (is.null(searchOption)) {
-  mlOptions <- .rfmlEnv$mlDefaultOption
-  #  } else {
-  #    mlOptions <- searchOption
-  #  }
-
 
   nStart=1
-  #  if (nrows>0) {
-  #    nPageLength <- nrows
-  #  } else {
   nPageLength <- mlDf@.nrows
-  #  }
 
   queryArgs <- c(queryComArgs, 'rs:pageLength'=nPageLength, 'rs:matrixfunc'=matrixfunc)
-
 
   # create
   if (length(mlDf@.col.defs) > 0) {
@@ -381,7 +370,6 @@
         fields <- paste(fields, ',', sep='')
       }
       fields <- paste(fields, '"', names(mlDf@.col.defs[i]), '":{"fieldDef":"',mlDf@.col.defs[[i]] ,'"}',sep='')
-      #fields <- paste(fields, '"',x@.name , '":{"fieldDef":"',x@.expr ,'","orgField":"', x@.org_name, '","orgFormat":"', x@.format , '"}
     }
     fields <- paste(fields, '}', sep='')
     queryArgs <- c(queryArgs, 'rs:fields'=fields)

@@ -21,7 +21,7 @@
 The correlation coefficient
 }
 \description{
-Returns the Pearson correlation coefficient of two variables, \link{ml.data.frame} fields.
+Returns the Pearson correlation coefficient between two \link{ml.data.frame} fields.
 }
 \details{
 The function eliminates all pairs for which either the first element or the second

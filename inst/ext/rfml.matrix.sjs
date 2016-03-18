@@ -1,4 +1,19 @@
+
 function getSummary(flatResult) {
+  Array.prototype.unique = function()
+{
+	var n = {},r=[];
+	for(var i = 0; i < this.length; i++)
+	{
+		if (!n[this[i]])
+		{
+			n[this[i]] = true;
+			r.push(this[i]);
+		}
+	}
+	return r;
+}
+
   var sumResult = {};
   for (var field in flatResult) {
     if (flatResult[field].fieldType == 'number') {
@@ -11,8 +26,17 @@ function getSummary(flatResult) {
                           'q1' : math.percentile(flatResult[field].values, 0.25),
                           'q3' : math.percentile(flatResult[field].values, 0.75)};
     } else {
-      /* max Length */
-      sumResult[field] = {'valType' : 'CATEGORICAL','length' : fn.count(xdmp.arrayValues(flatResult[field].values))};
+      /* Get the count per level (distinct value) */
+      var levels = {};
+      var levelArr = flatResult[field].values.sort();
+      for(var i=0;i< levelArr.length;i++)
+      {
+          var key = levelArr[i];
+          levels[key] = (levels[key])? levels[key] + 1 : 1 ;
+
+      }
+      sumResult[field] = {'valType' : 'CATEGORICAL','length' : fn.count(xdmp.arrayValues(flatResult[field].values)),
+                           "levels": levels};
     };
   };
   return xdmp.toJsonString(sumResult);

@@ -1,7 +1,7 @@
 ################ Correlation ############################
 #' Correlation
 #'
-#' Returns the Pearson correlation coefficient of two variables, \link{ml.data.frame} fields.
+#' Returns the Pearson correlation coefficient between two \link{ml.data.frame} fields.
 #'
 #' The function eliminates all pairs for which either the first element or the second
 #' element is empty. After the elimination, if the length of the input is less than 2,
@@ -60,10 +60,10 @@ setMethod(f="cor", signature=c(x="ml.col.def",y="ml.col.def"),
 #' deviation of the first column or the standard deviation of the second column is 0,
 #' the function returns the empty sequence.
 #'
-#' @param x a ml.data.frame
-#' @param y not used currently
-#' @param use not used currently
-#' @param method not used currently
+#' @param x a \link{ml.data.frame}
+#' @param y not used when doing a matrix
+#' @param use not implemented
+#' @param method not implemented
 #' @return The correlation coefficient matrix
 #' @examples
 #' \dontrun{
@@ -550,6 +550,7 @@ percentile <- function(x, p) {
 #' @param digits integer, used for number formatting
 #' @param maxsum not used.
 #' @param ... not used.
+#' @aliases summary
 #' @export
 setMethod(f="summary", signature=c("ml.data.frame"),
           function (object,digits=max(3L, getOption("digits") -3L), maxsum = 7L, ...) {
@@ -559,7 +560,7 @@ setMethod(f="summary", signature=c("ml.data.frame"),
 
             summaryTbl <- list()
             labelNum<-c("Min.","1st Qu.","Median","Mean","3rd Qu.","Max.")
-            labelCat <- c("Length","Class","Mode")
+            #labelCat <- c("Length","Class","Mode")
             # Get statsitics per field
             sumResult <- .ml.matrix(mlDf, "summary")
             # since the result is a list with lists (one for each field) we need to transform it to
@@ -569,7 +570,9 @@ setMethod(f="summary", signature=c("ml.data.frame"),
                 values <- c(sumResult[[i]]$min, sumResult[[i]]$q1, sumResult[[i]]$median,sumResult[[i]]$mean, sumResult[[i]]$q3, sumResult[[i]]$max)
                 values <- paste0(format(labelNum), ":", format(values,digits=digits,nsmall=3), "  ")
               } else {
-                values <- c(sumResult[[i]]$length, "character", "character")
+                labelCat <- names(sumResult[[i]]$levels)
+                #values <- c(sumResult[[i]]$length, "character", "character")
+                values <- unlist(sumResult[[i]]$levels, use.names = FALSE)
                 values <- paste0(format(labelCat), ":", format(values), "  ")
               }
               # make sure that the length is same for all values

@@ -2,6 +2,7 @@
 % Please edit documentation in R/method-statistics.R
 \docType{methods}
 \name{summary,ml.data.frame-method}
+\alias{summary}
 \alias{summary,ml.data.frame-method}
 \title{ml.data.frame Summaries}
 \usage{

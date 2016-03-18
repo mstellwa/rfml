@@ -8,13 +8,13 @@
 \S4method{cor}{ml.data.frame,ANY}(x, y = NULL, use = NULL, method = NULL)
 }
 \arguments{
-\item{x}{a ml.data.frame}
+\item{x}{a \link{ml.data.frame}}
 
-\item{y}{not used currently}
+\item{y}{not used when doing a matrix}
 
-\item{use}{not used currently}
+\item{use}{not implemented}
 
-\item{method}{not used currently}
+\item{method}{not implemented}
 }
 \value{
 The correlation coefficient matrix

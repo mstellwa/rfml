@@ -30,8 +30,8 @@ ml.connect <- function(host = "localhost", port = "8000",
   }
   # the database is ok to use
   .rfmlEnv$dbOk <- TRUE
-  .rfmlEnv$conn <- list("host" = host, "port" = port, "username" = username,
-               "password"= enc_pwd)
+  #.rfmlEnv$conn <- list("host" = host, "port" = port, "username" = username,
+  #             "password"= enc_pwd)
   mlConn <- new("ml.conn")
   mlConn@.id <- keyInd
   mlConn@.host<-host
