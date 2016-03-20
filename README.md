@@ -1,5 +1,7 @@
-[![Build Status](https://travis-ci.org/mstellwa/rfml.svg?branch=master)](https://travis-ci.org/mstellwa/rfml)
 # rfml – a R package for MarkLogic Server
+[![Build Status](https://travis-ci.org/mstellwa/rfml.svg?branch=master)](https://travis-ci.org/mstellwa/rfml)
+[![CRAN_Status_Badge](http://www.r-pkg.org/badges/version/rfml)](http://cran.r-project.org/package=rfml)
+
 
 rfml is a R package for MarkLogic Server, Enterprise NoSQL database, enabling in-dabase analytics.
 
