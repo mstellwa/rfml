@@ -301,7 +301,7 @@
   key <- .rfmlEnv$key[[conn@.id]]
   password <- rawToChar(PKI::PKI.decrypt(conn@.password, key))
   username <- conn@.username
-  mlHost <- paste("http://", .rfmlEnv$conn$host, ":", conn@.port, sep="")
+  mlHost <- paste("http://", conn@.host, ":", conn@.port, sep="")
 
   mlDelURL <- paste(mlHost, "/v1/resources/rfml.dframe", sep="")
 
