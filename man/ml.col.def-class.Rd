@@ -22,6 +22,8 @@ An S4 class to represent a ml.col.def.
 
 \item{\code{.org_name}}{A string with the original names of field}
 
+\item{\code{.org_xpath}}{A string with the xpath of field}
+
 \item{\code{.format}}{A string with the format of the source field}
 
 \item{\code{.xmlns}}{A string with the namespace of the source field}

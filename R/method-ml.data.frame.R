@@ -423,16 +423,19 @@ setMethod("$", signature(x = "ml.data.frame"),
             i <- which(x@.col.name %in% name)
             dataType <- x@.col.data_type[i]
             orgName <- x@.col.org_name[i]
+            orgXpath <- x@.col.org_xpath[i]
             colFormat <- x@.col.format[i]
+
             # check if the column are a added or already existing
             if(is.null(x@.col.defs[[name]])) {
               return(new(Class="ml.col.def",.expr=paste("rfmlResult[\'",name, "\']", sep=''),
-                         .name=name,.data_type=dataType, .org_name=orgName, .format=colFormat,
+                         .name=name,.data_type=dataType, .org_name=orgName, .org_xpath=orgXpath,
+                         .format=colFormat,
                          .parent=x,.type="field",.aggType="none"));
             } else {
 
               return(new(Class="ml.col.def",.expr=x@.col.defs[[name]],.name=name,.data_type=dataType,
-                         .org_name=orgName, .format=colFormat,
+                         .org_name=orgName, .org_xpath=orgXpath, .format=colFormat,
                          .parent=x,.type="expr",.aggType="none"));
             }
 

@@ -68,6 +68,7 @@ setClass("ml.data.frame",
 #' @slot .name A string with name of the field
 #' @slot .data_type A string with the data type of the field
 #' @slot .org_name A string with the original names of field
+#' @slot .org_xpath A string with the xpath of field
 #' @slot .format A string with the format of the source field
 #' @slot .xmlns A string with the namespace of the source field
 #' @slot .aggType A string
@@ -78,6 +79,7 @@ setClass("ml.col.def",
                  .name = "character",
                  .data_type = "character",
                  .org_name = "character",
+                 .org_xpath = "character",
                  .format = "character",
                  .xmlns = "character",
                  .aggType="character"

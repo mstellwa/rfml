@@ -7,7 +7,9 @@
 setMethod("print", signature(x="ml.col.def"),
           function (x) {
             cat(paste("Column definition: ", x@.expr,
-                      "\nMarkLogic element/property name:", x@.org_name, "\nSource document format:", x@.format,
+                      "\nMarkLogic element/property name:", x@.org_name,
+                      "\nMarkLogic element/property XPath:", x@.org_xpath,
+                      "\nSource document format:", x@.format,
                       "\nSource document namespace:", x@.xmlns,
                       "\nUse this to define new columns on a ml.data.frame using the $ operator. To select a subset of a ml.data.frame, use bldf[] notation. "),"\n")
           }
@@ -19,7 +21,9 @@ setMethod("print", signature(x="ml.col.def"),
 setMethod("show", signature(object="ml.col.def"),
           function (object) {
             cat(paste("Column definition:", object@.expr,
-                      " \nMarkLogic element/property name:", object@.org_name, "\nSource document format:", object@.format,
+                      " \nMarkLogic element/property name:", object@.org_name,
+                      "\nMarkLogic element/property XPath:", object@.org_xpath,
+                      "\nSource document format:", object@.format,
                       "\nSource document namespace:", object@.xmlns
                       ,"\nUse this to define new columns on a ml.data.frame using the $ operator. To select a subset of a ml.data.frame, use bldf[] notation. "),"\n")
           }

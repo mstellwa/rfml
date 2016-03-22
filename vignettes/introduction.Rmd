@@ -68,20 +68,19 @@ As a  example consider the following XML document:
 </customerOrder>
 ```
 When viewed using rfml it will look like this:
-```
-customerOrder1orderNumber lineItem1orderLineNumber lineItem1productNo   lineItem1productName   lineItem1quantityOrdered lineItem1priceEach lineItem1lineTotal lineItem2orderLineNumber lineItem2productNo     lineItem2productName lineItem2quantityOrdered lineItem2priceEach lineItem2lineTotal
-                    T200                        1                  2    1900s Vintage Bi-Plane                       21                 33                693                        2                  4 Collectable Wooden Train                       32              23.45              750.4
 
+|cr1orderNumber|cr1ls1lm11orderLineNumber|cr1ls1lm11productNo|cr1ls1lm11productName |cr1ls1lm11quantityOrdered|cr1ls1lm11priceEach|cr1ls1lm11lineTotal|cr1ls1lm12orderLineNumber|cr1ls1lm12productNo|cr1ls1lm12productName   |cr1ls1lm12quantityOrdered|cr1ls1lm12priceEach|cr1ls1lm12lineTotal|
+|--------------|-------------------------|-------------------|----------------------|-------------------------|-------------------|-------------------|-------------------------|-------------------|------------------------|-------------------------|-------------------|-------------------|
+|         T200 |                       1 |                 2 |1900s Vintage Bi-Plane|                       21|              33.00|                693|                        2|                  4|Collectable Wooden Train|                     32  |            23.45  |            750.4  |
 
-```
-What is happening behind the scene is that all data is flatten out before returned to the R client. Column names are created based on the level the element is, having the names of the parent elements with a number after before the element name.
+What is happening behind the scene is that all data is flatten out before returned to the R client. Column names are created based on the level the element is, having the first and last character from the name of the parent elements with a number after before the element name.
 
 ```XML
 <customerOrder><orderNumber>
 ```
 becomes
 ```
-customerOrder1orderNumber
+cr1orderNumber
 ```
 This means that values that are in the same level with the same element name will be in the same column in the result. 
 
