@@ -39,16 +39,3 @@ ml.connect <- function(host = "localhost", port = "8000",
   return(mlConn)
 
 }
-#' @export
-ml.disconnect <- function(mlConnection) {
-
-  .rfmlEnv$key[[mlConnection@.id]] <- NULL
-  # mlConnection <- NULL
-  mlConnection@.id <- NULL
-  mlConnection@.host <- NULL
-  mlConnection@.port <- NULL
-  mlConnection@.mlversion <- NULL
-  mlConnection@.username <- NULL
-  mlConnection@.password <- NULL
-
-}
