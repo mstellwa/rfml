@@ -11,10 +11,18 @@
   response <- GET(mlURL,authenticate(username, password, type="digest"), accept_json())
   rContent <- content(response)
   if (response$status_code != 200){
-    return(FALSE)
+    stop(paste("It seems like rfml is not installed on ",mlHost,
+               "\nUse ml.init.database for setting up the database.", sep=""))
   }
   curRfmlVer <- as.character(packageVersion("rfml"))
-  return(curRfmlVer == rContent$rfmlVersion)
+  mlVersion <- rContent$mlVersion
+  if (curRfmlVer != rContent$rfmlVersion) {
+    stop(paste("The installed rfml version on ",mlHost, " is not the same version as installed version.",
+               "\nVersion on MarkLogic Server: ",rContent$rfmlVersion,
+               "\nInstalled version: ",curRfmlVer,
+               "\nUse ml.init.database for updating the database.", sep=""))
+  }
+  return(mlVersion)
 }
 
 # internal function to add rest interface used
@@ -111,10 +119,6 @@
 .get.ml.data <- function(mlDf, nrows=0, searchOption=NULL) {
 
   conn <- mlDf@.conn
-
-  if (length(.rfmlEnv$key) < conn@.id) {
-    stop("Need a valid connection. Use ml.connection to create one!")
-  }
   key <- .rfmlEnv$key[[conn@.id]]
   password <- tryCatch(rawToChar(PKI::PKI.decrypt(conn@.password, key))
                        , error = function(err) stop("Need a valid connection. Use ml.connection to create one!"))
@@ -188,7 +192,8 @@
   conn <- mlDf@.conn
   # get connection imformation
   key <- .rfmlEnv$key[[conn@.id]]
-  password <- rawToChar(PKI::PKI.decrypt(conn@.password, key))
+  password <- tryCatch(rawToChar(PKI::PKI.decrypt(conn@.password, key))
+                       , error = function(err) stop("Need a valid connection. Use ml.connection to create one!"))
   username <- conn@.username
   mlHost <- paste("http://", conn@.host, ":", conn@.port, sep="")
   mlSearchURL <- paste(mlHost, "/v1/resources/rfml.dframe", sep="")
@@ -258,7 +263,8 @@
 
   # get connection imformation
   key <- .rfmlEnv$key[[conn@.id]]
-  password <- rawToChar(PKI::PKI.decrypt(conn@.password, key))
+  password <- tryCatch(rawToChar(PKI::PKI.decrypt(conn@.password, key))
+                       , error = function(err) stop("Need a valid connection. Use ml.connection to create one!"))
   username <- conn@.username
   mlHost <- paste("http://", conn@.host, ":", conn@.port, sep="")
 
@@ -299,13 +305,14 @@
   conn <- myData@.conn
   # get connection imformation
   key <- .rfmlEnv$key[[conn@.id]]
-  password <- rawToChar(PKI::PKI.decrypt(conn@.password, key))
+  password <- tryCatch(rawToChar(PKI::PKI.decrypt(conn@.password, key))
+                       , error = function(err) stop("Need a valid connection. Use ml.connection to create one!"))
   username <- conn@.username
   mlHost <- paste("http://", conn@.host, ":", conn@.port, sep="")
 
   mlDelURL <- paste(mlHost, "/v1/resources/rfml.dframe", sep="")
 
-  rfmlCollection <- myData@.queryArgs$`rs:collection`
+  rfmlCollection <- fromJSON(myData@.queryArgs$`rs:collection`)
   if (nchar(rfmlCollection) == 0) {
     stop("Can only delete data for a ml.data.frame that has been created using as.mld.data.frame!")
   }
@@ -331,7 +338,8 @@
 .ml.stat.func <- function(mlDf, fields, func) {
   conn <- mlDf@.conn
   key <- .rfmlEnv$key[[conn@.id]]
-  password <- rawToChar(PKI::PKI.decrypt(conn@.password, key))
+  password <- tryCatch(rawToChar(PKI::PKI.decrypt(conn@.password, key))
+                       , error = function(err) stop("Need a valid connection. Use ml.connection to create one!"))
   username <- conn@.username
   queryComArgs <- mlDf@.queryArgs
 
@@ -355,7 +363,8 @@
 .ml.matrix <- function(mlDf, matrixfunc) {
   conn <- mlDf@.conn
   key <- .rfmlEnv$key[[conn@.id]]
-  password <- rawToChar(PKI::PKI.decrypt(conn@.password, key))
+  password <- tryCatch(rawToChar(PKI::PKI.decrypt(conn@.password, key))
+                       , error = function(err) stop("Need a valid connection. Use ml.connection to create one!"))
   username <- conn@.username
   queryComArgs <- mlDf@.queryArgs
 
@@ -398,7 +407,8 @@
 .ml.movavg.func <- function(mlTs, fields, func, n) {
   conn <- mlTs@.conn
   key <- .rfmlEnv$key[[conn@.id]]
-  password <- rawToChar(PKI::PKI.decrypt(conn@.password, key))
+  password <- tryCatch(rawToChar(PKI::PKI.decrypt(conn@.password, key))
+                       , error = function(err) stop("Need a valid connection. Use ml.connection to create one!"))
   username <- conn@.username
   queryComArgs <- mlTs@.queryArgs
 
@@ -504,3 +514,22 @@
   #message(tf)
   return(tf)
 }
+
+.uuid <- function(uppercase=FALSE) {
+
+  hex_digits <- c(as.character(0:9), letters[1:6])
+  hex_digits <- if (uppercase) toupper(hex_digits) else hex_digits
+
+  y_digits <- hex_digits[9:12]
+
+  paste(
+    paste0(sample(hex_digits, 8), collapse=''),
+    paste0(sample(hex_digits, 4), collapse=''),
+    paste0('4', sample(hex_digits, 3), collapse=''),
+    paste0(sample(y_digits,1),
+           sample(hex_digits, 3),
+           collapse=''),
+    paste0(sample(hex_digits, 12), collapse=''),
+    sep='-')
+}
+

@@ -3,7 +3,7 @@ context("ml.data.frame")
 test_that("can create and delete a ml.data.frame based on iris dataset using json format", {
    skip_on_cran()
    myConn <- ml.connect(port = "8088")
-   mlIris <- as.ml.data.frame(myConn, iris, "iris-test", format = "json")
+   mlIris <- as.ml.data.frame(myConn, iris, "iris-test-json", format = "json")
    expect_is(mlIris, "ml.data.frame")
    expect_true(is.ml.data.frame(mlIris))
    expect_equal(mlIris@.nrows, 150)
@@ -13,7 +13,7 @@ test_that("can create and delete a ml.data.frame based on iris dataset using jso
 test_that("can create and delete a ml.data.frame based on iris dataset using xml format", {
   skip_on_cran()
   myConn <- ml.connect(port = "8088")
-  mlIris <- as.ml.data.frame(myConn, iris, "iris-test", format = "XML")
+  mlIris <- as.ml.data.frame(myConn, iris, "iris-test-xml", format = "XML")
   expect_is(mlIris, "ml.data.frame")
   expect_true(is.ml.data.frame(mlIris))
   expect_equal(mlIris@.nrows, 150)

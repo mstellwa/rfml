@@ -53,7 +53,8 @@ ml.data.frame <- function (conn, query="", fieldFilter="", ns = "NA", collection
   dframe <- format(Sys.time(),"%Y%m%d%H%M%S")
   # need to check that the key exits...
   key <- .rfmlEnv$key[[conn@.id]]
-  password <- rawToChar(PKI::PKI.decrypt(conn@.password, key))
+  password <- tryCatch(rawToChar(PKI::PKI.decrypt(conn@.password, key))
+                       , error = function(err) stop("Need a valid connection. Use ml.connection to create one!"))
   username <- conn@.username
 
   mlHost <- paste("http://", conn@.host, ":", conn@.port, sep="")
@@ -93,23 +94,25 @@ ml.data.frame <- function (conn, query="", fieldFilter="", ns = "NA", collection
   }
   # Collection and/or directory filtering
   if (length(collection) > 0) {
-    strColl <- ''
+    strColl <- '['
     for (i in 1:length(collection)) {
       if (i>1) {
         strColl <- paste(strColl, ',', sep='')
       }
-      strColl <- paste(strColl, collection[i], sep='')
+      strColl <- paste(strColl, '"' ,collection[i], '"', sep='')
     }
+    strColl <- paste(strColl, ']', sep='')
     queryComArgs <- c(queryComArgs, 'rs:collection'=strColl)
   }
   if (length(directory) > 0) {
-    strDir <- ''
+    strDir <- '['
     for (i in 1:length(directory)) {
       if (i>1) {
         strDir <- paste(strDir, ',', sep='')
       }
-      strDir <- paste(strDir, directory[i], sep='')
+      strDir <- paste(strDir, '"', directory[i], '"', sep='')
     }
+    strDir <- paste(strDir, ']', sep='')
     queryComArgs <- c(queryComArgs, 'rs:directory'=strDir)
   }
 

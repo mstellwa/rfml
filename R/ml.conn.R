@@ -18,26 +18,37 @@ ml.connect <- function(host = "localhost", port = "8000",
   # The key is stored in a package specific enviroment, created in the defs-pkg.R file
   RSAkey <- PKI::PKI.genRSAkey(2048)
   keyInd <- length(.rfmlEnv$key) + 1L
-  .rfmlEnv$key <- c(.rfmlEnv$key, RSAkey)
+  connUUID <- .uuid()
+  #.rfmlEnv$key <- c(.rfmlEnv$key, RSAkey)
+  .rfmlEnv$key[[connUUID]] <- RSAkey
   enc_pwd <- PKI::PKI.encrypt(charToRaw(password), RSAkey)
   mlHost <- paste("http://", host, ":", port, sep="")
 
   # Check that we have required search options and transformations/modules installed
-  if (!.check.database(mlHost, username, password)) {
-    .rfmlEnv$dbOk <- FALSE
-    stop(paste("The database on ",mlHost, " is not set up to work with rfml. ",
-               "Use ml.init.database for setting up the database.", sep=""))
-  }
+  mlVersion <- .check.database(mlHost, username, password)
+
   # the database is ok to use
   .rfmlEnv$dbOk <- TRUE
-  #.rfmlEnv$conn <- list("host" = host, "port" = port, "username" = username,
-  #             "password"= enc_pwd)
   mlConn <- new("ml.conn")
-  mlConn@.id <- keyInd
+  mlConn@.id <- connUUID
   mlConn@.host<-host
   mlConn@.port<-port
+  mlConn@.mlversion <- mlVersion
   mlConn@.username <- username
   mlConn@.password <- enc_pwd
   return(mlConn)
+
+}
+#' @export
+ml.disconnect <- function(mlConnection) {
+
+  .rfmlEnv$key[[mlConnection@.id]] <- NULL
+  # mlConnection <- NULL
+  mlConnection@.id <- NULL
+  mlConnection@.host <- NULL
+  mlConnection@.port <- NULL
+  mlConnection@.mlversion <- NULL
+  mlConnection@.username <- NULL
+  mlConnection@.password <- NULL
 
 }

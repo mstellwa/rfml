@@ -32,7 +32,8 @@ ml.arules <- function(data, itemField, support = 0.5, confidence = 0.8, maxlen =
   }
   conn <- data@.conn
   key <- .rfmlEnv$key[[conn@.id]]
-  password <- rawToChar(PKI::PKI.decrypt(conn@.password, key))
+  password <- tryCatch(rawToChar(PKI::PKI.decrypt(conn@.password, key))
+                       , error = function(err) stop("Need a valid connection. Use ml.connection to create one!"))
   username <- conn@.username
   queryComArgs <- data@.queryArgs
 

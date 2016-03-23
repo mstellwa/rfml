@@ -18,7 +18,8 @@ ml.collections <- function (conn, query="")
   # get data from ML
   # need to check that the key exits...
   key <- .rfmlEnv$key[[conn@.id]]
-  password <- rawToChar(PKI::PKI.decrypt(conn@.password, key))
+  password <- tryCatch(rawToChar(PKI::PKI.decrypt(conn@.password, key))
+                       , error = function(err) stop("Need a valid connection. Use ml.connection to create one!"))
   username <- conn@.username
 
   mlHost <- paste("http://", conn@.host, ":", conn@.port, sep="")
@@ -71,7 +72,8 @@ ml.collection.info <- function (conn,collection)
   # get data from ML
   # need to check that the key exits...
   key <- .rfmlEnv$key[[conn@.id]]
-  password <- rawToChar(PKI::PKI.decrypt(conn@.password, key))
+  password <- tryCatch(rawToChar(PKI::PKI.decrypt(conn@.password, key))
+                       , error = function(err) stop("Need a valid connection. Use ml.connection to create one!"))
   username <- conn@.username
 
   mlHost <- paste("http://", conn@.host, ":", conn@.port, sep="")

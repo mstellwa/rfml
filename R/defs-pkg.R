@@ -19,7 +19,7 @@
 #' @slot .username A string with username
 #' @slot .password Encrypted password
 setClass("ml.conn",
-         slots=c( .id="integer",
+         slots=c( .id="character",
                   .host="character",
                   .port="character",
                   .mlversion="character",

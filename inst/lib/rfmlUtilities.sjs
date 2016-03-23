@@ -375,82 +375,81 @@ function getMatrixResult(whereQuery, pageStart,getRows, relevanceScores, docUri,
 /******************************************************************************
  * Generates a cts query based on search text, collections and directory
  ******************************************************************************/
- function getCtsQuery(qText, collections, directory, fieldQuery) {
-   var ctsQuery,collectionQuery, directoryQuery;
-   var mlVersion = xdmp.version();
+ function getCtsQuery(qText, colls, dirs, fields) {
+    var ctsQuery,collectionQuery, directoryQuery;
+    var mlVersion = xdmp.version();
 
-   // count arguments to decide if and query...
-   var queries = 0;
-   var andQuery = false;
+    // count arguments to decide if and query...
+    var queries = 0;
 
-   if (qText != "") {
-     queries = queries +1;
-   }
-   if ((collections) && (collections.length > 0)) {
-     andQuery = true;
-     queries = queries +1;
-     if (Array.isArray(collections)) {
-       var collParams = [];
-       for (var i = 0; i < collections.length; i++) {
-         collParams.push(collections[i]);
-       }
-       collectionQuery = cts.collectionQuery(collParams);
-     } else {
-       collectionQuery = cts.collectionQuery(collections);
-     }
-   };
-
-   if ((directory) && (directory.length > 0)) {
-     andQuery = true;
-     queries = queries +1;
-      if (Array.isArray(directory)) {
-       var dirParams = [];
-       for (var i = 0; i < directory.length; i++) {
-         dirParams.push(directory[i]);
-       }
-       directoryQuery = cts.directoryQuery(dirParams);
-     } else {
-       directoryQuery = cts.directoryQuery(directory);
-     }
-   };
-   /*
-     In order to be able to handle both XML and JSON without knowing beforehand,
-     cts.orQuery needs to be used:
-     cts.orQuery([cts.elementValueQuery(xs.QName("addressLine1"), "4092 Furth Circle"),cts.jsonPropertyValueQuery("addressLine1", "4092 Furth Circle")])
-     If there is filtering on multiple fields (field1, field2)
-       cts.orQuery([field1 XML, field1 JSON]),cts.orQuery([field2 XML, field2 JSON])
-   */
-   if ((fieldQuery)) {
-      andQuery = true;
+    if ((colls) && (colls.length > 0)) {
       queries = queries +1;
-       var ctsFieldQuery = [];
-       for (var field in fieldQuery) {
-         switch(fieldQuery[field].operator) {
-           case "==":
-             ctsFieldQuery.push(cts.orQuery([cts.elementValueQuery(fn.QName((fieldQuery[field].xmlns != "NA") ? fieldQuery[field].xmlns : "",field), fieldQuery[field].value),cts.jsonPropertyValueQuery(field, fieldQuery[field].value)]));
-             break;
-           default:
-             ctsFieldQuery.push(cts.orQuery([cts.elementRangeQuery(fn.QName((fieldQuery[field].xmlns != "NA") ? fieldQuery[field].xmlns : "",field),fieldQuery[field].operator, fieldQuery[field].value),
-                                            cts.jsonPropertyRangeQuery(field,fieldQuery[field].operator, fieldQuery[field].value)]));
-         }
-       };
-   };
+      if (Array.isArray(colls)) {
+        var collParams = [];
+        for (var i = 0; i < colls.length; i++) {
+          collParams.push(colls[i]);
+        }
+        collectionQuery = cts.collectionQuery(collParams);
+      } else {
+        collectionQuery = cts.collectionQuery(colls);
+      }
+    };
 
-   if (mlVersion >= "8.0-4") {
-     ctsQuery = cts.parse(qText);
-
-   } else {
-     var parseQuery = xdmp.xqueryEval(
-             'xquery version "1.0-ml";  ' +
-             'import module namespace search = "http://marklogic.com/appservices/search"  ' +
-             '    at "/MarkLogic/appservices/search/search.xqy";  ' +
-             'declare variable $qtext as xs:string external;  ' +
-             'search:parse($qtext)',
-              { '{}qtext': qText });
-       ctsQuery = cts.query(parseQuery);
-   };
-  return (andQuery) ? cts.andQuery([ctsQuery,ctsFieldQuery,collectionQuery,directoryQuery]) : ctsQuery;
- }
+    if ((dirs) && (dirs.length > 0)) {
+      queries = queries +1;
+       if (Array.isArray(dirs)) {
+        var dirParams = [];
+        for (var i = 0; i < dirs.length; i++) {
+          dirParams.push(dirs[i]);
+        }
+        directoryQuery = cts.directoryQuery(dirParams);
+      } else {
+        directoryQuery = cts.directoryQuery(dirs);
+      }
+    };
+    /*
+      In order to be able to handle both XML and JSON without knowing beforehand,
+      cts.orQuery needs to be used:
+      cts.orQuery([cts.elementValueQuery(xs.QName("addressLine1"), "4092 Furth Circle"),cts.jsonPropertyValueQuery("addressLine1", "4092 Furth Circle")])
+      If there is filtering on multiple fields (field1, field2)
+        cts.orQuery([field1 XML, field1 JSON]),cts.orQuery([field2 XML, field2 JSON])
+    */
+    if ((fields)) {
+       queries = queries +1;
+        var ctsFieldQuery = [];
+        for (var field in fields) {
+          switch(fields[field].operator) {
+            case "==":
+              ctsFieldQuery.push(cts.orQuery([cts.elementValueQuery(fn.QName((fields[field].xmlns != "NA") ? fields[field].xmlns : "",field), fields[field].value),cts.jsonPropertyValueQuery(field, fields[field].value)]));
+              break;
+            default:
+              ctsFieldQuery.push(cts.orQuery([cts.elementRangeQuery(fn.QName((fields[field].xmlns != "NA") ? fields[field].xmlns : "",field),fields[field].operator, fields[field].value),
+                                             cts.jsonPropertyRangeQuery(field,fields[field].operator, fields[field].value)]));
+          }
+        };
+    };
+    if (qText != "") {
+       queries = queries +1;
+      if (mlVersion >= "8.0-4") {
+        ctsQuery = cts.parse(qText);
+      } else {
+        var parseQuery = xdmp.xqueryEval(
+                'xquery version "1.0-ml";  ' +
+                'import module namespace search = "http://marklogic.com/appservices/search"  ' +
+                '    at "/MarkLogic/appservices/search/search.xqy";  ' +
+                'declare variable $qtext as xs:string external;  ' +
+                'search:parse($qtext)',
+                 { '{}qtext': qText });
+          ctsQuery = cts.query(parseQuery);
+      };
+    }
+    if (queries > 1) {
+      return cts.andQuery([ctsQuery,ctsFieldQuery,collectionQuery,directoryQuery]);
+    } else {
+      return (ctsQuery) ? ctsQuery : (ctsFieldQuery) ? ctsFieldQuery : (collectionQuery) ? collectionQuery : directoryQuery;
+    }
+  }
+  
 function saveDfDataCTS(whereQuery, pageStart, getRows, relevanceScores, docUri, addFields, extrFields, collection, directory) {
  var path = typeof path !== 'undefined' ?  path : "";
  var resultContent;

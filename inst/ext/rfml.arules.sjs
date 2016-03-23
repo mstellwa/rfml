@@ -155,8 +155,8 @@ function arules(context, params) {
   var rfmlUtilities = require('/ext/rfml/rfmlUtilities.sjs');
   /* parmeters */
   var qText = (params.q) ? params.q : "";
-  var collections = params.collection;
-  var directory = params.directory;
+  var collections = (params.collection) ? JSON.parse(params.collection): null;
+  var directory = (params.directory) ? JSON.parse(params.directory): null;
   var minSupport = params.supp ? params.supp === 0 ? 0 : params.supp : 0.15;
   var minItems = params.minlen ? params.minlen === 0 ? 0 : params.minlen : 1;
   /* We keep a seperated variable for the minum items in a rule */

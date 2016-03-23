@@ -211,7 +211,8 @@ ml.add.index <- function(x, scalarType= "string", collation = "http://marklogic.
       stop("You need to provide a password value or a valid ml.conn object for the conn parameter")
     } else {
       key <- .rfmlEnv$key[[conn@.id]]
-      pwd <- rawToChar(PKI::PKI.decrypt(conn@.password, key))
+      pwd <- tryCatch(rawToChar(PKI::PKI.decrypt(conn@.password, key))
+                           , error = function(err) stop("Need a valid connection. Use ml.connection to create one!"))
     }
   }
   if (nchar(host) > 0) {

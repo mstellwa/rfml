@@ -2,8 +2,8 @@ function getStat(context, params) {
   var rfmlUtilities = require('/ext/rfml/rfmlUtilities.sjs');
 
   var qText = (params.q) ? params.q : "";
-  var collections = params.collection;
-  var directory = params.directory;
+  var collections = (params.collection) ? JSON.parse(params.collection): null;
+  var directory = (params.directory) ? JSON.parse(params.directory): null;
   var pageLength = params.pageLength;
   var statFunc =  JSON.parse(params.statfunc);
   /* pageStart only works with math functions because we first selects the result

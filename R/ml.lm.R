@@ -19,7 +19,8 @@ ml.lm <- function(form, mlDf) {
 
   conn <- mlDf@.conn
   key <- .rfmlEnv$key[[conn@.id]]
-  password <- rawToChar(PKI::PKI.decrypt(conn@.password, key))
+  password <- tryCatch(rawToChar(PKI::PKI.decrypt(conn@.password, key))
+                       , error = function(err) stop("Need a valid connection. Use ml.connection to create one!"))
   username <- conn@.username
   queryComArgs <- mlDf@.queryArgs
 

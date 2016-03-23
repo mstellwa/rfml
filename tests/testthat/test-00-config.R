@@ -5,9 +5,9 @@ test_that("MarkLogic database can be initiated for rfml", {
   ml.init.database(port = "8088")
 })
 
-test_that("MarkLogic database can be cleand up", {
+test_that("MarkLogic database can be cleaned up", {
   skip_on_cran()
   ml.clear.database(port = "8088")
-  expect_error(ml.connect(port="8088"), "The database on http://localhost:8088 is not set up to work with rfml. Use ml.init.database for setting up the database.")
+  expect_error(ml.connect(port="8088"), "It seems like rfml is not installed on http://localhost:8088\nUse ml.init.database for setting up the database.\n")
   ml.init.database(port = "8088")
 })

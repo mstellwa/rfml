@@ -1,9 +1,10 @@
 function dbInit(context, params) {
   var rfmlVersion = params.rfmlVersion;
   var rfmInitDate = params.initDate;
+  var mlVersion = xdmp.version();
   context.outputTypes = ['application/json'];
 
-  xdmp.documentInsert("/rfml/rfmlInfo.json", {"rfmlVersion":rfmlVersion, "rfmInitDate":rfmInitDate }, xdmp.permission("rest-reader", "read"), "rfml")
+  xdmp.documentInsert("/rfml/rfmlInfo.json", {"rfmlVersion":rfmlVersion, "rfmInitDate":rfmInitDate, "mlVersion": mlVersion }, xdmp.permission("rest-reader", "read"), "rfml")
 
   context.outputStatus = [204, 'rfml info Saved'];
 }

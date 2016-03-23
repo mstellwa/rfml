@@ -76,8 +76,8 @@ function getMatrix(context, params) {
   var rfmlUtilities = require('/ext/rfml/rfmlUtilities.sjs');
   /* parmeters */
   var qText = (params.q) ? params.q : "";
-  var collections = params.collection;
-  var directory = params.directory;
+  var collections = (params.collection) ? JSON.parse(params.collection): null;
+  var directory = (params.directory) ? JSON.parse(params.directory): null;
   var pageLength = params.pageLength;
   var pageStart = (parseInt(params.start) > 0) ? parseInt(params.start) : 1;
   var matrixFunc = params.matrixfunc;

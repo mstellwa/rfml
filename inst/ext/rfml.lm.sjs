@@ -2,8 +2,8 @@ function getLm(context, params) {
   var rfmlUtilities = require('/ext/rfml/rfmlUtilities.sjs');
   var xml2json = require('/ext/rfml/xml2json.sjs');
   var qText = (params.q) ? params.q : "";
-  var collections = params.collection;
-  var directory = params.directory;
+  var collections = (params.collection) ? JSON.parse(params.collection): null;
+  var directory = (params.directory) ? JSON.parse(params.directory): null;
   var pageLength = params.pageLength;
   var getRows = (parseInt(pageLength) > 0) ? parseInt(pageLength) : 30;
 

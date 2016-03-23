@@ -6,44 +6,37 @@
    var rfmlUtilities = require('/ext/rfml/rfmlUtilities.sjs');
    /* parmeters */
    var qText = (params.q) ? params.q : "";
-   var collections = params.collection;
-   var directory = params.directory;
+   var collections = (params.collection) ? JSON.parse(params.collection): null;
+   var directory = (params.directory) ? JSON.parse(params.directory): null;
    var pageLength = params.pageLength;
    var pageStart = (parseInt(params.start) > 0) ? parseInt(params.start) : 1;
    var returnFormat = params.return;
    var relevanceScores = params.relevanceScores == "TRUE" ? true : false;
    var docUri = params.docUri == "TRUE" ? true : false;
-
    var getRows = (parseInt(pageLength) > 0) ? parseInt(pageLength) : 30;
-   var extFields;
-   var fieldQuery;
+   var extFields = (params.extfields) ? JSON.parse(params.extfields) : null;
+   var fieldQuery = (params.fieldQuery) ? JSON.parse(params.fieldQuery) : null;
 
    context.outputTypes = ['application/json'];
-   if (params.extfields) {
-     extFields = JSON.parse(params.extfields);
-   }
 
-   if (params.fieldQuery) {
-     fieldQuery = JSON.parse(params.fieldQuery);
-   }
    var whereQuery = rfmlUtilities.getCtsQuery(qText, collections, directory, fieldQuery);
    if (params.return == 'data') {
      var addFields = {};
      if (params.fields) {
        addFields = JSON.parse(params.fields);
      }
-     return rfmlUtilities.getResultData(whereQuery, pageStart, getRows, relevanceScores, docUri, addFields, extFields);
+    return rfmlUtilities.getResultData(whereQuery, pageStart, getRows, relevanceScores, docUri, addFields, extFields);
    } else {
      return rfmlUtilities.getResultMetadata(whereQuery, getRows, relevanceScores, docUri, extFields);
    };
-   //return whereQuery;
  }
+
  function saveDframe(context, params, input) {
   var rfmlUtilities = require('/ext/rfml/rfmlUtilities.sjs');
   /* parmeters */
   var qText = (params.q) ? params.q : "";
-  var collections = params.collection;
-  var directory = params.directory;
+  var collections = (params.collection) ? JSON.parse(params.collection): null;
+  var directory = (params.directory) ? JSON.parse(params.directory): null;
   var pageLength = params.pageLength;
   var pageStart = (parseInt(params.start) > 0) ? parseInt(params.start) : 1;
   var returnFormat = params.return;
