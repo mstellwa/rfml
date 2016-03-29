@@ -1,7 +1,11 @@
-#' Creates a connection to a MarkLogic REST server.
+#' Creates a connection to a MarkLogic REST instance.
 #'
-#' @param host Hostname or ip-adress of the MarkLogic http server. Default to localhost.
-#' @param port Port number of the MarkLogic http server. 8000 is used default
+#' The in order to use a database with rfml there needs to be a \href{http://docs.marklogic.com/guide/rest-dev/service#id_15309}{REST instance}
+#' for that database with a \href{http://docs.marklogic.com/guide/admin/databases#id_38484}{module database}. The REST instance needs
+#' to be created according to \href{http://docs.marklogic.com/guide/rest-dev/service#id_12021}{Creating a REST instance}.
+#'
+#' @param host Hostname or ip-adress of the MarkLogic REST instance. Default to localhost.
+#' @param port Port number of the MarkLogic REST instance. 8000 is used default
 #' @param username Username. admin is default.
 #' @param password Password admin is default.
 #' @return A ml.conn object.
@@ -17,7 +21,6 @@ ml.connect <- function(host = "localhost", port = "8000",
   # We encrypt the password before storing it in the list
   # The key is stored in a package specific enviroment, created in the defs-pkg.R file
   RSAkey <- PKI::PKI.genRSAkey(2048)
-  keyInd <- length(.rfmlEnv$key) + 1L
   connUUID <- .uuid()
   #.rfmlEnv$key <- c(.rfmlEnv$key, RSAkey)
   .rfmlEnv$key[[connUUID]] <- RSAkey

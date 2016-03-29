@@ -9,7 +9,7 @@ It is based on the REST interface to allow users to use search syntax for creati
 
 rfml only works with MarkLogic Server version 8 and higher. You can download MarkLogic Server at http://developer.marklogic.com/products.
 
-In order to use rfml you need a REST server, with a module database, for the MarkLogic database that contains your source data..
+In order to use rfml you need a REST server, with a module database, for the MarkLogic database that contains your source data. You need to create the REST server according to http://docs.marklogic.com/guide/rest-dev/service#id_12021
 
 **If you have previous installed rfml, before 7th December 2015, you need to execute ml.clear.database before installing the new version.**
 
@@ -34,18 +34,19 @@ After the package is installed you need to setup the database that is to be used
 * rest-writer
 * rest-reader
 
+Host are the hostname or ip-adress of your Marklogic Server (in this example localhost), port is the port your REST server listen on (in this example 8000, which is the default that is using the Documents database).
 ```R
 library(rfml)
 # setup the database to be used with rfml, will install query options and transformation
-ml.init.database("localhost", "8000", "admin", "admin")
+ml.init.database(host="localhost", port="8000", adminuser="admin", password="admin")
 
 ````
 After the setup you can use a standard user with rest-reader and if you want to upload data rest-writer priviligies.
 
-Before data can be selected a call to ml.connect is needed, the function verifies that the database is setup correctly and returns a connection object. You can have multiple connections at the same time.
+Before data can be selected a call to ml.connect is needed, the function verifies that the database is setup correctly and returns a connection object. You can have multiple connections at the same time. Host are the hostname or ip-adress of your Marklogic Server (in this example localhost), port is the port your REST server listen on (in this example 8000, which is the default that is using the Documents database).
 ```R
 #create a connection
-localConn <- ml.connect("localhost","8000", "myuser", "mypassword")
+localConn <- ml.connect(host="localhost",port="8000", user="myuser", password="mypassword")
 ```
 After the connections is done there is multiple ways to select data from the MarkLogic database.
 

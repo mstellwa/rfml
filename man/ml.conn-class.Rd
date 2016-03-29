@@ -14,7 +14,7 @@ An S4 class to represent a connection to a MarkLogic Server Database
 
 \item{\code{.host}}{A string with the MarkLogic Server hostname or ip-adress}
 
-\item{\code{.port}}{A string with the port number to the HTTP server for the MarkLogic Databse used}
+\item{\code{.port}}{A string with the port number to the REST instance for the MarkLogic Databse used}
 
 \item{\code{.mlversion}}{A string with the version of the MarkLogic Server}
 

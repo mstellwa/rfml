@@ -2,15 +2,15 @@
 % Please edit documentation in R/ml.conn.R
 \name{ml.connect}
 \alias{ml.connect}
-\title{Creates a connection to a MarkLogic REST server.}
+\title{Creates a connection to a MarkLogic REST instance.}
 \usage{
 ml.connect(host = "localhost", port = "8000", username = "admin",
   password = "admin")
 }
 \arguments{
-\item{host}{Hostname or ip-adress of the MarkLogic http server. Default to localhost.}
+\item{host}{Hostname or ip-adress of the MarkLogic REST instance. Default to localhost.}
 
-\item{port}{Port number of the MarkLogic http server. 8000 is used default}
+\item{port}{Port number of the MarkLogic REST instance. 8000 is used default}
 
 \item{username}{Username. admin is default.}
 
@@ -20,7 +20,9 @@ ml.connect(host = "localhost", port = "8000", username = "admin",
 A ml.conn object.
 }
 \description{
-Creates a connection to a MarkLogic REST server.
+The in order to use a database with rfml there needs to be a \href{http://docs.marklogic.com/guide/rest-dev/service#id_15309}{REST instance}
+for that database with a \href{http://docs.marklogic.com/guide/admin/databases#id_38484}{module database}. The REST instance needs
+to be created according to \href{http://docs.marklogic.com/guide/rest-dev/service#id_12021}{Creating a REST instance}.
 }
 \examples{
 \dontrun{

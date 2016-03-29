@@ -5,8 +5,9 @@
 #' for each database that is going to be used with rfml. It also creates a document, /rfml/rfmlInfo.json, that
 #' stores the version of the rfml package and the date the database are initiated.
 #'
-#' The database must have a \href{http://docs.marklogic.com/guide/admin/http}{REST server}
-#' and a \href{http://docs.marklogic.com/guide/admin/databases#id_38484}{module database}.
+#' The database must have a \href{http://docs.marklogic.com/guide/rest-dev/service#id_15309}{REST instance}
+#' and a \href{http://docs.marklogic.com/guide/admin/databases#id_38484}{module database}. The REST instance needs
+#' to be created according to \href{http://docs.marklogic.com/guide/rest-dev/service#id_12021}{Creating a REST instance}.
 #' It also adds a document, /rfml/rfmlInfo.json, that stores the version of the rfml
 #' package and the date the database are initiated.
 #'
@@ -18,8 +19,8 @@
 #'  \item http://marklogic.com/xdmp/privileges/rest-reader
 #'  }
 #'
-#' @param host The hostname or ip-adress of the MarkLogic http server. Default to localhost.
-#' @param port The port number of the MarkLogic http server. 8000 is used default
+#' @param host The hostname or ip-adress of the MarkLogic REST instance. Default to localhost.
+#' @param port The port number of the MarkLogic REST instance. 8000 is used default
 #' @param adminuser The username of a user that have rights to install options. admin is default.
 #' @param password The password admin is default.
 #' @return Nothing if success or raise a error.
@@ -82,8 +83,8 @@ ml.init.database <- function(host = "localhost", port = "8000", adminuser = "adm
 #'  \item http://marklogic.com/xdmp/privileges/rest-reader
 #'  }
 #'
-#' @param host The hostname or ipadress of the MarkLogic http server. Default to localhost.
-#' @param port The port number of the MarkLogic http server. 8000 is used default
+#' @param host The hostname or ipadress of the MarkLogic REST instance. Default to localhost.
+#' @param port The port number of the MarkLogic REST instance. 8000 is used default
 #' @param adminuser The username of a user that have rights to install options. admin is default.
 #' @param password The password admin is default.
 #' @return Nothing if success otherwise it will raise an error.

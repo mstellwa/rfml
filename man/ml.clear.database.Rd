@@ -8,9 +8,9 @@ ml.clear.database(host = "localhost", port = "8000", adminuser = "admin",
   password = "admin")
 }
 \arguments{
-\item{host}{The hostname or ipadress of the MarkLogic http server. Default to localhost.}
+\item{host}{The hostname or ipadress of the MarkLogic REST instance. Default to localhost.}
 
-\item{port}{The port number of the MarkLogic http server. 8000 is used default}
+\item{port}{The port number of the MarkLogic REST instance. 8000 is used default}
 
 \item{adminuser}{The username of a user that have rights to install options. admin is default.}
 

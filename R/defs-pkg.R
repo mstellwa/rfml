@@ -14,7 +14,7 @@
 #'
 #' @slot .id A integer with the connection number.
 #' @slot .host A string with the MarkLogic Server hostname or ip-adress
-#' @slot .port A string with the port number to the HTTP server for the MarkLogic Databse used
+#' @slot .port A string with the port number to the REST instance for the MarkLogic Databse used
 #' @slot .mlversion A string with the version of the MarkLogic Server
 #' @slot .username A string with username
 #' @slot .password Encrypted password
