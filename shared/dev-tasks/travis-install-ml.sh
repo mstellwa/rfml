@@ -15,9 +15,7 @@ set | grep TRAVIS
 
 test $1 && arg1=$1
 if [[ $arg1 = 'release' ]]; then
-  #ver=8.0-4.2
-  ver=${MLBUILD_VERSION}
-  fname=MarkLogic-${ver}.x86_64.rpm
+  fname=${MLBUILD_FNAME}
   fnamedeb="marklogic_"
   fnamedeb=$fnamedeb$ver
   suff="_amd64.deb"
@@ -27,7 +25,7 @@ if [[ $arg1 = 'release' ]]; then
   dl_link=$(curl -b cookies.txt --data "download=/download/binaries/8.0/${fname}" https://developer.marklogic.com/get-download-url | perl -pe 's/.*"path":"([^"]+).*/\1/')
   url="https://developer.marklogic.com${dl_link}"
 
-  echo "********* Downloading MarkLogic $ver"
+  echo "********* Downloading MarkLogic $fname"
 
   successOrExit curl -k -o ./$fname $url
 
