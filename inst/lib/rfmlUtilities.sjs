@@ -3,19 +3,25 @@
  * Author: Mats Stellwall
  ******************************************************************************/
 
- /************************************
+ /**
  * Check if a value is numeric
  * returns true if and false if not.
- ************************************/
+ *
+ *  @property {} n - the value to test
+ */
 function isNumeric(n) {
  return !isNaN(parseFloat(n)) && isFinite(n);
 }
 
-/***********************************************************************
-* Flatten a json documet
-* If retFieldDef if true it will onnly return information about the structure
-* else it will return fieldname and value
-************************************************************************/
+/**
+ * Flatten a json documet
+ *
+ *  @property {Object} data - the JSON object to flatten
+ *  @property {Object} result - the JSON object to add it to
+ *  @property {boolean} retFieldDef - if only field information should be returned
+ *  @property {string} docFormat - what format the source was orginaly in XML/JSON
+ *  @property {string} docXmlns - the namespace that the orginal XML is using
+ */
 function flatten(data, result, retFieldDef, docFormat, docXmlns) {
     function recurse (cur, prop, name, path) {
         /* if cur is a value */
@@ -64,70 +70,93 @@ function flatten(data, result, retFieldDef, docFormat, docXmlns) {
     recurse(data, "", "", "");
     return result;
 }
-/***********************************************************************
-*
-************************************************************************/
-function getFlatResult(docRaw, docFormat, searchRelatedVals, addFields, extrFields) {
-  var xml2json = require('/ext/rfml/xml2json.sjs');
-  var resultContent;
-  switch (docFormat) {
-    /* XML format result from jsearch */
-    case 'element':
-      var xmlContent = xdmp.unquote(docRaw.toString()).next().value;
-      var x2js = new xml2json.X2JS();
-      resultContent = x2js.xml2json( xmlContent );
-      break;
-    /* XML format result from cts.search */
-    case "XML":
-      var x2js = new xml2json.X2JS();
-      resultContent = x2js.xml2json( docRaw );
-      break;
-    /* JSON format result from jsearch */
-    case 'object':
-      resultContent = JSON.parse(docRaw);
-      break;
-    /* XML format result from cts.search */
-    case "JSON":
-      resultContent = docRaw.toObject();
-      break;
-    default:
-      return;
-  };
-  var flatDoc = {};
-  /*  Add search related fields */
-  flatDoc = searchRelatedVals;
-  flatDoc = flatten(resultContent, flatDoc, false, "", "") ;
-
-  /* Add user defined fields */
-  for (var field in addFields) {
-    var fieldName = field;
-    var fieldDef = addFields[field].fieldDef;
-    flatDoc[fieldName] = eval(fieldDef.replace(/rfmlResult/g, "flatDoc"));
-  };
-  var retDoc = {};
-  /* if we should only return a extract of the result */
-  if (extrFields) {
-    for (var extrField in extrFields) {
-      retDoc[extrField] = flatDoc[extrField]
+/**
+ * Primary function for flatten results. If the document is in XML it will converted
+ * to JSON first.
+ *
+ * @property {Object} docRaw - the object to flatten can be XML/JSON
+ * @property {string} docFormat - what format the source was orginaly in XML/JSON
+ * @property {Object} searchRelatedVals - object contianing search specific information, scores and URI
+ * @property {Object} addFields - user defined fields
+ * @property {Object} extrFields - if only part of result is returned the fields to return in is this object
+ * @property {boolean} sourceFlat - if the source data is already flat
+ */
+ function getFlatResult(docRaw, docFormat, searchRelatedVals, addFields, extrFields, sourceFlat) {
+   var xml2json = require('/ext/rfml/xml2json.sjs');
+   var resultContent;
+   var mlVersion = xdmp.version();
+   switch (docFormat) {
+     /* XML format result from jsearch */
+     case 'element':
+       var itr = xdmp.unquote(docRaw.toString());
+       var xmlContent;
+       if(itr instanceof ValueIterator && 'function' === typeof itr.next) {
+           xmlContent = itr.next().value;
+       } else {
+           xmlContent = fn.head(itr);
+       }
+       var x2js = new xml2json.X2JS();
+       resultContent = x2js.xml2json( xmlContent );
+       break;
+     /* XML format result from cts.search */
+     case "XML":
+       var x2js = new xml2json.X2JS();
+       resultContent = x2js.xml2json( docRaw );
+       break;
+     /* JSON format result from jsearch */
+     case 'object':
+       resultContent = JSON.parse(docRaw);
+       break;
+     /* XML format result from cts.search */
+     case "JSON":
+       resultContent = docRaw.toObject();
+       break;
+     default:
+       return;
+   };
+   var flatDoc = {};
+   /*  Add search related fields */
+   flatDoc = searchRelatedVals;
+   if (sourceFlat) {
+    for (field in resultContent) {
+      flatDoc[field] = resultContent[field];
     }
-  } else {
-    retDoc = flatDoc;
-  }
+   } else {
+     flatDoc = flatten(resultContent, flatDoc, false, "", "") ;
+   }
 
-  return retDoc;
-}
-/***********************************************************************************************************
+   /* Add user defined fields */
+   for (var field in addFields) {
+     var fieldName = field;
+     var fieldDef = addFields[field].fieldDef;
+     flatDoc[fieldName] = eval(fieldDef.replace(/rfmlResult/g, "flatDoc"));
+   };
+   var retDoc = {};
+   /* if we should only return a extract of the result */
+   if (extrFields) {
+     for (var extrField in extrFields) {
+       retDoc[extrField] = flatDoc[extrField]
+     }
+   } else {
+     retDoc = flatDoc;
+   }
+
+   return retDoc;
+ }
+
+/**
 * Returns a flatten result set using cts.search
 *
-* whereQuery - a cts.query used for the search
-* pageStart - integer. One-based index of the first document to return.
-* getRows - integer. 	The one-based index of the document after the last document to return
-* relevanceScores - boolean. If the score, confidence and fitness values should be returned
-* docUri - boolean. If the uri should be returned
-* addFields - object. Additional fields to add to the results
-* extrFields - object. Fields that should be extracted from the results and returned instead of all fields.
-************************************************************************************************************/
-function getDataCts(whereQuery, pageStart, getRows, relevanceScores, docUri, addFields, extrFields) {
+* @property {cts.query} whereQuery - a cts.query used for the search
+* @property {integer} pageStart - One-based index of the first document to return.
+* @property {integer} getRows - The one-based index of the document after the last document to return
+* @property {boolean} relevanceScores - If the score, confidence and fitness values should be returned
+* @property {boolean} docUri - If the uri should be returned
+* @property {object} addFields - Additional fields to add to the results
+* @property {object} extrFields - Fields that should be extracted from the results and returned instead of all fields.
+* @property {boolean} sourceFlat - if the source data is already flat
+*/
+function getDataCts(whereQuery, pageStart, getRows, relevanceScores, docUri, addFields, extrFields, sourceFlat) {
   var path = typeof path !== 'undefined' ?  path : "";
   var resultContent;
   var flatResult = [];
@@ -145,7 +174,7 @@ function getDataCts(whereQuery, pageStart, getRows, relevanceScores, docUri, add
       searchRelatedVals.confidence = results.confidence;
       searchRelatedVals.fitness = results.fitness;
     };
-    var flatDoc = getFlatResult(result, result.documentFormat, searchRelatedVals, addFields, extrFields);
+    var flatDoc = getFlatResult(result, result.documentFormat, searchRelatedVals, addFields, extrFields, sourceFlat);
     flatResult.push(flatDoc);
   };
   return {"results":flatResult};
@@ -153,15 +182,16 @@ function getDataCts(whereQuery, pageStart, getRows, relevanceScores, docUri, add
 /***********************************************************************************************************
 * Returns a flatten result set using jsearch
 *
-* whereQuery - a cts.query used for the search
-* pageStart - integer. Zero-based index of the first document to return.
-* getRows - integer. 	The zero-based index of the document after the last document to return
-* relevanceScores - boolean. If the score, confidence and fitness values should be returned
-* docUri - boolean. If the uri should be returned
-* addFields - object. Additional fields to add to the results
-* extrFields - object. Fields that should be extracted from the results and returned instead of all fields.
+* @property {cts.query} whereQuery - a cts.query used for the search
+* @property {integer} pageStart - One-based index of the first document to return.
+* @property {integer} getRows - The one-based index of the document after the last document to return
+* @property {boolean} relevanceScores - If the score, confidence and fitness values should be returned
+* @property {boolean} docUri - If the uri should be returned
+* @property {object} addFields - Additional fields to add to the results
+* @property {object} extrFields - Fields that should be extracted from the results and returned instead of all fields.
+* @property {boolean} sourceFlat - If the source is already flat
 ************************************************************************************************************/
-function getDataJS(whereQuery, pageStart,getRows, relevanceScores, docUri, addFields, extrFields) {
+function getDataJS(whereQuery, pageStart,getRows, relevanceScores, docUri, addFields, extrFields, sourceFlat) {
   var jsearch = require('/MarkLogic/jsearch.sjs');
   return jsearch.documents()
                  .where(whereQuery)
@@ -179,24 +209,23 @@ function getDataJS(whereQuery, pageStart,getRows, relevanceScores, docUri, addFi
                            searchRelatedVals.confidence = match.confidence;
                            searchRelatedVals.fitness = match.fitness;
                          };
-
-                        return getFlatResult(docRaw, docRaw.nodeKind, searchRelatedVals, addFields, extrFields);
+                         return getFlatResult(docRaw, docRaw.nodeKind, searchRelatedVals, addFields, extrFields, sourceFlat);
                    })
                    .result();
  }
  /***********************************************************************************************
  * Returns a array with the value pairs of the fields in fields
  *
- * whereQuery - a cts.query used for the search
- * pageStart - integer. one-based index of the first document to return.
- * getRows - integer. 	The one-based index of the document after the last document to return
- * fields - object. The fields which vales is added to the returned array.
+ * @property {cts.query} whereQuery - a cts.query used for the search
+ * @property {integer} pageStart - One-based index of the first document to return.
+ * @property {integer} getRows - The one-based index of the document after the last document to return
+ * @property {object} fields - The fields which values is added to the returned array.
  *************************************************************************************************/
  function fields2array(whereQuery, pageStart, getRows, fields) {
    var mlVersion = xdmp.version();
    var res = {};
      /* Check version and do diffrently */
-   if (mlVersion >= "8.0-6") {
+   if (mlVersion >= "8.0-4") {
      /* jsearch DocumentsSearch.slice starts on 0 so we need to decrease with 1 (subsequence used in with cts starts at 1) */
      pageStart = pageStart -1;
      res = getDataJS(whereQuery, pageStart,getRows, true, true, fields, fields)
@@ -215,10 +244,17 @@ function getDataJS(whereQuery, pageStart,getRows, relevanceScores, docUri, addFi
     return flatResult;
 }
 
-/***********************************************************************
- * Creates a result set that can be used to create
- * summary (descreptive statsitcs).
- ************************************************************************/
+/**
+ * Creates a result set that can be used to create a summary table (descreptive statsitcs).
+ *
+ * @property {cts.query} whereQuery - a cts.query used for the search
+ * @property {integer} pageStart - One-based index of the first document to return.
+ * @property {integer} getRows - The one-based index of the document after the last document to return
+ * @property {boolean} relevanceScores - If the score, confidence and fitness values should be returned
+ * @property {boolean} docUri - If the uri should be returned
+ * @property {object} addFields - Additional fields to add to the results
+ * @property {object} extrFields - Fields that should be extracted from the results and returned instead of all fields.
+ */
 function getMatrixResult(whereQuery, pageStart,getRows, relevanceScores, docUri, addFields, extFields) {
   var mlVersion = xdmp.version();
   var res = {};
@@ -247,25 +283,40 @@ function getMatrixResult(whereQuery, pageStart,getRows, relevanceScores, docUri,
   }
   return flatResult;
 }
-/******************************************************************************
+/**
  * Gets data using cts.search/jsearch, add additional fields and flatten the result
- ******************************************************************************/
- function getResultData(whereQuery, pageStart, getRows, relevanceScores, docUri, addFields, extFields) {
-   var mlVersion = xdmp.version();
-     /* Check version and do diffrently */
-   if (mlVersion >= "8.0-4") {
-       pageStart = pageStart -1;
-       return getDataJS(whereQuery, pageStart, getRows, relevanceScores, docUri, addFields, extFields);
-   } else {
-      return getDataCts(whereQuery, pageStart, getRows, relevanceScores, docUri, addFields, extFields)
-   };
- }
- /******************************************************************************
-  * Gets metadata using jsearch
-  ******************************************************************************/
+ *
+ * @property {cts.query} whereQuery - a cts.query used for the search
+ * @property {integer} pageStart - One-based index of the first document to return.
+ * @property {integer} getRows - The one-based index of the document after the last document to return
+ * @property {boolean} relevanceScores - If the score, confidence and fitness values should be returned
+ * @property {boolean} docUri - If the uri should be returned
+ * @property {object} addFields - Additional fields to add to the results
+ * @property {object} extrFields - Fields that should be extracted from the results and returned instead of all fields.
+ * @property {boolean} sourceFlat - If the source data is already flat
+ */
+ function getResultData(whereQuery, pageStart, getRows, relevanceScores, docUri, addFields, extFields, sourceFlat) {
+  var mlVersion = xdmp.version();
+    /* Check version and do diffrently */
+  if (mlVersion >= "8.0-4") {
+      pageStart = pageStart -1;
+      return getDataJS(whereQuery, pageStart, getRows, relevanceScores, docUri, addFields, extFields, sourceFlat);
+  } else {
+     return getDataCts(whereQuery, pageStart, getRows, relevanceScores, docUri, addFields, extFields, sourceFlat)
+  };
+}
+
+/**
+ * Gets metadata using jsearch
+ *
+ * @property {cts.query} whereQuery - a cts.query used for the search
+ * @property {integer} getRows - The one-based index of the document after the last document to return
+ * @property {object} docFields -
+ */
  function getMetaDataJS(whereQuery, getRows, docFields) {
    var jsearch = require('/MarkLogic/jsearch.sjs');
    var xml2json = require('/ext/rfml/xml2json.sjs');
+   var mlVersion = xdmp.version();
 
      var x  = jsearch.documents()
                  .where(whereQuery)
@@ -277,7 +328,13 @@ function getMatrixResult(whereQuery, pageStart,getRows, relevanceScores, docUri,
                          switch (docRaw.nodeKind) {
                            case 'element':
                              orgFormat = 'XML';
-                             var xmlContent = xdmp.unquote(docRaw.toString()).next().value;
+                             var itr = xdmp.unquote(docRaw.toString());
+                             var xmlContent;
+                             if(itr instanceof ValueIterator && 'function' === typeof itr.next) {
+                                 xmlContent = itr.next().value;
+                             } else {
+                                 xmlContent = fn.head(itr);
+                             }
                              var nsArr = xmlContent.xpath('./*/namespace::*/data()').toArray();
                              var xmlns = '';
                              for (var i = 0; i < nsArr.length; i++) {
@@ -296,8 +353,6 @@ function getMatrixResult(whereQuery, pageStart,getRows, relevanceScores, docUri,
                            default:
                              return;
                          };
-                         //getFlatResult(docRaw, docRaw.nodeKind, searchRelatedVals, addFields, extrFields);
-                         //docFields = flattenJsonObject(resultContent, docFields, "", true, orgFormat,"",xmlns);
                          docFields =  flatten(resultContent, docFields, true, orgFormat, xmlns);
 
                    })
@@ -312,9 +367,13 @@ function getMatrixResult(whereQuery, pageStart,getRows, relevanceScores, docUri,
    return dfInfoDoc;
 
  }
- /******************************************************************************
+ /**
   * Gets metadata using cts.search
-  ******************************************************************************/
+  *
+  * @property {cts.query} whereQuery - a cts.query used for the search
+  * @property {integer} getRows - The one-based index of the document after the last document to return
+  * @property {object} docFields -
+  */
  function getMetaDataCts(whereQuery, getRows, docFields) {
    var xml2json = require('/ext/rfml/xml2json.sjs');
    var resultContent;
@@ -341,7 +400,6 @@ function getMatrixResult(whereQuery, pageStart,getRows, relevanceScores, docUri,
        default:
          continue;
      };
-     //docFields =  flattenJsonObject(resultContent, docFields, "", true, result.documentFormat, "",xmlns);
      docFields =  flatten(resultContent, docFields, true, result.documentFormat, xmlns);
    };
    var dfInfoDoc = {
@@ -351,6 +409,15 @@ function getMatrixResult(whereQuery, pageStart,getRows, relevanceScores, docUri,
    };
    return dfInfoDoc;
  }
+ /**
+  * Primary function for getting metadata using cts.search/jsearch
+  *
+  * @property {cts.query} whereQuery - a cts.query used for the search
+  * @property {integer} getRows - The one-based index of the document after the last document to return
+  * @property {boolean} relevanceScores - If the score, confidence and fitness values should be returned
+  * @property {boolean} docUri - If the uri should be returned
+  * @property {object} extrFields - Fields that should be extracted from the results and returned instead of all fields.
+  */
  function getResultMetadata(whereQuery, getRows, relevanceScores, docUri, extFields) {
    var mlVersion = xdmp.version();
 
@@ -372,10 +439,15 @@ function getMatrixResult(whereQuery, pageStart,getRows, relevanceScores, docUri,
    };
 
  }
-/******************************************************************************
+/**
  * Generates a cts query based on search text, collections and directory
- ******************************************************************************/
- function getCtsQuery(qText, colls, dirs, fields) {
+ *
+ * @property {string} qText - a text string query
+ * @property {Object} colls - collections to search on
+ * @property {Object} dirs - directories to search on
+ * @property {Object} fields - elementValueQuery/elementRangeQuery definitions
+ */
+function getCtsQuery(qText, colls, dirs, fields) {
     var ctsQuery,collectionQuery, directoryQuery;
     var mlVersion = xdmp.version();
 
@@ -449,8 +521,22 @@ function getMatrixResult(whereQuery, pageStart,getRows, relevanceScores, docUri,
       return (ctsQuery) ? ctsQuery : (ctsFieldQuery) ? ctsFieldQuery : (collectionQuery) ? collectionQuery : directoryQuery;
     }
   }
-  
-function saveDfDataCTS(whereQuery, pageStart, getRows, relevanceScores, docUri, addFields, extrFields, collection, directory) {
+/**
+ * Generates and save documents based on a cts query using cts search
+ *
+ * @property {cts.query} whereQuery - a cts.query used for the search
+ * @property {integer} pageStart - One-based index of the first document to return.
+ * @property {integer} getRows - The one-based index of the document after the last document to return
+ * @property {boolean} relevanceScores - If the score, confidence and fitness values should be returned
+ * @property {boolean} docUri - If the uri should be returned
+ * @property {object} addFields - Additional fields to add to the results
+ * @property {object} extrFields - Fields that should be extracted from the results and returned instead of all fields.
+ * @property {string} collection - the collection to save the documents into
+ * @property {string} directory - the directory to save the documents into
+ * @property {boolean} sourceFlat - if the source data is already flat
+ */
+function saveDfDataCts(whereQuery, pageStart, getRows, relevanceScores, docUri, addFields,
+                       extrFields, collection, directory, sourceFlat) {
  var path = typeof path !== 'undefined' ?  path : "";
  var resultContent;
  var flatResult = [];
@@ -468,14 +554,27 @@ function saveDfDataCTS(whereQuery, pageStart, getRows, relevanceScores, docUri, 
      searchRelatedVals.confidence = results.confidence;
      searchRelatedVals.fitness = results.fitness;
    };
-   var saveDoc = getFlatResult(result, result.documentFormat, searchRelatedVals, addFields, extrFields);
+   var saveDoc = getFlatResult(result, result.documentFormat, searchRelatedVals, addFields, extrFields, sourceFlat);
    var ext = result.documentFormat;
    var docURI =  directory + i + ext;
-   xdmp.documentInsert(docURI, saveDoc, null, collection);
+   xdmp.documentInsert(docURI, saveDoc, xdmp.defaultPermissions(), collection);
    i += 1;
  };
  return true;
 }
+/**
+ * Generates and save documents based on a cts query using jsearch
+ *
+ * @property {cts.query} whereQuery - a cts.query used for the search
+ * @property {integer} pageStart - One-based index of the first document to return.
+ * @property {integer} getRows - The one-based index of the document after the last document to return
+ * @property {boolean} relevanceScores - If the score, confidence and fitness values should be returned
+ * @property {boolean} docUri - If the uri should be returned
+ * @property {object} addFields - Additional fields to add to the results
+ * @property {object} extrFields - Fields that should be extracted from the results and returned instead of all fields.
+ * @property {string} collection - the collection to save the documents into
+ * @property {string} directory - the directory to save the documents into
+ */
 function saveDfDataJS(whereQuery, pageStart, getRows, relevanceScores, docUri, addFields, extrFields, collection, directory) {
 
  var jsearch = require('/MarkLogic/jsearch.sjs');
@@ -504,6 +603,19 @@ function saveDfDataJS(whereQuery, pageStart, getRows, relevanceScores, docUri, a
                   .result();
     return true;
 }
+/**
+ * Primary function for generating and save documents based on a cts query using jsearch/cts.search
+ *
+ * @property {cts.query} whereQuery - a cts.query used for the search
+ * @property {integer} pageStart - One-based index of the first document to return.
+ * @property {integer} getRows - The one-based index of the document after the last document to return
+ * @property {boolean} relevanceScores - If the score, confidence and fitness values should be returned
+ * @property {boolean} docUri - If the uri should be returned
+ * @property {object} addFields - Additional fields to add to the results
+ * @property {object} extrFields - Fields that should be extracted from the results and returned instead of all fields.
+ * @property {string} collection - the collection to save the documents into
+ * @property {string} directory - the directory to save the documents into
+ */
 function saveDfData(whereQuery, pageStart, getRows, relevanceScores, docUri, addFields, extFields, saveCollection, saveDirectory) {
   var mlVersion = xdmp.version();
     /* Check version and do diffrently */
@@ -511,7 +623,7 @@ function saveDfData(whereQuery, pageStart, getRows, relevanceScores, docUri, add
       pageStart = pageStart -1;
       return saveDfDataJS(whereQuery, pageStart, getRows, relevanceScores, docUri, addFields, extFields, saveCollection, saveDirectory);
   } else {
-     return saveDfDataCTS(whereQuery, pageStart, getRows, relevanceScores, docUri, addFields, extFields, saveCollection, saveDirectory);
+     return saveDfDataCts(whereQuery, pageStart, getRows, relevanceScores, docUri, addFields, extFields, saveCollection, saveDirectory);
   };
 }
 exports.fields2array = fields2array;

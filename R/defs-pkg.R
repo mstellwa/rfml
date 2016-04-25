@@ -95,3 +95,25 @@ setClass("ml.col.def",
 #            .field="character" # field used in Time series
 #          )
 # )
+
+#' An S4 class to represent MLparameter used with \link{ml.data.frame}
+#'
+#' @slot relevanceScores TRUE/FALSE. If the result attributes score, confidence and fitness should be included. Default is FALSE
+#' @slot docUri Deprecated TRUE/FALSE. If the uri of the documents in the results should be included. Default is FALSE.
+#' @slot sourceFlat TRUE/FALSE if the source document are already flat, no nesting. Works only with JSON data.
+setClass("MLparameter",
+         representation(
+           docUri = "logical",
+           relevanceScores  = "logical",
+           sourceFlat  = "logical"
+           ),
+
+         prototype(
+           docUri = FALSE,
+           relevanceScores  = FALSE,
+           sourceFlat  = FALSE)
+        )
+
+setAs("NULL", "MLparameter", function(from, to) new(to))
+setAs("list", "MLparameter", function(from, to) .list2object(from, to))
+

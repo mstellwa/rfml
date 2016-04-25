@@ -6,7 +6,7 @@
 \usage{
 ml.data.frame(conn, query = "", fieldFilter = "", ns = "NA",
   collection = c(), directory = c(), relevanceScores = FALSE,
-  docUri = FALSE)
+  docUri = FALSE, parameter = NULL)
 }
 \arguments{
 \item{conn}{A \link{ml.conn-class} object created by \link{ml.connect}}
@@ -21,9 +21,11 @@ ml.data.frame(conn, query = "", fieldFilter = "", ns = "NA",
 
 \item{directory}{A list of directory URI:s to filter on.}
 
-\item{relevanceScores}{TRUE/FALSE. If the result attributes score, confidence and fitness should be included. Default is FALSE}
+\item{relevanceScores}{Deprecated use parameter instead. TRUE/FALSE. If the result attributes score, confidence and fitness should be included. Default is FALSE}
 
-\item{docUri}{TRUE/FALSE. If the uri of the documents in the results should be included. Default is FALSE.}
+\item{docUri}{Deprecated use parameter instead. TRUE/FALSE. If the uri of the documents in the results should be included. Default is FALSE.}
+
+\item{parameter}{object of class  \link{MLparameter-class} or named list. Used to control return.}
 }
 \value{
 A ml.data.frame object.
@@ -45,6 +47,8 @@ the ">"  "<"  "!=" "<=" ">=" operators there muset exist a
 \href{http://docs.marklogic.com/guide/admin/range_index#id_93351}{element range index}
 on the source field or a error will be raised, element range index can be created using the \link{ml.add.index}
 function. "==" operator will always work since it does not depend of range indexes.
+
+parameter is a named list that is used to control what is returned. Valid
 }
 \examples{
 \dontrun{

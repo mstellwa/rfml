@@ -1,4 +1,4 @@
-#' Creates a \link{ml.data.frame} object
+#' Creates a \link{ml.data.frame-class} object
 #'
 #' A ml.data.frame object is an abstraction layer of data stored in a MarkLogic Server database. It is created based
 #' on the provided query, collection, directory and/or fiedlFilter parameters. For query and fieldFilter
@@ -16,6 +16,8 @@
 #' on the source field or a error will be raised, element range index can be created using the \link{ml.add.index}
 #' function. "==" operator will always work since it does not depend of range indexes.
 #'
+#' parameter is a named list that is used to control what is returned. Valid
+#'
 #' @seealso \code{\link[rfml]{as.data.frame}} for pulling data, \code{\link{as.ml.data.frame}} for uploading data, \code{\link{rm.ml.data.frame}} for delete uploaded data
 #'
 #' @param conn A \link{ml.conn-class} object created by \link{ml.connect}
@@ -24,8 +26,9 @@
 #' @param ns A character with the namespace URI to be used with fieldFilter, default is none
 #' @param collection A list of collection URI:s to filter on.
 #' @param directory A list of directory URI:s to filter on.
-#' @param relevanceScores TRUE/FALSE. If the result attributes score, confidence and fitness should be included. Default is FALSE
-#' @param docUri TRUE/FALSE. If the uri of the documents in the results should be included. Default is FALSE.
+#' @param relevanceScores Deprecated use parameter instead. TRUE/FALSE. If the result attributes score, confidence and fitness should be included. Default is FALSE
+#' @param docUri Deprecated use parameter instead. TRUE/FALSE. If the uri of the documents in the results should be included. Default is FALSE.
+#' @param parameter object of class  \link{MLparameter-class} or named list. Used to control return.
 #' @return A ml.data.frame object.
 #' @examples
 #' \dontrun{
@@ -39,11 +42,9 @@
 #'  mlIris <- ml.data.frame(localConn, fieldFilter = "Species == setosa")
 #' }
 #' @export
-ml.data.frame <- function (conn, query="", fieldFilter="", ns = "NA", collection = c(), directory = c(), relevanceScores = FALSE, docUri = FALSE)
+ml.data.frame <- function (conn, query="", fieldFilter="", ns = "NA", collection = c(), directory = c(),
+                            relevanceScores = FALSE, docUri = FALSE, parameter = NULL)
 {
-  # if (length(.rfmlEnv$conn) != 4) {
-  #   stop("Need create a connection object. Use ml.connect first.")
-  # }
 
   if (class(conn) != "ml.conn" || missing(conn)) {
     stop("Need a valid ml.conn object. Use ml.connect to create one.")
@@ -59,10 +60,24 @@ ml.data.frame <- function (conn, query="", fieldFilter="", ns = "NA", collection
 
   mlHost <- paste("http://", conn@.host, ":", conn@.port, sep="")
   mlSearchURL <- paste(mlHost, "/v1/resources/rfml.dframe", sep="")
-  nPageLength=30
+  nPageLength <- 30
+
+  parameter <- as(parameter, "MLparameter")
+
+  if (!missing(relevanceScores)) {
+    warning("argument relevanceScores is deprecated; please use parameter instead.",
+            call. = FALSE)
+    parameter@relevanceScores <- relevanceScores
+  }
+  if (!missing(docUri)) {
+    warning("argument docUri is deprecated; please use parameter instead.",
+            call. = FALSE)
+    parameter@docUri <- docUri
+  }
 
     # These are the arguments that are common to all calls to MarkLogic
-  queryComArgs <- list('rs:q'=query, 'rs:relevanceScores'=relevanceScores, 'rs:docUri' = docUri)
+  queryComArgs <- list('rs:q'=query, 'rs:relevanceScores'=parameter@relevanceScores,
+                       'rs:docUri' = parameter@docUri, 'rs:sourceFlat'= parameter@sourceFlat)
 
   # fieldQuery
   # operators:  "==" ">"  "<"  "!=" "<=" ">=", only == is currently supported, all the rest require Range Indexs
@@ -241,9 +256,13 @@ as.ml.data.frame <- function (conn, x, name, format = "json", directory = "") {
   } else {
     stop("Only objects of data.frame or ml.data.frame type are supported!")
   }
-
+  if (format == "json") {
+    flat <- TRUE
+  } else {
+    flat <- FALSE
+  }
   # create a ml.data.frame object based on a collection search
-  return(ml.data.frame(conn, collection=c(rfmlCollection)));
+  return(ml.data.frame(conn, collection=c(rfmlCollection), parameter = list(sourceFlat = flat)));
 }
 
 #' Remove the data of a ml.data.frame object in MarkLogic server database.

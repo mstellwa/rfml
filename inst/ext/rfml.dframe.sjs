@@ -13,6 +13,7 @@
    var returnFormat = params.return;
    var relevanceScores = params.relevanceScores == "TRUE" ? true : false;
    var docUri = params.docUri == "TRUE" ? true : false;
+   var sourceFlat = params.sourceFlat == "TRUE" ? true : false;
    var getRows = (parseInt(pageLength) > 0) ? parseInt(pageLength) : 30;
    var extFields = (params.extfields) ? JSON.parse(params.extfields) : null;
    var fieldQuery = (params.fieldQuery) ? JSON.parse(params.fieldQuery) : null;
@@ -25,7 +26,7 @@
      if (params.fields) {
        addFields = JSON.parse(params.fields);
      }
-    return rfmlUtilities.getResultData(whereQuery, pageStart, getRows, relevanceScores, docUri, addFields, extFields);
+    return rfmlUtilities.getResultData(whereQuery, pageStart, getRows, relevanceScores, docUri, addFields, extFields, sourceFlat);
    } else {
      return rfmlUtilities.getResultMetadata(whereQuery, getRows, relevanceScores, docUri, extFields);
    };
@@ -44,6 +45,7 @@
   var docUri = params.docUri == "TRUE" ? true : false;
   var saveCollection = params.saveCollection;
   var saveDirectory = params.saveDirectory;
+  var sourceFlat = params.sourceFlat == "TRUE" ? true : false;
 
   var getRows = (parseInt(pageLength) > 0) ? parseInt(pageLength) : 30;
   var extFields;
@@ -64,7 +66,7 @@
   }
      /* save all result from the query into a new documents
      using directory and collection parameters */
-  var saved = rfmlUtilities.saveDfData(whereQuery, pageStart, getRows, relevanceScores, docUri, addFields, extFields, saveCollection, saveDirectory);
+  var saved = rfmlUtilities.saveDfData(whereQuery, pageStart, getRows, relevanceScores, docUri, addFields, extFields, saveCollection, saveDirectory, sourceFlat);
    context.outputStatus = [204, 'ml.data.frame data Saved'];
 }
 

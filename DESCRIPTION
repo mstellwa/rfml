@@ -12,6 +12,7 @@ Maintainer: Mats Stellwall <mats.stellwall@gmail.com>
 Description: Functionality required to efficiently use R with MarkLogic NoSQL Database Server, <http://www.marklogic.com/what-is-marklogic/>. Many basic and complex R operations are pushed down into the database, which removes the main memory boundary of R and allows to make full use of MarkLogic server. In order to use the package you need a MarkLogic Server version 8 or higher.
 URL: https://github.com/mstellwa/rfml
 BugReports: https://github.com/mstellwa/rfml/issues
+Depends: R (>= 3.2.0)
 License: GPL-3
 LazyData: TRUE
 Imports:

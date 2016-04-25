@@ -23,11 +23,14 @@
 
 #' @export
 ml.arules <- function(data, itemField, support = 0.5, confidence = 0.8, maxlen = 5, target = "rules") {
-#"frequent itemsets" "maximally frequent itemsets" "closed frequent itemsets" "rules" (only available for Apriori) "hyperedgesets"
 
-  # need to check for the arules package ...
+    # need to check for the arules package ...
   if (!requireNamespace("arules", quietly = TRUE)) {
     stop("arules is needed for this function to work. Please install it.",
+         call. = FALSE)
+  }
+  if (!target %in% c("frequent itemsets", "rules")) {
+    stop(paste("target =", target, "not supported."),
          call. = FALSE)
   }
   conn <- data@.conn

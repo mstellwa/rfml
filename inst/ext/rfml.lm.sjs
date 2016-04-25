@@ -6,7 +6,7 @@ function getLm(context, params) {
   var directory = (params.directory) ? JSON.parse(params.directory): null;
   var pageLength = params.pageLength;
   var getRows = (parseInt(pageLength) > 0) ? parseInt(pageLength) : 30;
-
+  var mlVersion = xdmp.version();
   var fieldQuery;
   if (params.fieldQuery) {
     fieldQuery = JSON.parse(params.fieldQuery);
@@ -37,7 +37,12 @@ function getLm(context, params) {
     var lm =  math.linearModel(lmArray);
   }
   var strLm = String(lm);
-  var xmlLm = xdmp.unquote(strLm.substring(17, (strLm.length-1))).next().value;
+  var xmlLm;
+  if (mlVersion < "8.0-5") {
+    xmlLm = xdmp.unquote(strLm.substring(17, (strLm.length-1))).next().value;
+  }else{
+    xmlLm = fn.head(xdmp.unquote(strLm.substring(17, (strLm.length-1))));
+  }
 
   var x2js = new xml2json.X2JS();
   var jsonLm = x2js.xml2json( xmlLm );
