@@ -19,7 +19,12 @@
    var extFields = (params.extfields) ? JSON.parse(params.extfields) : null;
    var fieldQuery = (params.fieldQuery) ? JSON.parse(params.fieldQuery) : null;
 
-   context.outputTypes = ['application/json'];
+   /*var outputTypes = [];
+   for (var i = 0; i < pageLength; i++) {
+     outputTypes.push('application/json');
+   }*/
+   //context.outputTypes = outputTypes;// ['application/json'];
+   context.outputTypes = ['application/json'];//['text/plain'];
 
    var whereQuery = rfmlUtilities.getCtsQuery(qText, collections, directory, fieldQuery);
    if (params.return == 'data') {
@@ -27,8 +32,9 @@
      if (params.fields) {
        addFields = JSON.parse(params.fields);
      }
-    return rfmlUtilities.getResultData(whereQuery, pageStart, getRows, relevanceScores, docUri, addFields, extFields, sourceFlat);
-    //return rfmlUtilities.getResultNdJson(whereQuery, pageStart, getRows, relevanceScores, docUri, addFields, extFields, sourceFlat);
+    //return rfmlUtilities.getResultData(whereQuery, pageStart, getRows, relevanceScores, docUri, addFields, extFields, sourceFlat);
+    return rfmlUtilities.getResultNdJson(whereQuery, pageStart, getRows, relevanceScores, docUri, addFields, extFields, sourceFlat);
+    //return xdmp.arrayValues(rfmlUtilities.getResultData(whereQuery, pageStart, getRows, relevanceScores, docUri, addFields, extFields, sourceFlat).results);
    } else {
      return rfmlUtilities.getResultMetadata(whereQuery, getRows, relevanceScores, docUri, extFields);
    };

@@ -126,7 +126,7 @@
   queryComArgs <- mlDf@.queryArgs
 
   mlHost <- paste("http://", conn@.host, ":", conn@.port, sep="")
-  mlSearchURL <- paste(mlHost, "/v1/resources/rfml.dframe", sep="")
+  mlUrl <- paste(mlHost, "/v1/resources/rfml.dframe", sep="")
 
   # need to pick start and end from mlDf...
   nStart=mlDf@.start
@@ -168,20 +168,34 @@
   }
    # do a search
   # IS IT POSSIBLE TO USE
-  response <- GET(mlSearchURL, query = queryArgs, authenticate(username, password, type="digest"), accept_json())
+  # fix queryArgs for curl
+  qryStr <- .fixQuery(queryArgs)
+  # response <- GET(mlSearchURL, query = queryArgs, authenticate(username, password, type="digest"), accept_json())
   # check that we get an 200
-  rContent <- content(response, as = "text")
-  if(response$status_code != 200) {
-    errorMsg <- paste("statusCode: ",
-                      rContent, sep="")
-    stop(paste("Ops, something went wrong.", errorMsg))
-  }
+  # rContent <- content(response, as = "text")
+  # if(response$status_code != 200) {
+  #   errorMsg <- paste("statusCode: ",
+  #                     rContent, sep="")
+  #   stop(paste("Ops, something went wrong.", errorMsg))
+  # }
+  #
+  # if (validate(rContent)) {
+  #   return(fromJSON(rContent, simplifyDataFrame = TRUE)$results)
+  # } else {
+  #   stop("The call to MarkLogic did not return valid data. The ml.data.frame data could be missing in the database.")
+  # }
+  mlUrl <- paste0(mlUrl,"?", qryStr)
+  userpwd <- paste0(username, ":",password)
+  httpauth <- 2
+  options <- list(httpauth = httpauth, userpwd=userpwd)
+  h <- curl::new_handle()
+  curl::handle_setopt(h, .list = options)
+  headers <- c("Accept" = "application/json")
+  curl::handle_setheaders(h, .list = headers)
+  on.exit(expr = curl::handle_reset(h), add = TRUE)
+  return(suppressMessages(stream_in(curl(url = mlUrl, handle = h))))
 
-  if (validate(rContent)) {
-    return(fromJSON(rContent, simplifyDataFrame = TRUE)$results)
-  } else {
-    stop("The call to MarkLogic did not return valid data. The ml.data.frame data could be missing in the database.")
-  }
+
 
 }
 # Internal used function that creats new documentsin MarkLogic based on a
@@ -291,6 +305,7 @@
   #suppressWarnings(closeAllConnections())
   #suppressWarnings(close(bodyFile))
   suppressWarnings(unlink(bodyFile, force=TRUE))
+  # for some resaon upload_file is leaving a connection open
   openCons <- showConnections()
   if (nrow(openCons) == 1) {
     try(con <- getConnection(as.integer(row.names(openCons))), silent = TRUE)
@@ -551,3 +566,14 @@
   names(from) <- s[p]
   do.call("new", c(from, Class = to))
 }
+
+.fixQuery <- function(query) {
+  names <- curl::curl_escape(names(query))
+  encode <- function(x) {
+    if (inherits(x, "AsIs")) return(x)
+    curl::curl_escape(x)
+  }
+  values <- vapply(query, encode, character(1))
+  paste0(names, "=", values, collapse = "&")
+}
+
