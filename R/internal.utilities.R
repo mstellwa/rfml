@@ -167,6 +167,7 @@
     queryArgs <- c(queryArgs, 'rs:fields'=fields)
   }
    # do a search
+  # IS IT POSSIBLE TO USE
   response <- GET(mlSearchURL, query = queryArgs, authenticate(username, password, type="digest"), accept_json())
   # check that we get an 200
   rContent <- content(response, as = "text")
@@ -285,10 +286,16 @@
   } else {
     stop("Unkown format")
   }
-
-  response <- POST(mlPostURL,  body = upload_file(bodyFile, type = "multipart/mixed; boundary=BOUNDARY"), authenticate(username, password, type="digest"), encode = "multipart", accept_json())
+  docs <- upload_file(bodyFile, type = "multipart/mixed; boundary=BOUNDARY")
+  response <- POST(mlPostURL,  body =docs , authenticate(username, password, type="digest"), encode = "multipart", accept_json())
   #suppressWarnings(closeAllConnections())
-  suppressWarnings(unlink(bodyFile))
+  #suppressWarnings(close(bodyFile))
+  suppressWarnings(unlink(bodyFile, force=TRUE))
+  openCons <- showConnections()
+  if (nrow(openCons) == 1) {
+    try(con <- getConnection(as.integer(row.names(openCons))), silent = TRUE)
+    try(close(con), silent = TRUE)
+  }
 
   # message(bodyFile)
   if(response$status_code != 200) {

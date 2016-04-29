@@ -3,6 +3,7 @@
  * Primnary GET function
  ******************************************************************************/
  function getDframe(context, params) {
+   //console.log("getDframe start: %d", Date.now());
    var rfmlUtilities = require('/ext/rfml/rfmlUtilities.sjs');
    /* parmeters */
    var qText = (params.q) ? params.q : "";
@@ -27,6 +28,7 @@
        addFields = JSON.parse(params.fields);
      }
     return rfmlUtilities.getResultData(whereQuery, pageStart, getRows, relevanceScores, docUri, addFields, extFields, sourceFlat);
+    //return rfmlUtilities.getResultNdJson(whereQuery, pageStart, getRows, relevanceScores, docUri, addFields, extFields, sourceFlat);
    } else {
      return rfmlUtilities.getResultMetadata(whereQuery, getRows, relevanceScores, docUri, extFields);
    };

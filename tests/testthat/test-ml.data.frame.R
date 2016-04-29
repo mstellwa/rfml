@@ -68,15 +68,15 @@ test_that("can create new fields on a ml.data.frame", {
   expect_equal(length(mlIris@.col.defs), 1)
   expect_equal(length(mlIris@.col.name), 6)
   mlIris$SepLength10 <- mlIris$Sepal.Length * 10
-  expect_output(mlIris$SepLength10@.expr, "(rfmlResult['Sepal.Length']*10)", fixed=TRUE)
+  expect_output(print(mlIris$SepLength10@.expr), "(rfmlResult['Sepal.Length']*10)", fixed=TRUE)
   expect_equal(length(mlIris@.col.defs), 2)
   expect_equal(length(mlIris@.col.name), 7)
   mlIris$SepRatio <- mlIris$Sepal.Length / mlIris$Sepal.Width
-  expect_output(mlIris$SepRatio@.expr, "(rfmlResult['Sepal.Length']/rfmlResult['Sepal.Width'])", fixed=TRUE)
+  expect_output(print(mlIris$SepRatio@.expr), "(rfmlResult['Sepal.Length']/rfmlResult['Sepal.Width'])", fixed=TRUE)
   expect_equal(length(mlIris@.col.defs), 3)
   expect_equal(length(mlIris@.col.name), 8)
   mlIris$SepLengthAbs <- abs(mlIris$Sepal.Length)
-  expect_output(mlIris$SepLengthAbs@.expr, "fn.abs(rfmlResult['Sepal.Length'])", fixed=TRUE)
+  expect_output(print(mlIris$SepLengthAbs@.expr), "fn.abs(rfmlResult['Sepal.Length'])", fixed=TRUE)
   expect_equal(length(mlIris@.col.defs), 4)
   expect_equal(length(mlIris@.col.name), 9)
   rm.ml.data.frame(mlIris)
@@ -100,7 +100,7 @@ test_that("sub select on a ml.data.frame", {
   expect_equal(length(mlIris6@.col.name), 5)
   expect_false(mlIris6@.extracted)
   mlIris7 <- mlIris["setosa",]
-  expect_output(mlIris7@.queryArgs$`rs:q`, "setosa")
+  expect_output(print(mlIris7@.queryArgs$`rs:q`), "setosa")
   expect_equal(length(mlIris7@.col.name), 5)
   rm.ml.data.frame(mlIris)
 })

@@ -2,7 +2,7 @@
 % Please edit documentation in R/method-ml.data.frame.R
 \name{ml.data.frame}
 \alias{ml.data.frame}
-\title{Creates a \link{ml.data.frame} object}
+\title{Creates a \link{ml.data.frame-class} object}
 \usage{
 ml.data.frame(conn, query = "", fieldFilter = "", ns = "NA",
   collection = c(), directory = c(), relevanceScores = FALSE,
