@@ -193,7 +193,7 @@
   headers <- c("Accept" = "application/json")
   curl::handle_setheaders(h, .list = headers)
   on.exit(expr = curl::handle_reset(h), add = TRUE)
-  return(suppressMessages(stream_in(curl(url = mlUrl, handle = h))))
+  return(suppressMessages(stream_in(curl::curl(url = mlUrl, handle = h))))
 
 
 

@@ -310,9 +310,9 @@ rm.ml.data.frame <- function(x, directory = "" ){
 #'
 #' @param x a ml.data.frame from which to extract element(s).
 #' @param i,j Indices specifying elements to extract. Indices are 'numeric' or 'character' vectors or empty (missing) or 'NULL'.
-#' @param ... Not used.
-#' @param drop Not used.
-#' @return A ml.data.frame object is returned
+#' @param groupBy
+#' @param aggFunc
+#' @return A \link{ml.data.frame-class} object is returned
 #' @examples
 #' \dontrun{
 #'  library(rfml)
@@ -335,9 +335,13 @@ rm.ml.data.frame <- function(x, directory = "" ){
 #' @concept array
 #' @aliases [,ml.data.frame-method
 #' @export
-setMethod("[", c(x = "ml.data.frame", i="ANY", j="ANY"),
-          function (x, i, j,..., drop=NA)
+#setMethod("[", c(x = "ml.data.frame", i="ANY", j="ANY"),
+"[.ml.data.frame"<-function (x, i, j,groupBy=NA, aggFunc=NA)
           {
+            # Could use the dots to suport groupBy and aggregate function...
+            # Getting the dots:
+            # dots <- as.character(substitute(list(...))[-1])
+            #
             colArg <- NULL
             rowArg <- NULL
             cols <- c()
@@ -427,7 +431,7 @@ setMethod("[", c(x = "ml.data.frame", i="ANY", j="ANY"),
             }
             return(x)
           }
-)
+#)
 
 ################ $ ############################
 #' Returns a \link{ml.data.frame} field as a \link{ml.col.def-class}

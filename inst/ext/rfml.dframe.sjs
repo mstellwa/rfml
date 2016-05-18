@@ -2,39 +2,43 @@
 /******************************************************************************
  * Primnary GET function
  ******************************************************************************/
- function getDframe(context, params) {
-   //console.log("getDframe start: %d", Date.now());
-   var rfmlUtilities = require('/ext/rfml/rfmlUtilities.sjs');
-   /* parmeters */
-   var qText = (params.q) ? params.q : "";
-   var collections = (params.collection) ? JSON.parse(params.collection): null;
-   var directory = (params.directory) ? JSON.parse(params.directory): null;
-   var pageLength = params.pageLength;
-   var pageStart = (parseInt(params.start) > 0) ? parseInt(params.start) : 1;
-   var returnFormat = params.return;
-   var relevanceScores = params.relevanceScores == "TRUE" ? true : false;
-   var docUri = params.docUri == "TRUE" ? true : false;
-   var sourceFlat = params.sourceFlat == "TRUE" ? true : false;
-   var getRows = (parseInt(pageLength) > 0) ? parseInt(pageLength) : 30;
-   var extFields = (params.extfields) ? JSON.parse(params.extfields) : null;
-   var fieldQuery = (params.fieldQuery) ? JSON.parse(params.fieldQuery) : null;
+function getDframe(context, params) {
+  var rfmlUtilities = require('/ext/rfml/rfmlUtilities.sjs');
+  /* parmeters */
+  /* Structured query text */
+  var qText = (params.q) ? params.q : "";
+  /* values for collectionQuery */
+  var collections = (params.collection) ? JSON.parse(params.collection): null;
+  /* values for directoryQuery */
+  var directory = (params.directory) ? JSON.parse(params.directory): null;
+  /* values and operator for elementValueQuery/elementRangeQuery/jsonPropertyRangeQuery */
+  var fieldQuery = (params.fieldQuery) ? JSON.parse(params.fieldQuery) : null;
+  /* Number of documents to return, default is 30 */
+  var getRows = (parseInt(params.pageLength) > 0) ? parseInt(params.pageLength) : 30;
+  /* Index of first document to return, default 1 */
+  var pageStart = (parseInt(params.start) > 0) ? parseInt(params.start) : 1;
+  /* If documents or information about documents are going to be returned */
+  var returnFormat = params.return;
+  /* If relevance scores is going to be returned with the result/information about the result */
+  var relevanceScores = params.relevanceScores == "TRUE" ? true : false;
+  /* If document uri is going to be returned with the result/information about the result */
+  var docUri = params.docUri == "TRUE" ? true : false;
+  /* If the source documents are flat, only works for JSON */
+  var sourceFlat = params.sourceFlat == "TRUE" ? true : false;
+  /* Fields that is going to be returned. If empty all. */
+  var extFields = (params.extfields) ? JSON.parse(params.extfields) : null;
 
-   /*var outputTypes = [];
-   for (var i = 0; i < pageLength; i++) {
-     outputTypes.push('application/json');
-   }*/
-   //context.outputTypes = outputTypes;// ['application/json'];
-   context.outputTypes = ['application/json'];//['text/plain'];
+  context.outputTypes = ['application/json'];
 
-   var whereQuery = rfmlUtilities.getCtsQuery(qText, collections, directory, fieldQuery);
-   if (params.return == 'data') {
+  var whereQuery = rfmlUtilities.getCtsQuery(qText, collections, directory, fieldQuery);
+
+  if (params.return == 'data') {
      var addFields = {};
      if (params.fields) {
        addFields = JSON.parse(params.fields);
      }
     //return rfmlUtilities.getResultData(whereQuery, pageStart, getRows, relevanceScores, docUri, addFields, extFields, sourceFlat);
     return rfmlUtilities.getResultNdJson(whereQuery, pageStart, getRows, relevanceScores, docUri, addFields, extFields, sourceFlat);
-    //return xdmp.arrayValues(rfmlUtilities.getResultData(whereQuery, pageStart, getRows, relevanceScores, docUri, addFields, extFields, sourceFlat).results);
    } else {
      return rfmlUtilities.getResultMetadata(whereQuery, getRows, relevanceScores, docUri, extFields);
    };

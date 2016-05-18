@@ -13,14 +13,13 @@ function getFreqItemSets(itemField, whereQuery, supp, totTrans ,minlen, maxlen) 
     	elementRefs.push(cts.elementReference(xs.QName(itemField)));
       //fn.QName((fieldQuery[field].xmlns != "NA") ? fieldQuery[field].xmlns : "",field)
     };
-    var itemSet = cts.valueTuples(elementRefs, 'ordered', whereQuery);
     var itemSetFreq = [];
-    for (var item of itemSet) {
+    for (var item of cts.valueTuples(elementRefs, 'ordered', whereQuery)) {
      var freq = cts.frequency(item);
      if (freq >= minTransSupp) {
-         // using toObject to ensure we are storing a array
-        itemSetFreq.push({"itemSet":item.toObject(), "absSupport":freq, "support": freq/totTrans});
-     }
+         /* using toObject to ensure we are storing a array */
+         itemSetFreq.push({"itemSet":item.toObject(), "absSupport":freq, "support": freq/totTrans});
+      }
     }
     if (itemSetFreq.length > 0) {
       frequentItemSets[i] = itemSetFreq;
@@ -33,10 +32,6 @@ function getFreqItemSets(itemField, whereQuery, supp, totTrans ,minlen, maxlen) 
 function getAssociationRules(frequentItemSets, minConfidence, minLen) {
   /* internal helper functions */
 
-  /* returns the itemset from f */
-  var extractItemSet = function (f) {
-    return f.itemSet;
-  };
   /* Generates all possible subsets, including the itemset, of a itemset
      ex array = ["I1", "I2", "I5"] then
     allSubSets = [["I1"], ["I2"], ["I5"], ["I1", "I2"], ["I1", "I5"], ["I2", "I5"], ["I1", "I2", "I5"]] */
@@ -105,32 +100,10 @@ function getAssociationRules(frequentItemSets, minConfidence, minLen) {
     }
   };
 
-  /*
-    for a itemset, generate all possible subsets, and for each subset
-    generate and add rules to associationRules
-  */
-  var saveAllAssociationRulesFound = function (itemSet) {
-    currentItemSet = itemSet;
-    toAllSubSets(currentItemSet).forEach(saveAssociationRuleFound);
-  };
-
   /* main logic */
   var frequencies = {};
   var currentItemSet;
   var associationRules = [];
-  /*
-    Generate a objects with the frequencies of all itemsets
-    Key is the itemset as a string.
-    Ex ["18th century schooner", "1900s Vintage Bi-Plane", "1903 Ford Model A"]
-        =>
-       "18th century schooner,1900s Vintage Bi-Plane,1903 Ford Model A"
-  */
-  for (var itemSets in frequentItemSets) {
-    for (var i = 0; i< frequentItemSets[itemSets].length; i++) {
-      frequencies[frequentItemSets[itemSets][i].itemSet.toString()] = frequentItemSets[itemSets][i].support;
-    };
-  };
-
   /*
      Walk through all itemsets and get the rules for them.
      itemsets are grouped by the number of items they have.
@@ -138,12 +111,22 @@ function getAssociationRules(frequentItemSets, minConfidence, minLen) {
    */
   for (var k in frequentItemSets) {
     /* get the all itemsets that has the same number of items */
-    var itemSets = frequentItemSets[k].map(extractItemSet);
-    if (itemSets.length === 0 ) {
-        continue;
+    for (var i = 0; i< frequentItemSets[k].length; i++) {
+      /* Generate a objects with the frequencies of all itemsets, needed to calculate Lift of a rule
+          Key is the itemset as a string.
+          Ex ["18th century schooner", "1900s Vintage Bi-Plane", "1903 Ford Model A"]
+          =>
+          "18th century schooner,1900s Vintage Bi-Plane,1903 Ford Model A" */
+      frequencies[frequentItemSets[k][i].itemSet.toString()] = frequentItemSets[k][i].support;
+
+      currentItemSet = frequentItemSets[k][i].itemSet;
+       /* toAllSubSets generates all possible subsets, including the itemset, of a itemset
+       ex array = ["I1", "I2", "I5"] then
+      allSubSets = [["I1"], ["I2"], ["I5"], ["I1", "I2"], ["I1", "I5"], ["I2", "I5"], ["I1", "I2", "I5"]]
+      Adn then to each subset generate and save rules:
+      */
+      toAllSubSets(currentItemSet).forEach(saveAssociationRuleFound);
     }
-    /* for each itemset add the rules into associationRules */
-    itemSets.forEach(saveAllAssociationRulesFound);
   };
   return associationRules;
 }
