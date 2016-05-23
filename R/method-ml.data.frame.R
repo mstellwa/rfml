@@ -58,8 +58,8 @@ ml.data.frame <- function (conn, query="", fieldFilter="", ns = "NA", collection
                        , error = function(err) stop("Need a valid connection. Use ml.connection to create one!"))
   username <- conn@.username
 
-  mlHost <- paste("http://", conn@.host, ":", conn@.port, sep="")
-  mlSearchURL <- paste(mlHost, "/v1/resources/rfml.dframe", sep="")
+  mlHost <- paste0("http://", conn@.host, ":", conn@.port)
+  mlSearchURL <- paste0(mlHost, "/v1/resources/rfml.dframe")
   nPageLength <- 30
 
   parameter <- as(parameter, "MLparameter")
@@ -97,14 +97,14 @@ ml.data.frame <- function (conn, query="", fieldFilter="", ns = "NA", collection
       opLength <- attr(opMatch, "match.length")
       op <- trimws(substr(fieldExprs[i], opIndex, opIndex+opLength))
       if (i > 1) {
-        fieldQuery <- paste(fieldQuery, ',', sep='')
+        fieldQuery <- paste0(fieldQuery, ',')
       }
-      fieldQuery <- paste(fieldQuery, '"', trimws(fieldExpr[1]),
+      fieldQuery <- paste0(fieldQuery, '"', trimws(fieldExpr[1]),
                           '":{"value":"',trimws(fieldExpr[2]),
                           '","operator":"', op ,'","orgPath":"","orgFormat":"","xmlns":"',
-                          ns, '"}',sep='')
+                          ns, '"}')
     }
-    fieldQuery <- paste(fieldQuery, '}', sep='')
+    fieldQuery <- paste0(fieldQuery, '}')
     queryComArgs <- c(queryComArgs,  'rs:fieldQuery'=fieldQuery)
   }
   # Collection and/or directory filtering
@@ -112,38 +112,38 @@ ml.data.frame <- function (conn, query="", fieldFilter="", ns = "NA", collection
     strColl <- '['
     for (i in 1:length(collection)) {
       if (i>1) {
-        strColl <- paste(strColl, ',', sep='')
+        strColl <- paste0(strColl, ',')
       }
-      strColl <- paste(strColl, '"' ,collection[i], '"', sep='')
+      strColl <- paste0(strColl, '"' ,collection[i], '"')
     }
-    strColl <- paste(strColl, ']', sep='')
+    strColl <- paste0(strColl, ']')
     queryComArgs <- c(queryComArgs, 'rs:collection'=strColl)
   }
   if (length(directory) > 0) {
     strDir <- '['
     for (i in 1:length(directory)) {
       if (i>1) {
-        strDir <- paste(strDir, ',', sep='')
+        strDir <- paste0(strDir, ',')
       }
-      strDir <- paste(strDir, '"', directory[i], '"', sep='')
+      strDir <- paste0(strDir, '"', directory[i], '"')
     }
-    strDir <- paste(strDir, ']', sep='')
+    strDir <- paste0(strDir, ']')
     queryComArgs <- c(queryComArgs, 'rs:directory'=strDir)
   }
 
   queryArgs <- c(queryComArgs,'rs:start'=1, 'rs:pageLength'=nPageLength, 'rs:return'="meta")
   # do a search
-  response <- GET(mlSearchURL, query = queryArgs, authenticate(username, password, type="digest"), accept_json())
+  response <- .curl("GET",mlSearchURL, queryArgs, username, password)
 
   # get the content
-  rContent <- content(response)
+  rContent <- .content(response)
 
   if(response$status_code != 200) {
-    errorMsg <- paste("statusCode: ",
+    errorMsg <- paste0("statusCode: ",
                       rContent$errorResponse$statusCode,
                       ", status: ", rContent$errorResponse$status,
-                      ", message: ", rContent$errorResponse$message, sep="")
-    stop(paste("Ops, something went wrong.", errorMsg))
+                      ", message: ", rContent$errorResponse$message)
+    stop(paste0("Ops, something went wrong.", errorMsg))
   }
   if (rContent$nrows == 0) {
     stop("Search did not produce any result");
@@ -287,9 +287,9 @@ rm.ml.data.frame <- function(x, directory = "" ){
   }
   call <- match.call()
   if(.delete.ml.data(x, directory)) {
-    retMsg <- paste("Data for ", call$x, " has been deleted", sep="")
+    retMsg <- paste0("Data for ", call$x, " has been deleted")
   } else {
-    retMsg <- paste("Could not delete data for ", call$x, sep="")
+    retMsg <- paste0("Could not delete data for ", call$x)
   }
   message(retMsg)
   TRUE
@@ -310,8 +310,8 @@ rm.ml.data.frame <- function(x, directory = "" ){
 #'
 #' @param x a ml.data.frame from which to extract element(s).
 #' @param i,j Indices specifying elements to extract. Indices are 'numeric' or 'character' vectors or empty (missing) or 'NULL'.
-#' @param groupBy
-#' @param aggFunc
+#' @param groupBy group by fields
+#' @param aggFunc aggregation function to apply
 #' @return A \link{ml.data.frame-class} object is returned
 #' @examples
 #' \dontrun{
@@ -384,9 +384,9 @@ rm.ml.data.frame <- function(x, directory = "" ){
               } else if (is.character(rowArg)) {
                 qText <- newQueryArgs$`rs:q`
                 if (nchar(qText) > 0) {
-                  qText <- paste(qText, " AND ", sep="")
+                  qText <- paste0(qText, " AND ")
                 }
-                qText <- paste(qText, rowArg, sep="")
+                qText <- paste0(qText, rowArg)
                 newQueryArgs$`rs:q` <- qText
               } else {
                 stop("row object does not specify a subset")
@@ -454,7 +454,7 @@ setMethod("$", signature(x = "ml.data.frame"),
 
             # check if the column are a added or already existing
             if(is.null(x@.col.defs[[name]])) {
-              return(new(Class="ml.col.def",.expr=paste("rfmlResult[\'",name, "\']", sep=''),
+              return(new(Class="ml.col.def",.expr=paste0("rfmlResult[\'",name, "\']"),
                          .name=name,.data_type=dataType, .org_name=orgName, .org_xpath=orgXpath,
                          .format=colFormat,
                          .parent=x,.type="field",.aggType="none"));

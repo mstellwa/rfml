@@ -12,7 +12,7 @@ function getFreqItemSets(itemField, whereQuery, supp, totTrans ,minlen, maxlen) 
     for (var j = 1; j <= i; j++) {
     	elementRefs.push(cts.elementReference(xs.QName(itemField)));
       //fn.QName((fieldQuery[field].xmlns != "NA") ? fieldQuery[field].xmlns : "",field)
-    };
+    }
     var itemSetFreq = [];
     for (var item of cts.valueTuples(elementRefs, 'ordered', whereQuery)) {
      var freq = cts.frequency(item);
@@ -47,7 +47,7 @@ function getAssociationRules(frequentItemSets, minConfidence, minLen) {
           op(nextN, nextArray, updatedCurrentSubSet, allSubSets);
         }
       }
-    };
+    }
 
     var allSubSets = [];
     array.sort();
@@ -56,7 +56,7 @@ function getAssociationRules(frequentItemSets, minConfidence, minLen) {
     }
     allSubSets.push(array);
     return allSubSets;
-  };
+  }
   /*
     Returns a array which contains the elements that is in arrayA but not in arrayB
     ex. arrayB = ["I1"], arrayA = ["I1", "I2", "I5"]

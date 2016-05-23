@@ -30,10 +30,10 @@ ml.collections <- function (conn, query="")
   queryArgs <- list('rs:q'=query)
 
   # do a search
-  response <- GET(mlSearchURL, query = queryArgs, authenticate(username, password, type="digest"), accept_json())
+  response <- .curl("GET",mlSearchURL, queryArgs, username, password)
 
   # get the content
-  rContent <- content(response)
+  rContent <- .content(response)
 
   if(response$status_code != 200) {
     errorMsg <- paste("statusCode: ",
@@ -84,10 +84,10 @@ ml.collection.info <- function (conn,collection)
   queryArgs <- list('rs:collection'=collection)
 
   # do a search
-  response <- GET(mlSearchURL, query = queryArgs, authenticate(username, password, type="digest"), accept_json())
+  response <- .curl("GET",mlSearchURL, queryArgs, username, password)
 
   # get the content
-  rContent <- content(response)
+  rContent <- .content(response)
 
   if(response$status_code != 200) {
     errorMsg <- paste("statusCode: ",

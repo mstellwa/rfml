@@ -7,9 +7,9 @@
 # it will add a warning
 .check.database <- function(mlHost, username, password) {
 
-  mlURL <- paste(mlHost, "/v1/resources/rfml.check", sep="")
-  response <- GET(mlURL,authenticate(username, password, type="digest"), accept_json())
-  rContent <- content(response)
+  mlURL <- paste0(mlHost, "/v1/resources/rfml.check")
+  response <- .curl("GET",mlURL,username = username, password = password)
+  rContent <- .content(response)
   if (response$status_code != 200){
     stop(paste("It seems like rfml is not installed on ",mlHost,
                "\nUse ml.init.database for setting up the database.", sep=""))
@@ -28,42 +28,22 @@
 # internal function to add rest interface used
 .insert.lib <- function(mlHost, username, password, mlLibName)  {
 
-  mlLibFile <- paste(mlLibName, ".sjs", sep='')
+  mlLibFile <- paste0(mlLibName, ".sjs")
   file <- system.file("lib",mlLibFile ,package = "rfml")
-  lib <- upload_file(file, "application/vnd.marklogic-javascript")
-  mlURL <- paste(mlHost, "/v1/ext/rfml/", mlLibFile, sep="")
-  # add or replace search options to the database
-  response <- PUT(mlURL, authenticate(username, password, type="digest"), body=lib, accept_json())
+  type <- "application/vnd.marklogic-javascript"
+  lib <- curl::form_file(file, type)
+  mlURL <- paste0(mlHost, "/v1/ext/rfml/", mlLibFile)
+  # add or replace modules to the database
+  response <- .curlBody('PUT', mlURL, body = lib, username =  username, password =  password)
   status_code <- response$status_code
   if (status_code != 201 && status_code != 204) {
-    rContent <- content(response)
+    rContent <- .content(response)
     errorMsg <- paste("statusCode: ",
                       rContent$errorResponse$statusCode,
                       ", status: ", rContent$errorResponse$status,
                       ", message: ", rContent$errorResponse$message, sep="")
     stop(paste("Ops, something went wrong.", errorMsg))
 
-  }
-  # return the name of the search options
-  return(TRUE)
-}
-
-# internal function to remove lib used
-.remove.lib <- function(mlHost, username, password, mlLibName)  {
-
-  mlLibFile <- paste(mlLibName, ".sjs", sep='')
-  mlURL <- paste(mlHost, "/v1/ext/rfml/", mlLibFile, sep="")
-  # add or replace search options to the database
-  response <- DELETE(mlURL, authenticate(username, password, type="digest"), accept_json())
-
-  if (response$status_code != 204) {
-
-    rContent <- content(response)
-    errorMsg <- paste("statusCode: ",
-                      rContent$errorResponse$statusCode,
-                      ", status: ", rContent$errorResponse$status,
-                      ", message: ", rContent$errorResponse$message, sep="")
-    stop(paste("Ops, something went wrong.", errorMsg))
   }
   # return the name of the search options
   return(TRUE)
@@ -74,14 +54,15 @@
 
   mlExtFile <- paste(mlExtName, ".sjs", sep='')
   file <- system.file("ext",mlExtFile ,package = "rfml")
-  ext <- upload_file(file, "application/vnd.marklogic-javascript")
-  #  'http://localhost:8004/v1/config/resources/example'
+  type <- "application/vnd.marklogic-javascript"
+  ext <- curl::form_file(file, type)
+
   mlURL <- paste(mlHost, "/v1/config/resources/", mlExtName, sep="")
   # add or replace search options to the database
-  response <- PUT(mlURL, authenticate(username, password, type="digest"), body=ext, accept_json())
+  response <- .curlBody('PUT', mlURL, body = ext, username = username, password = password)
   status_code <- response$status_code
   if (status_code != 201 && status_code != 204) {
-    rContent <- content(response)
+    rContent <- .content(response)
     errorMsg <- paste("statusCode: ",
                       rContent$errorResponse$statusCode,
                       ", status: ", rContent$errorResponse$status,
@@ -93,17 +74,17 @@
   return(TRUE)
 }
 
-# internal function to remove ext used
+# internal function to remove extensions and library used
 .remove.ext <- function(mlHost, username, password, mlExtName)  {
 
-  ##mlLibFile <- paste(mlLibName, ".sjs", sep='')
-  mlURL <- paste(mlHost, "/v1/config/resources/", mlExtName, sep="")
+  mlURL <- paste0(mlHost, mlExtName)
   # add or replace search options to the database
-  response <- DELETE(mlURL, authenticate(username, password, type="digest"), accept_json())
+  #response <- DELETE(mlURL, authenticate(username, password, type="digest"), accept_json())
+  response <- .curl("DELETE",mlURL, username = username, password = password)
 
   if (response$status_code != 204) {
 
-    rContent <- content(response)
+    rContent <- .content(response)
     errorMsg <- paste("statusCode: ",
                       rContent$errorResponse$statusCode,
                       ", status: ", rContent$errorResponse$status,
@@ -195,8 +176,6 @@
   on.exit(expr = curl::handle_reset(h), add = TRUE)
   return(suppressMessages(stream_in(curl::curl(url = mlUrl, handle = h))))
 
-
-
 }
 # Internal used function that creats new documentsin MarkLogic based on a
 # ml.data.frame object.
@@ -259,9 +238,11 @@
 
 
   # do a search
-  response <- PUT(mlSearchURL, query = queryArgs, authenticate(username, password, type="digest"), accept_json())
+  #response <- PUT(mlSearchURL, query = queryArgs, authenticate(username, password, type="digest"), accept_json())
+  response <- .curlBody('PUT', mlUrl = mlSearchURL, queryArgs = queryArgs, username = username, password = password)
   # check that we get an 200
-  rContent <- content(response, as = "text")
+  #rContent <- content(response, as = "text")
+  rContent <- .content(response, format = "text")
   if(response$status_code != 204) {
     errorMsg <- paste("statusCode: ",
                       rContent, sep="")
@@ -300,8 +281,13 @@
   } else {
     stop("Unkown format")
   }
-  docs <- upload_file(bodyFile, type = "multipart/mixed; boundary=BOUNDARY")
-  response <- POST(mlPostURL,  body =docs , authenticate(username, password, type="digest"), encode = "multipart", accept_json())
+  #docs <- upload_file(bodyFile, type = "multipart/mixed; boundary=BOUNDARY")
+  #file <- system.file("ext",mlExtFile ,package = "rfml")
+
+  type <- "multipart/mixed; boundary=BOUNDARY"
+  docs <- curl::form_file(bodyFile, type)
+  #response <- POST(mlPostURL,  body =docs , authenticate(username, password, type="digest"), encode = "multipart", accept_json())
+  response <- .curlBody('POST', mlUrl = mlPostURL, body = docs, encode = "multipart", username = username, password = password)
   #suppressWarnings(closeAllConnections())
   #suppressWarnings(close(bodyFile))
   suppressWarnings(unlink(bodyFile, force=TRUE))
@@ -314,7 +300,7 @@
 
   # message(bodyFile)
   if(response$status_code != 200) {
-    rContent <- content(response, as = "text")
+    rContent <- .content(response,format = "text")
     errorMsg <- paste("statusCode: ",rContent, sep="")
     stop(paste("Ops, something went wrong.", errorMsg))
   }
@@ -346,9 +332,9 @@
   }
   queryArgs <- list('rs:collection'=rfmlCollection, 'rs:directory'=rfmlDirectory)
 
-  response <- DELETE(mlDelURL, query = queryArgs, authenticate(username, password, type="digest"), accept_json())
+  response <- .curl('DELETE', mlDelURL, queryArgs, username, password)
   if(response$status_code != 204) {
-    rContent <- content(response, as = "text")
+    rContent <- .content(response)
     errorMsg <- paste("statusCode: ",rContent, sep="")
     stop(paste("Ops, something went wrong.", errorMsg))
   }
@@ -365,20 +351,19 @@
   username <- conn@.username
   queryComArgs <- mlDf@.queryArgs
 
-  mlHost <- paste("http://", conn@.host, ":", conn@.port, sep="")
-  mlSearchURL <- paste(mlHost, "/v1/resources/rfml.stat", sep="")
+  mlHost <- paste0("http://", conn@.host, ":", conn@.port)
+  mlSearchURL <- paste0(mlHost, "/v1/resources/rfml.stat")
   nPageLength <- mlDf@.nrows
   queryArgs <- c(queryComArgs, 'rs:pageLength'=nPageLength, 'rs:statfunc'=func,'rs:fields'=fields)
 
-  response <- GET(mlSearchURL, query = queryArgs, authenticate(username, password, type="digest"), accept_json())
-  rContent <- content(response) #, as = "text""
-  if(response$status_code != 200) {
-    errorMsg <- paste("statusCode: ",
-                      rContent, sep="")
+  resp <- .curl("GET",mlSearchURL,queryArgs, username, password)
+  rContent <- .content(resp)
+  if(resp$status_code != 200) {
+    errorMsg <- paste0("statusCode: ",
+                      resp$status_code, "\nmessage: ", rContent)
     stop(paste("Ops, something went wrong.", errorMsg))
   }
   return(rContent)
-
 }
 
 # Get data for the summary function
@@ -411,15 +396,12 @@
     queryArgs <- c(queryArgs, 'rs:fields'=fields)
   }
 
-
-  # do a search
-  response <- GET(mlSearchURL, query = queryArgs, authenticate(username, password, type="digest"), accept_json())
-  # check that we get an 200
-  rContent <- content(response)
-  if(response$status_code != 200) {
-    errorMsg <- paste("statusCode: ",
-                      rContent, sep="")
-    stop(paste("Ops, something went wrong.", errorMsg))
+  resp <- .curl("GET",mlSearchURL,queryArgs, username, password)
+  rContent <- .content(resp)
+  if(resp$status_code != 200) {
+    errorMsg <- paste0("statusCode: ",
+                      resp$status_code, "\nmessage: ",rContent)
+    stop(paste0("Ops, something went wrong.", errorMsg))
   }
 
   return(rContent)
@@ -438,9 +420,8 @@
   mlSearchURL <- paste(mlHost, "/v1/resources/rfml.movavg", sep="")
   nPageLength <- mlTs@.nrows
   queryArgs <- c(queryComArgs, 'rs:pageLength'=nPageLength, 'rs:avgfunc'=func,'rs:fields'=fields)
-
-  response <- GET(mlSearchURL, query = queryArgs, authenticate(username, password, type="digest"), accept_json())
-  rContent <- content(response) #, as = "text""
+  response <- .curl("GET",mlSearchURL, queryArgs, username, password)
+  rContent <- .content(response)
   if(response$status_code != 200) {
     errorMsg <- paste("statusCode: ",
                       rContent, sep="")
@@ -474,18 +455,15 @@
     }
     myXml$closeTag()
     bodyText <- c(bodyText, saveXML(myXml,indent = FALSE,prefix = '<?xml version="1.0"?>'))
-    #bodyText <- c(bodyText, saveXML(myXml,indent = FALSE, prefix = ''))
   }
   bodyText <- c(bodyText, "--BOUNDARY--", "")
   # add it
   tf <- tempfile()
   multipartBody <- file(tf, open = "wb")
-  #writeLines(text = bodyText, con = multipartBody
+
   # need to have CRLF no matter of which platform it is running on...
   writeLines(text = bodyText, con = multipartBody, sep="\r\n")
   close(multipartBody)
-  #writeBin(bodyText, multipartBody)
-  #message(tf)
   return(tf)
 
 }
@@ -505,7 +483,7 @@
     # start loop
     for (i in 1:nrow(data)) {
       bodyText <- c(bodyText,boundary,contentType, paste('Content-Disposition: attachment;filename="',directory,row.names(data[i,]), '.json"', sep=""), "")
-      jsonData <- toJSON(data[i,])
+      jsonData <- jsonlite::toJSON(data[i,])
       # need to remove the [ ] in the doc, before sending it
       jsonData <- gsub("\\]", "", gsub("\\[", "", jsonData))
 
@@ -518,9 +496,6 @@
       fileName <- system.file(data, uploadFiles[i], package="rfml")
       jsonData <-readChar(fileName, file.info(fileName)$size) #toJSON(data[i,])
 
-      # need to remove the [ ] in the doc, before sending it
-      #jsonData <- gsub("\\]", "", gsub("\\[", "", jsonData))
-
       bodyText <- c(bodyText, jsonData)
     }
   }
@@ -528,15 +503,12 @@
   # add it
   tf <- tempfile()
   multipartBody <- file(tf, open = "wb")
-  #writeLines(text = bodyText, con = multipartBody
   # need to have CRLF no matter of which platform it is running on...
   writeLines(text = bodyText, con = multipartBody, sep="\r\n")
   close(multipartBody)
-  #writeBin(bodyText, multipartBody)
-  #message(tf)
   return(tf)
 }
-
+# generate a UUID that is used to identify a connection object
 .uuid <- function(uppercase=FALSE) {
 
   hex_digits <- c(as.character(0:9), letters[1:6])
@@ -559,8 +531,6 @@
   if (!length(from)) return(new(to))
   s <- slotNames(to)
   p <- pmatch(names(from), s)
-  #if(any(is.na(p))) stop(paste("\nInvalid slot name(s) for class",
-  #        to, ":", paste(names(from)[is.na(p)], collapse=" ")))
   if(any(is.na(p))) stop(paste("\nInvalid parameter:",
                                paste(names(from)[is.na(p)], collapse=" ")), call.=FALSE)
   names(from) <- s[p]
@@ -577,3 +547,108 @@
   paste0(names, "=", values, collapse = "&")
 }
 
+.content <- function(r, format = "json") {
+  # need probably to allow some more parameteres like encoding and simplifyVector
+  # return(jsonlite::fromJSON(iconv(readBin(r$content, character()), from = "UTF-8", to = "UTF-8"), simplifyVector = FALSE))
+  if (format == "json") {
+    return(jsonlite::fromJSON(readBin(r$content, character()), simplifyVector = FALSE))
+  } else if (format == "text") {
+    return(readBin(r$content, character()))
+  } else {
+    # wrong format
+
+  }
+}
+
+.curl <- function(reqType = 'GET', mlUrl, queryArgs = NULL, username, password) {
+
+  if (!is.null(queryArgs)) {
+    qryStr <- .fixQuery(queryArgs)
+    mlUrl <- paste0(mlUrl,"?", qryStr)
+  }
+  userpwd <- paste0(username, ":",password)
+  httpauth <- 2
+  options <- list(httpauth = httpauth, userpwd=userpwd, customrequest = reqType)
+
+  h <- curl::new_handle()
+  curl::handle_setopt(h, .list = options)
+
+  headers <- c("Accept" = "application/json")
+  curl::handle_setheaders(h, .list = headers)
+  on.exit(expr = curl::handle_reset(h), add = TRUE)
+
+  return(curl::curl_fetch_memory(url = mlUrl, handle = h))
+}
+
+.curlBody <- function(reqType = 'PUT', mlUrl, queryArgs = NULL, body = NULL, encode = NULL,username, password) {
+
+  if (!is.null(queryArgs)) {
+    qryStr <- .fixQuery(queryArgs)
+    mlUrl <- paste0(mlUrl,"?", qryStr)
+  }
+  userpwd <- paste0(username, ":",password)
+  httpauth <- 2
+  options <- list(httpauth = httpauth, userpwd=userpwd, customrequest = reqType,
+                  post = TRUE)
+  fields <- NULL
+  if (is.character(body) || is.raw(body)) {
+    if (is.character(body)) {
+      body <- charToRaw(paste(body, collapse = "\n"))
+    }
+    bodyOps <- list(postfieldsize = length(body), postfields = body)
+    if (is.null(encode)) {
+      type <- ''
+    } else {
+      if (encode == "json") {
+        type <- "application/json"
+      } else {
+        type <- encode
+      }
+    }
+  } else if (inherits(body, "form_file")) {
+    con <- file(body$path, "rb")
+    size <- file.info(body$path)$size
+
+    bodyOps <- list(
+        readfunction = function(nbytes, ...) {
+          if(is.null(con))
+            return(raw())
+          bin <- readBin(con, "raw", nbytes)
+          if (length(bin) < nbytes){
+            close(con)
+            con <<- NULL
+          }
+          bin
+        },
+        postfieldsize_large = size
+      )
+    type <- body$type
+  } else if (is.null(body)) {
+    body <- raw()
+    type <- ''
+    bodyOps <- list(postfieldsize = length(body), postfields = body)
+  } else if (encode == "json") {
+    null <- vapply(body, is.null, logical(1))
+    body <- body[!null]
+    charToRaw(paste(jsonlite::toJSON(body, auto_unbox = TRUE),collapse = "\n"))
+    type <- "application/json"
+  } else if (encode == "multipart") {
+    #request(fields = lapply(body, as.character))
+    fields <- lapply(body, as.character)
+  }
+  h <- curl::new_handle()
+
+  options <- c(options, bodyOps)
+
+  curl::handle_setopt(h, .list = options)
+
+  if (!is.null(fields)) {
+    curl::handle_setform(h, .list = fields)
+  }
+
+  headers <- c("Accept" = "application/json", "Content-Type" = type)
+  curl::handle_setheaders(h, .list = headers)
+  on.exit(expr = curl::handle_reset(h), add = TRUE)
+
+  return(curl::curl_fetch_memory(url = mlUrl, handle = h))
+}

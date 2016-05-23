@@ -79,7 +79,7 @@ function getDframe(context, params) {
      /* save all result from the query into a new documents
      using directory and collection parameters */
   var saved = rfmlUtilities.saveDfData(whereQuery, pageStart, getRows, relevanceScores, docUri, addFields, extFields, saveCollection, saveDirectory, sourceFlat);
-   context.outputStatus = [204, 'ml.data.frame data Saved'];
+  context.outputStatus = [204, 'ml.data.frame data Saved'];
 }
 
 

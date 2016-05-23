@@ -31,7 +31,7 @@ function flatten(data, result, retFieldDef, docFormat, docXmlns) {
             if (result[prop]) {
                if (result[prop].fieldType == 'number' && !isNumeric(cur)) {
                  result[prop].fieldType = 'string';
-               };
+               }
              } else {
                result[prop] = {"fieldType":isNumeric(cur) ? 'number' : 'string',
                                          "fieldDef":prop, "orgField": name,
@@ -115,7 +115,7 @@ function flatten(data, result, retFieldDef, docFormat, docXmlns) {
        break;
      default:
        return;
-   };
+   }
    var flatDoc = {};
    /*  Add search related fields */
    flatDoc = searchRelatedVals;
@@ -132,7 +132,7 @@ function flatten(data, result, retFieldDef, docFormat, docXmlns) {
      var fieldName = field;
      var fieldDef = addFields[field].fieldDef;
      flatDoc[fieldName] = eval(fieldDef.replace(/rfmlResult/g, "flatDoc"));
-   };
+   }
    var retDoc = {};
    /* if we should only return a extract of the result */
    if (extrFields) {
@@ -169,12 +169,12 @@ function getResultNdJson(whereQuery, pageStart, getRows, relevanceScores, docUri
     var searchRelatedVals = {};
     if (docUri) {
       searchRelatedVals.docUri = results.uri;
-    };
+    }
     if (relevanceScores) {
       searchRelatedVals.score = results.score;
       searchRelatedVals.confidence = results.confidence;
       searchRelatedVals.fitness = results.fitness;
-    };
+    }
     //var flatDoc = getFlatResult(result, result.documentFormat, searchRelatedVals, addFields, extrFields, sourceFlat);
     //flatResult.push(flatDoc);
     //flatResult.push(getFlatResult(result, result.documentFormat, searchRelatedVals, addFields, extrFields, sourceFlat));
@@ -206,13 +206,13 @@ function getResultData(whereQuery, pageStart, getRows, relevanceScores, docUri, 
     var searchRelatedVals = {};
     if (docUri) {
       searchRelatedVals.docUri = fn.documentUri(result); //results.uri;
-    };
+    }
     if (relevanceScores) {
       searchRelatedVals.score = cts.score(result); // results.score;
       searchRelatedVals.confidence = cts.confidence(result); // results.confidence;
       searchRelatedVals.fitness = cts.fitness(result); // results.fitness;
 
-    };
+    }
     //var flatDoc = getFlatResult(result, result.documentFormat, searchRelatedVals, addFields, extrFields, sourceFlat);
     //flatResult.push(flatDoc);
     flatResult.push(getFlatResult(result, result.documentFormat, searchRelatedVals, addFields, extrFields, sourceFlat));
@@ -246,7 +246,7 @@ function getResultData(whereQuery, pageStart, getRows, relevanceScores, docUri, 
       var useFields = [];
       for (var field in resArray[i]) {
         useFields.push(resArray[i][field])
-      };
+      }
       flatResult.push(useFields);
     }
     return flatResult;
@@ -281,7 +281,7 @@ function getMatrixResult(whereQuery, pageStart,getRows, relevanceScores, docUri,
       if (flatResult[field]) {
         if (flatResult[field].fieldType == 'number' && !isNumeric(resArray[i][field])) {
           flatResult[field].fieldType = 'string';
-        };
+        }
         flatResult[field].values.push(isNumeric(resArray[i][field]) ? parseFloat(resArray[i][field]) : resArray[i][field])
       } else {
         flatResult[field] = {"fieldType":isNumeric(resArray[i][field]) ? 'number' : 'string',
@@ -324,9 +324,9 @@ function getMatrixResult(whereQuery, pageStart,getRows, relevanceScores, docUri,
          break;
        default:
          continue;
-     };
+     }
      docFields =  flatten(resultContent, docFields, true, result.documentFormat, xmlns);
-   };
+   }
    var dfInfoDoc = {
      "ctsQuery": whereQuery,
      "nrows": nEstimate,
@@ -349,12 +349,12 @@ function getMatrixResult(whereQuery, pageStart,getRows, relevanceScores, docUri,
    var docFields = {};
    if (docUri) {
        docFields.docUri = {"fieldType":'string', "fieldDef":'docUri'};
-   };
+   }
    if (relevanceScores) {
        docFields.score = {"fieldType":'number', "fieldDef":'score'};
        docFields.confidence = {"fieldType":'number', "fieldDef":'confidence'};
        docFields.fitness = {"fieldType":'number', "fieldDef":'fitness'};
-   };
+   }
 
    /* Check version and do diffrently */
    //if (mlVersion >= "8.0-4") {
@@ -391,7 +391,7 @@ function getCtsQuery(qText, colls, dirs, fields) {
       } else {
         collectionQuery = cts.collectionQuery(colls);
       }
-    };
+    }
 
     if ((dirs) && (dirs.length > 0)) {
       queries = queries +1;
@@ -404,7 +404,7 @@ function getCtsQuery(qText, colls, dirs, fields) {
       } else {
         directoryQuery = cts.directoryQuery(dirs);
       }
-    };
+    }
     /*
       In order to be able to handle both XML and JSON without knowing beforehand,
       cts.orQuery needs to be used:
@@ -424,8 +424,8 @@ function getCtsQuery(qText, colls, dirs, fields) {
               ctsFieldQuery.push(cts.orQuery([cts.elementRangeQuery(fn.QName((fields[field].xmlns != "NA") ? fields[field].xmlns : "",field),fields[field].operator, fields[field].value),
                                              cts.jsonPropertyRangeQuery(field,fields[field].operator, fields[field].value)]));
           }
-        };
-    };
+        }
+    }
     if (qText != "") {
        queries = queries +1;
       if (mlVersion >= "8.0-4") {
@@ -439,7 +439,7 @@ function getCtsQuery(qText, colls, dirs, fields) {
                 'search:parse($qtext)',
                  { '{}qtext': qText });
           ctsQuery = cts.query(parseQuery);
-      };
+      }
     }
     console.log("getCtsQuery end: %d", Date.now());
     if (queries > 1) {
@@ -474,19 +474,19 @@ function saveDfDataCts(whereQuery, pageStart, getRows, relevanceScores, docUri, 
    var searchRelatedVals = {};
    if (docUri) {
      searchRelatedVals.docUri = results.uri;
-   };
+   }
 
    if (relevanceScores) {
      searchRelatedVals.score = results.score;
      searchRelatedVals.confidence = results.confidence;
      searchRelatedVals.fitness = results.fitness;
-   };
+   }
    var saveDoc = getFlatResult(result, result.documentFormat, searchRelatedVals, addFields, extrFields, sourceFlat);
    var ext = result.documentFormat;
    var docURI =  directory + i + ext;
    xdmp.documentInsert(docURI, saveDoc, xdmp.defaultPermissions(), collection);
    i += 1;
- };
+ }
  return true;
 }
 

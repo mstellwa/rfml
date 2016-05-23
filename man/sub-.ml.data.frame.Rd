@@ -11,6 +11,10 @@
 \item{x}{a ml.data.frame from which to extract element(s).}
 
 \item{i, j}{Indices specifying elements to extract. Indices are 'numeric' or 'character' vectors or empty (missing) or 'NULL'.}
+
+\item{groupBy}{group by fields}
+
+\item{aggFunc}{aggregation function to apply}
 }
 \value{
 A \link{ml.data.frame-class} object is returned

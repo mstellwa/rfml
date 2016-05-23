@@ -20,7 +20,6 @@ Imports:
     utils,
     methods,
     curl,
-    httr,
     PKI,
     jsonlite,
     XML

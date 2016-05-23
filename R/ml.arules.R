@@ -53,9 +53,9 @@ ml.arules <- function(data, itemField, support = 0.5, confidence = 0.8, maxlen =
   fields <- paste(fields, '}', sep='')
   queryArgs <- c(queryArgs, 'rs:fields'=fields)
 
-  response <- GET(mlSearchURL, query = queryArgs, authenticate(username, password, type="digest"), accept_json())
+  response <- .curl("GET",mlSearchURL, queryArgs, username, password)
 
-  rContent <- content(response) #, as = "text""
+  rContent <- .content(response) #, as = "text""
   if(response$status_code != 200) {
     errorMsg <- paste("statusCode: ",
                       rContent, sep="")

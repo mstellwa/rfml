@@ -56,10 +56,10 @@ ml.init.database <- function(host = "localhost", port = "8000", adminuser = "adm
   # Need to post a config document that can used to verify against
   mlURL <- paste(mlHost, "/v1/resources/rfml.check", sep="")
   queryArgs <- list('rs:rfmlVersion'=rfmlVer, 'rs:initDate'=initDate)
-  response <- PUT(mlURL,query = queryArgs, authenticate(adminuser, password, type="digest"), accept_json())
+  response <- .curlBody("PUT",mlURL,queryArgs = queryArgs, username = adminuser, password = password)
   status_code <- response$status_code
   if (status_code != 204) {
-    rContent <- content(response)
+    rContent <- .content(response)
     errorMsg <- paste("statusCode: ",
                       rContent$errorResponse$statusCode,
                       ", status: ", rContent$errorResponse$status,
@@ -103,18 +103,17 @@ ml.clear.database <- function(host = "localhost", port = "8000", adminuser = "ad
   mlExts <- .rfmlEnv$mlExts
   # remove the document with rfml info first while we still have the exstention left...
   mlURL <- paste(mlHost, "/v1/resources/rfml.check", sep="")
-  response <- DELETE(mlURL, authenticate(adminuser, password, type="digest"), accept_json())
 
+  response <- .curl("DELETE",mlURL, username = adminuser, password = password)
   for (i in 1:length(mlLibs)) {
     # install the needed module library
-    if (.remove.lib(mlHost, adminuser, password, mlLibs[i])) {
+    if (.remove.ext(mlHost, adminuser, password, paste0("/v1/ext/rfml/", mlLibs[i], ".sjs"))) {
       message(paste("Library ",  mlLibs[i]," is removed from ", host, ":", port, sep=""))
     }
   }
-
   for (i in 1:length(mlExts)) {
-    # install the needed module library
-    if (.remove.ext(mlHost, adminuser, password, mlExts[i])) {
+    # remove the needed module library
+    if (.remove.ext(mlHost, adminuser, password, paste0("/v1/config/resources/",mlExts[i]))) {
       message(paste("REST extension ",  mlExts[i]," is removed from ", host, ":", port, sep=""))
     }
   }
@@ -233,9 +232,9 @@ ml.add.index <- function(x, scalarType= "string", collation = "http://marklogic.
 
   # first we need to get the existing properties because we need existing range-element-index, otherwise
   # we will replace them
-  response <- GET(mlURL, authenticate(username, pwd, type="digest"), accept_json())
-  rContent <- content(response) #, as = "text"
-  #
+  response <- .curl("GET", mlURL, username = username, password = pwd)
+  rContent <- .content(response) #, as = "text"
+
   localname <- x@.org_name
   indexJson <- ''
   if (length(rContent$`range-element-index`) > 0 ) {
@@ -277,12 +276,13 @@ ml.add.index <- function(x, scalarType= "string", collation = "http://marklogic.
    indexJson <- paste( indexJson, ',"collation": "', collation , '"' ,  sep="")
   indexJson <- paste( indexJson,',"range-value-positions":true}', sep="")
   indexJson <- paste(indexJsonStart, indexJson, indexJsonEnd, sep="")
-  response <- PUT(mlURL, authenticate(username, pwd, type="digest"), body=indexJson, encode = "json", content_type_json(),accept_json())
+  response <- .curlBody('PUT', mlURL,body = indexJson, encode = "json", username = username, password = pwd)
   if(response$status_code != 204) {
-    rContent <- content(response, as = "text")
+    rContent <- .content(response)
     errorMsg <- paste("return message: ",
                       rContent, sep="")
     stop(paste("Ops, something went wrong.", errorMsg, "\n body: ", indexJson))
   }
   message(paste("Range element index created on ", localname,sep=""))
+  # return(rContent)
 }
