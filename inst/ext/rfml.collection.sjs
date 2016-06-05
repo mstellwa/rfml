@@ -16,7 +16,17 @@ function getCollections(context, params) {
   if (collection != '') {
     return rfmlUtilities.getResultMetadata(whereQuery, 30, false, false, {});
   } else {
-    var lsColl = cts.collections(null,null, whereQuery);
+    var lsColl;
+    try {
+      lsColl = cts.collections(null,null, whereQuery);
+
+    } catch(err) {
+      var dbCols = [];
+      for (var uri of cts.uris()) {
+        dbCols.push(xdmp.documentGetCollections(uri));
+      }
+      lsColl = fn.distinctValues(xdmp.arrayValues(dbCols, true));
+    }
     return xdmp.toJsonString(lsColl);
   }
 }

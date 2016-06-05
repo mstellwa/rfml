@@ -294,6 +294,7 @@ rm.ml.data.frame <- function(x, directory = "" ){
   message(retMsg)
   TRUE
 }
+
 ################ [ ############################
 #' Extract subsets of a ml.data.frame
 #'
@@ -309,9 +310,10 @@ rm.ml.data.frame <- function(x, directory = "" ){
 #' function. "==" operator will always work since it does not depend of range indexes.
 #'
 #' @param x a ml.data.frame from which to extract element(s).
-#' @param i,j Indices specifying elements to extract. Indices are 'numeric' or 'character' vectors or empty (missing) or 'NULL'.
-#' @param groupBy group by fields
-#' @param aggFunc aggregation function to apply
+#' @param i hmmmm
+#' @param j Integer vector,
+#' @param ... can be used to specify a groupBy field. Is only used when j is a aggregation.
+#' @param drop not used.
 #' @return A \link{ml.data.frame-class} object is returned
 #' @examples
 #' \dontrun{
@@ -326,112 +328,210 @@ rm.ml.data.frame <- function(x, directory = "" ){
 #'  # same
 #'  mlIris2 <- mlIris[,c("Sepal.Length","Sepal.Width","Petal.Length")]
 #'  # select first three columns for all rows with Spieces = setosa
-#'  mlIris2 <- mlIris[mlIris$Species=="setosa", 1:3]
+#'  mlIris2 <- mlIris[Species=="setosa", 1:3]
 #'  # select all columns for all rows with Spieces = setosa
-#'  mlIris2 <- mlIris[mlIris$Species=="setosa",]
+#'  mlIris2 <- mlIris[Species=="setosa",]
 #'  # select all columns for all rows with "setosa" in any column
 #'  mlIris2 <- mlIris["setosa",]
+#'  # get max value for Sepal.Length
+#'  mlIris2 <- mlIris[,max(Sepal.Length)]
+#'  # get max value for Sepal.Length where Spieces = setosa
+#'  mlIris2 <- mlIris[Species=="setosa",,max(Sepal.Length)]
+#'  # get max, min and mean value for Sepal.Length
+#'  mlIris2 <- mlIris[,c(max(Sepal.Length), min(Sepal.Length), mean(Sepal.Length))]
 #' }
 #' @concept array
 #' @aliases [,ml.data.frame-method
 #' @export
-#setMethod("[", c(x = "ml.data.frame", i="ANY", j="ANY"),
-"[.ml.data.frame"<-function (x, i, j,groupBy=NA, aggFunc=NA)
-          {
-            # Could use the dots to suport groupBy and aggregate function...
-            # Getting the dots:
-            # dots <- as.character(substitute(list(...))[-1])
-            #
-            colArg <- NULL
-            rowArg <- NULL
-            cols <- c()
-            n <- nargs()
-            if (n == 1) {
-              stop("Argument is missing!")
-            }
-            if (n == 2) {
-              # select columns -> mlDf[1]/mlDf[1:4]/mlDf["column"]/mlDf[c("col1","col2)]
-              colArg <- i
-            } else if (n == 3) {
-              # several cases
-              if (missing(i)) {
-                # if i is missing -> mlDf[, 1:2]
-                # select columns based on j
-                colArg <- j
-              } else if (missing(j)) {
-                # if j is missing -> mlDf[1:2,] -> row selection...
-                rowArg <- i
-              } else {
-                # else mlDf[1:2,1:4]
-                # i is row selection ...
-                colArg <- j
-                rowArg <- i
-              }
-            }
-            # rows selection
-            if (!is.null(rowArg)) {
-              newQueryArgs <- x@.queryArgs
-              if (is.numeric(rowArg)) {
-                stop("row numbering is not allowed")
-              } else if (class(rowArg)=="ml.col.def") {
-                if(rowArg@.type!='logical' && validate(toJSON(rowArg@.expr))) {
-                  stop("Column expression must resolve into a boolean value for row selection.")
-                }
-                newQueryArgs <- c(newQueryArgs, 'rs:fieldQuery'=rowArg@.expr)
-                # we should update the row count since we are changing the definition...
-                # need a estimate function....
-                #x@.nrows <- NA
-              } else if (is.character(rowArg)) {
-                qText <- newQueryArgs$`rs:q`
-                if (nchar(qText) > 0) {
-                  qText <- paste0(qText, " AND ")
-                }
-                qText <- paste0(qText, rowArg)
-                newQueryArgs$`rs:q` <- qText
-              } else {
-                stop("row object does not specify a subset")
-              }
-              x@.queryArgs <- newQueryArgs
-            }
-            # column selection.
-            # must verify that we handle added columns as well.
-            if (!is.null(colArg)) {
-              if (is.numeric(colArg)) { # column selection
-                # using  x[1:2]
-                cols <- c(cols,as.integer(colArg))
-              } else if (!is.integer(colArg)) {
-                # using column names
-                if (is.character(colArg)){
-                  for (n in colArg){
-                    # get the index of columnname
-                    cols <- c(cols, which(names(x)==n))
-                    # need to check if the name exists...
-                  }
-                }
-              }
-              if (!is.null(x@.col.name) ) {
-                x@.col.name <- x@.col.name[cols]
-                x@.col.data_type <- x@.col.data_type[cols]
-                x@.col.org_name <- x@.col.org_name[cols]
-                x@.col.org_xpath <- x@.col.org_xpath[cols]
-                x@.col.format <- x@.col.format[cols]
-                x@.col.xmlns <- x@.col.xmlns[cols]
-                # need to check if selected column is part of .col.defs
-                colDefs <- list()
-                if (length(x@.col.defs) > 0) {
-                  for (i in 1:length(x@.col.name)) {
-                    if (!is.null(x@.col.defs[[x@.col.name[i]]])) {
-                      colDefs <- c(colDefs, x@.col.defs[x@.col.name[i]])
-                    }
-                  }
-                }
-                x@.col.defs <- colDefs
-                x@.extracted <- TRUE
-              }
-            }
-            return(x)
+setMethod("[", c(x = "ml.data.frame", i="ANY", j="ANY"), function(x, i, j, ...)
+{
+  #browser()
+  #get the by argument...
+  colArg <- NULL
+  rowArg <- NULL
+  groupBy <- NULL
+  # allowed aggregation functions (currently missing"length)
+  # only those in aggFuncs are allowed.
+  aggFuncs = c("max", "min", "mean", "sum", "median",
+               "sd", "sd.pop", "var", "var.pop")
+  cols <- c()
+  n <- nargs()
+
+  #if (n == 1) {
+  #  stop("Argument is missing!")
+  #}
+  if (missing(i) && missing(j)) {
+    stop("i and/or j argument is needed!")
+  }
+  #
+  # Maybe looking at arguments instead of the numbers?
+  # mlDf[1]/mlDf[1:4]/mlDf["column"]/mlDf[c("col1","col2")] -> only i
+  #  mlDf[, 1:2] -> i missing and j has value
+  # mlDf[1:2,]  -> i value and j missing
+  # mlDf[1:2,1:4] or mlDf[1:2,sum(mlIris$Sepal.Length)] -> both has values
+  # i can bee col or row depending on if it is the only argument or not...
+  if(!missing(i)) {
+    if (n == 2L) {
+      colArg <- substitute(i)
+    } else {
+      rowArg <- substitute(i)
+    }
+  }
+  # j is always a col argument
+  if(!missing(j)) {
+    # colArg <- j
+    # we need to use the substitute function so aggregation functions is not executed...
+    colArg <- substitute(j)
+  }
+  dots <- as.list(substitute(list(...)))[-1L]
+
+  # if not doing any aggregation we should just do a exraction...
+
+  # rows selection
+  if (!is.null(rowArg)) {
+    newQueryArgs <- x@.queryArgs
+    #browser()
+    if (is.numeric(rowArg)) {
+      stop("row numbering is not allowed")
+    }else if (rowArg[[1]] == '=='){
+     # browser()
+      if ('$' %in% as.character(rowArg[[2]])){
+        rowArg <- eval(rowArg, parent.frame())
+      } else {
+        # for some reason
+        if (is.character(rowArg[[3]])) {
+          val <- paste0('"', rowArg[[3]], '"')
+        } else {
+          val <-rowArg[[3]]
+        }
+        evalStr <- paste0('x$', rowArg[[2]],rowArg[[1]], val)
+        rowArg <- eval(parse(text=evalStr), NULL)
+      }
+      if(rowArg@.type!='logical' && validate(toJSON(rowArg@.expr))) {
+        stop("Column expression must resolve into a boolean value for row selection.")
+      }
+      newQueryArgs <- c(newQueryArgs, 'rs:fieldQuery'=rowArg@.expr)
+      # we should update the row count since we are changing the definition...
+      # need a estimate function....
+      #x@.nrows <- NA
+    } else if (is.character(rowArg)) {
+      qText <- newQueryArgs$`rs:q`
+      if (nchar(qText) > 0) {
+        qText <- paste0(qText, " AND ")
+      }
+      qText <- paste0(qText, rowArg)
+      newQueryArgs$`rs:q` <- qText
+    } else {
+      stop("row object does not specify a subset")
+    }
+    x@.queryArgs <- newQueryArgs
+    # need to re execute to get rows...
+
+  }
+  # column selection.
+  # Test if we have a aggregation function as colArg
+  # colAggr -> sum(Sepal.Length) or c(sum(Sepal.Length), min(Sepal.Length))
+  #browser()
+  if (!is.null(colArg) && ((as.character(colArg[[1L]]) %in% aggFuncs) || (as.character(colArg[[2L]][[1L]]) %in% aggFuncs))) {
+    #   colAggr <- TRUE
+    # if we do not have a rowArg we will aggregate all rows
+    # and missing a groupBy
+    if (length(dots) > 0L) {
+      # check for groupBy
+      if ("groupBy" %in% names(dots)) {
+        groupBy <- as.character(dots$groupBy)
+      }
+    }
+    # maybe we should create a table for the return?
+    # now it is just a vector...
+    aggVals <- c()
+    if (colArg[[1L]] == "c" && length(colArg) > 1L) {
+      #browser()
+      colArgL <- as.list.default(colArg) # generate a list of all values in
+      for (n in 2:length(colArgL)) {
+        # This is not optimal since there is one call for each function,
+        # should be done as one call instead
+        # if we have
+        # need to use x$ so c(sum(Sepal.Length), max(Sepal.Length))
+        # becomes c(sum(x$Sepal.Length), max(x$Sepal.Length))
+        #browser()
+        if (is.null(groupBy)) {
+          # not the best way ...
+          evalStr <- paste0(colArgL[[n]][[1]], '(x$', colArgL[[n]][[2]], ')')
+          if (is.null(aggVals)) {
+            aggVals <- c(eval(parse(text=evalStr), NULL))
+          } else {
+            aggVals <- c(aggVals, eval(parse(text=evalStr), NULL))
           }
-#)
+        } else {
+          # how to handle group by...
+
+        }
+      }
+
+    } else {
+      # not the best way ...
+      #browser()
+      evalStr <- paste0(colArg[[1]], '(x$', colArg[[2]], ')')
+      if (is.null(aggVals)) {
+        aggVals <- c(eval(parse(text=evalStr), NULL))
+      }else {
+        aggVals <- c(aggVals, eval(parse(text=evalStr), NULL))
+      }
+    }
+    #browser()
+    return(aggVals)
+  }
+  # must verify that we handle added columns as well.
+  # need to check if we are doing column selection or using an aggregation function ....
+  if (!is.null(colArg)) {
+    # if colArg = 1:2
+    if (is.call(colArg) && length(colArg) == 3L && colArg[[1L]] == ":") {
+      # using  x[1:2]
+      colInt <- eval(colArg, parent.frame(), parent.frame())
+      cols <- c(cols,as.integer(colInt))
+    } else if (colArg[[1L]] == "c" && length(colArg) > 1L) {
+      # This could be either c(columnname1, columnname2, ...)
+      #  or c(sum(column1), avg(column2), ...)
+       # browser()
+        aggVals <- c()
+        colArgL <- as.list.default(colArg) # generate a list of all values in
+        for (n in 2:length(colArgL)) {
+            # get the index of columnname, if it is a valid columnname
+            if (colArgL[n] %in% names(x)) {
+              cols <- c(cols, which(names(x)==colArgL[n]))
+            } else {
+              stop("Not an existing column!")
+            }
+        }
+    } else if (colArg %in% names(x)) {
+      # selection of a column...
+      return()
+
+    }
+    if (!is.null(x@.col.name) ) {
+      x@.col.name <- x@.col.name[cols]
+      x@.col.data_type <- x@.col.data_type[cols]
+      x@.col.org_name <- x@.col.org_name[cols]
+      x@.col.org_xpath <- x@.col.org_xpath[cols]
+      x@.col.format <- x@.col.format[cols]
+      x@.col.xmlns <- x@.col.xmlns[cols]
+      # need to check if selected column is part of .col.defs
+      colDefs <- list()
+      if (length(x@.col.defs) > 0) {
+        for (i in 1:length(x@.col.name)) {
+          if (!is.null(x@.col.defs[[x@.col.name[i]]])) {
+            colDefs <- c(colDefs, x@.col.defs[x@.col.name[i]])
+          }
+        }
+      }
+      x@.col.defs <- colDefs
+      x@.extracted <- TRUE
+    }
+  }
+  return(x)
+})
+
 
 ################ $ ############################
 #' Returns a \link{ml.data.frame} field as a \link{ml.col.def-class}
@@ -467,6 +567,7 @@ setMethod("$", signature(x = "ml.data.frame"),
 
           }
 )
+
 ################ $<- ############################
 #' Adds a new ml.data.frame field as a \link{ml.col.def-class}
 #'

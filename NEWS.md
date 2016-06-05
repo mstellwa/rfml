@@ -1,12 +1,13 @@
 # rfml 0.1.0.9000
-## Major changes
+## Enhancements and changes
 
-(###) Generation of fields name has been changed in order to get them shorter. Instead of using the full name of parents only first and last letter are used.
+(###) Generation of fields name has been changed in order to get them shorter. No only first and last letter for the parent is used.
 (###) Changed the way how data is retrived from MarkLogic, now using a stream in order to speed it up.
 (###) Changed to use curl package instead of httr
 (###) ml.data.frame is now using a parameter object for parameters that affect the output
-(#23) Changed to us fn.head instead of .next().value
+(#23) Changed to use fn.head instead of .next().value in server side code
 (#24) Specify that source data is flat by using a parameter
+(#27) List collection without the collection index enabled
 
 ## Bug fixes
 (#20) rm.ml.data.frame is failing with unknown hostname

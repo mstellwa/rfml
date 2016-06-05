@@ -42,12 +42,12 @@ is.ml.col.def <-
 # internal used function
 as.ml.col.def <- function(x) {
   if(inherits(x,"ml.data.frame")) {
-    return(paste('"rfmlResult[\'',x@.col.name[1],'\']"',sep=''))
+    return(paste0('"rfmlResult[\'',x@.col.name[1],'\']"'))
   } else if(inherits(x,"ml.col.def")) {
     return(x@.expr)
   } else {
     if(is.character(x)) {
-      return(paste("'",x,"'",sep=''))
+      return(paste0("'",x,"'"))
     } else {
       return(as.character(x))
     }

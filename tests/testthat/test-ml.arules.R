@@ -1,11 +1,18 @@
 context("ml.arules")
 
+mlHost <- "localhost"
+mlPort <- "8088"
+mlUser <- "admin"
+mlUserPwd <- "admin"
+mlAdmin <- "admin"
+mlAdminPwd <- "admin"
+mlDb <- "rfml"
+
 test_that("ml.arules works", {
   skip_on_cran()
-  myConn <- ml.connect(port = "8088")
+  myConn <- ml.connect(host = mlHost, port = mlPort, username = mlUser, password = mlUserPwd)
   mlBaskets <- ml.load.sample.data(myConn, "baskets", "baskets-test")
-  db <- "rfml"
-  expect_message(ml.add.index(x = mlBaskets$cr1ls1lm11productName, scalarType = "string", database =  db, conn = myConn), "Range element index created on productName")
+  expect_message(ml.add.index(x = mlBaskets$cr1ls1lm11productName, scalarType = "string", host = mlHost,database =  mlDb, adminuser = mlAdmin, password = mlAdminPwd), "Range element index created on productName")
   # We need to wait so that the index gets updated before using a function that leverage it
   Sys.sleep(10)
   itemsets <- ml.arules(mlBaskets, mlBaskets$cr1ls1lm11productName, support = 0.22, confidence = 0.01, target = "frequent itemsets")

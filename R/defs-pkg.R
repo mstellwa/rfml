@@ -42,6 +42,7 @@ setClass("ml.conn",
 #' @slot .col.format A character vector withthe  source document format XML/JSON
 #' @slot .col.xmlns A character vector with the namespace for the source document
 #' @slot .col.defs  A list of \link{ml.col.def-class} added fields
+#' @export
 setClass("ml.data.frame",
          slots=c(
            .name="character",

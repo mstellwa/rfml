@@ -184,7 +184,7 @@ ml.add.index <- function(x, scalarType= "string", collation = "http://marklogic.
                          namespaceUri = "",database = "Documents", host = "", port = "8002",
                          adminuser = "", password = "", conn = NA) {
 
-  if (class(conn) != "ml.conn" || missing(conn)) {
+  if (missing(conn) || class(conn) != "ml.conn") {
     hasConn <- FALSE
   } else {
     hasConn <- TRUE

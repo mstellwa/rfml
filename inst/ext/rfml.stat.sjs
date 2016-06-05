@@ -5,7 +5,9 @@ function getStat(context, params) {
   var collections = (params.collection) ? JSON.parse(params.collection): null;
   var directory = (params.directory) ? JSON.parse(params.directory): null;
   var pageLength = params.pageLength;
-  var statFunc =  JSON.parse(params.statfunc);
+  var statFunc = params.statfunc; //JSON.parse(params.statfunc);
+  var groupByFields = (params.groupBy) ? JSON.parse(params.groupBy): null;
+
   /* pageStart only works with math functions because we first selects the result
      and then apply the function after. With cts functions range indexes are used and
      there is not possible to limit the resul other than with a query(?) */
@@ -29,23 +31,78 @@ function getStat(context, params) {
      }
 
   }
+  var idxFunc;
+  var func;
+  switch(statFunc) {
+    case "cor":
+      idxFunc = cts.correlation;
+      func = math.correlation;
+      break;
+    case "cov":
+      idxFunc = cts.covariance;
+      func = math.covariance;
+      break;
+    case "cov.pop":
+      idxFunc = cts.covarianceP;
+      func = math.covarianceP;
+      break;
+    case "var":
+      idxFunc = cts.variance;
+      func = math.variance;
+      break;
+    case "var.pop":
+      idxFunc = cts.varianceP;
+      func = math.varianceP;
+      break;
+    case "sd":
+      idxFunc = cts.stddev;
+      func = math.stddev;
+      break;
+    case "sd.pop":
+      idxFunc = cts.stddevP;
+      func = math.stddevP;
+      break;
+    case "median":
+      idxFunc = cts.median;
+      func = math.median;
+      break;
+    case "mean":
+      idxFunc = cts.avgAggregate;
+      func = fn.avg;
+      break;
+    case "sum":
+      idxFunc = cts.sumAggregate;
+      func = fn.sum;
+      break;
+    case "max":
+      idxFunc = cts.max;
+      func = fn.max;
+      break;
+    case "min":
+      idxFunc = cts.min;
+      func = fn.min;
+      break;
+    default:
+      /* Unsuported function */
+      return null;
+      break;
+  }
+
   /* Check if we have indexes and then could use cts* functions */
  try {
-    /* Need to change from eval */
-    var strParams = '';
+    var elementRefs = [];
     for (var i = 0; i < orgFields.length; i++) {
-      if (strParams.length > 1) {
-        strParams = strParams + ',';
-      };
-      var addParam = (orgFields[i].format == 'XML') ? 'cts.elementReference(fn.QName("'(orgFields[i].xmlns != "NA") ? forgFields[i].xmlns : "" + '","'   + orgFields[i].name +'"))' : 'cts.jsonPropertyReference("' + orgFields[i].name + '")';
-      strParams = strParams + addParam;
-
+      if (orgFields[i].format == 'XML') {
+        elementRefs.push(cts.elementReference(fn.QName( (orgFields[i].xmlns != "NA") ? forgFields[i].xmlns : "", orgFields[i].name)));
+      } else {
+        elementRefs.push(cts.jsonPropertyReference(xs.QName(orgFields[i].name)));
+      }
     }
-    strParams = strParams + ',null,whereQuery';
-    return eval(statFunc.index + '('+ strParams +')');
+     return idxFunc(elementRefs, null, whereQuery);
+
   } catch(err) {
     var funcArray = rfmlUtilities.fields2array(whereQuery,pageStart, getRows, fields)
-    return eval(statFunc.noindex + '(funcArray)');
+    return func(funcArray);
   }
 
 }

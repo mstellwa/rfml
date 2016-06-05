@@ -45,7 +45,7 @@ setMethod(f="cor", signature=c(x="ml.col.def",y="ml.col.def"),
             fields <- "{"
             fields <- paste(fields, '"',x@.name , '":{"fieldDef":"',x@.expr ,'","orgField":"', x@.org_name, '","orgFormat":"', x@.format, '","xmlns":"', x@.xmlns , '"},"', y@.name, '":{"fieldDef":"',y@.expr, '","orgField":"', y@.org_name, '","orgFormat":"', y@.format, '","xmlns":"', y@.xmlns ,'"}' ,sep='')
             fields <- paste(fields, '}', sep='')
-            func <- '{"index":"cts.correlation", "noindex": "math.correlation"}'
+            func <- 'cor'
             return(.ml.stat.func(x@.parent, fields, func))
         }
 )
@@ -148,7 +148,7 @@ setMethod(f="cov", signature=c(x="ml.col.def",y="ml.col.def"),
             fields <- "{"
             fields <- paste(fields, '"',x@.name , '":{"fieldDef":"',x@.expr ,'","orgField":"', x@.org_name, '","orgFormat":"', x@.format, '","xmlns":"', x@.xmlns , '"},"', y@.name, '":{"fieldDef":"',y@.expr, '","orgField":"', y@.org_name, '","orgFormat":"', y@.format, '","xmlns":"', y@.xmlns ,'"}' ,sep='')
             fields <- paste(fields, '}', sep='')
-            func <- '{"index":"cts.covariance", "noindex": "math.covariance"}'
+            func <- 'cov'
             return(.ml.stat.func(x@.parent, fields, func))
           }
 )
@@ -186,7 +186,7 @@ cov.pop <- function(x,y) {
   fields <- "{"
   fields <- paste(fields, '"',x@.name , '":{"fieldDef":"',x@.expr ,'","orgField":"', x@.org_name, '","orgFormat":"', x@.format, '","xmlns":"', x@.xmlns, '"},"', y@.name, '":{"fieldDef":"',y@.expr, '","orgField":"', y@.org_name, '","orgFormat":"', y@.format, '","xmlns":"', y@.xmlns ,'"}' ,sep='')
   fields <- paste(fields, '}', sep='')
-  func <- '{"index":"cts.covarianceP", "noindex": "math.covarianceP"}'
+  func <- 'cov.pop'
 
   return(.ml.stat.func(x@.parent, fields, func))
 }
@@ -226,7 +226,7 @@ setMethod(f="var", signature=c(x="ml.col.def"),
             fields <- "{"
             fields <- paste(fields, '"',x@.name , '":{"fieldDef":"',x@.expr ,'","orgField":"', x@.org_name, '","orgFormat":"', x@.format, '","xmlns":"', x@.xmlns ,'"}' ,sep='')
             fields <- paste(fields, '}', sep='')
-            func <- '{"index":"cts.variance", "noindex": "math.variance"}'
+            func <- 'var'
 
             return(.ml.stat.func(x@.parent, fields, func))
           }
@@ -265,7 +265,7 @@ var.pop <- function(x,na.rm = FALSE ) {
   fields <- "{"
   fields <- paste(fields, '"',x@.name , '":{"fieldDef":"',x@.expr ,'","orgField":"', x@.org_name, '","orgFormat":"', x@.format, '","xmlns":"', x@.xmlns ,'"}' ,sep='')
   fields <- paste(fields, '}', sep='')
-  func <- '{"index":"cts.varianceP", "noindex": "math.varianceP"}'
+  func <- 'var.pop'
   return(.ml.stat.func(x@.parent, fields, func))
 }
 ################ Standard Deviation ############################
@@ -306,7 +306,7 @@ setMethod(f="sd", signature=c(x="ml.col.def"),
             fields <- "{"
             fields <- paste(fields, '"',x@.name , '":{"fieldDef":"',x@.expr ,'","orgField":"', x@.org_name, '","orgFormat":"', x@.format, '","xmlns":"', x@.xmlns ,'"}' ,sep='')
             fields <- paste(fields, '}', sep='')
-            func <- '{"index":"cts.stddev", "noindex": "math.stddev"}'
+            func <- 'sd'
 
             return(.ml.stat.func(x@.parent, fields, func))
 
@@ -342,7 +342,7 @@ sd.pop <- function(x) {
   fields <- "{"
   fields <- paste(fields, '"',x@.name , '":{"fieldDef":"',x@.expr ,'","orgField":"', x@.org_name, '","orgFormat":"', x@.format, '","xmlns":"', x@.xmlns ,'"}' ,sep='')
   fields <- paste(fields, '}', sep='')
-  func <- '{"index":"cts.stddevP", "noindex": "math.stddevP"}'
+  func <- 'sd.pop'
   return(.ml.stat.func(x@.parent, fields, func))
 
 }
@@ -378,7 +378,7 @@ setMethod(f="median", signature=c(x="ml.col.def"),
             fields <- "{"
             fields <- paste(fields, '"',x@.name , '":{"fieldDef":"',x@.expr ,'","orgField":"', x@.org_name, '","orgFormat":"', x@.format, '","xmlns":"', x@.xmlns ,'"}' ,sep='')
             fields <- paste(fields, '}', sep='')
-            func <- '{"index":"cts.median", "noindex": "math.median"}'
+            func <- 'median'
             return(.ml.stat.func(x@.parent, fields, func))
           }
 )
@@ -414,7 +414,7 @@ setMethod(f="mean", signature=c(x="ml.col.def"),
             fields <- "{"
             fields <- paste(fields, '"',x@.name , '":{"fieldDef":"',x@.expr ,'","orgField":"', x@.org_name, '","orgFormat":"', x@.format, '","xmlns":"', x@.xmlns ,'"}' ,sep='')
             fields <- paste(fields, '}', sep='')
-            func <- '{"index":"cts.avgAggregate", "noindex": "fn.avg"}'
+            func <- 'mean'
             return(.ml.stat.func(x@.parent, fields, func))
           }
 )
@@ -450,7 +450,7 @@ setMethod(f="sum", signature=c(x="ml.col.def"),
             fields <- "{"
             fields <- paste(fields, '"',x@.name , '":{"fieldDef":"',x@.expr ,'","orgField":"', x@.org_name, '","orgFormat":"', x@.format, '","xmlns":"', x@.xmlns ,'"}' ,sep='')
             fields <- paste(fields, '}', sep='')
-            func <- '{"index":"cts.sumAggregate", "noindex": "fn.sum"}'
+            func <- 'sum'
 
             return(.ml.stat.func(x@.parent, fields, func))
           }
@@ -487,7 +487,7 @@ setMethod(f="max", signature=c(x="ml.col.def"),
             fields <- "{"
             fields <- paste(fields, '"',x@.name , '":{"fieldDef":"',x@.expr ,'","orgField":"', x@.org_name, '","orgFormat":"', x@.format, '","xmlns":"', x@.xmlns ,'"}' ,sep='')
             fields <- paste(fields, '}', sep='')
-            func <- '{"index":"cts.max", "noindex": "fn.max"}'
+            func <- 'max'
             return(.ml.stat.func(x@.parent, fields, func))
           }
 )
@@ -523,7 +523,7 @@ setMethod(f="min", signature=c(x="ml.col.def"),
             fields <- "{"
             fields <- paste(fields, '"',x@.name , '":{"fieldDef":"',x@.expr ,'","orgField":"', x@.org_name, '","orgFormat":"', x@.format, '","xmlns":"', x@.xmlns ,'"}' ,sep='')
             fields <- paste(fields, '}', sep='')
-            func <- '{"index":"cts.min", "noindex": "fn.min"}'
+            func <- 'min'
             return(.ml.stat.func(x@.parent, fields, func))
           }
 )
@@ -539,7 +539,7 @@ percentile <- function(x, p) {
   fields <- "{"
   fields <- paste(fields, '"',x@.name , '":{"fieldDef":"',x@.expr ,'","orgField":"', x@.org_name, '","orgFormat":"', x@.format, '","xmlns":"', x@.xmlns ,'"}' ,sep='')
   fields <- paste(fields, '}', sep='')
-  func <- '{"index":"cts.percentile", "noindex": "math.percentile"}'
+  func <- 'percentile'
   return(.ml.stat.func(x@.parent, fields, func))
 }
 

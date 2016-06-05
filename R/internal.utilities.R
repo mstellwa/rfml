@@ -174,10 +174,13 @@
   headers <- c("Accept" = "application/json")
   curl::handle_setheaders(h, .list = headers)
   on.exit(expr = curl::handle_reset(h), add = TRUE)
+  # There is a risk with this since MarkLogic does not support chuncked data through REST
+  # a possibility could be to try to write something that is between and send each complete
+  # line to the stream_in function...
   return(suppressMessages(stream_in(curl::curl(url = mlUrl, handle = h))))
 
 }
-# Internal used function that creats new documentsin MarkLogic based on a
+# Internal used function that creats new documents in MarkLogic based on a
 # ml.data.frame object.
 # Each line is added as a document, put in a collection named after
 # myCollection value
@@ -223,7 +226,7 @@
     queryArgs <- c(queryArgs,'rs:extfields'=extFields)
   }
 
-  # create
+  # created fields
   if (length(mlDf@.col.defs) > 0) {
     fields <- "{"
     for (i in 1:length(mlDf@.col.defs)) {
@@ -253,7 +256,7 @@
 
 }
 # Internal used function that inserts data.frame data into MarkLogic.
-# Each line is added as a document, put in a collection named after
+# Each row is added as a document, put in a collection named after
 # myCollection value
 .insert.ml.data <- function(conn, myData, myCollection, format, directory) {
 
@@ -363,7 +366,8 @@
                       resp$status_code, "\nmessage: ", rContent)
     stop(paste("Ops, something went wrong.", errorMsg))
   }
-  return(rContent)
+  #browser()
+  return(ifelse(is.numeric(rContent), as.numeric(rContent), NA))
 }
 
 # Get data for the summary function
