@@ -95,18 +95,25 @@ ml.data.frame <- function (conn, query="", fieldFilter="", ns = "NA", collection
       opMatch <- regexpr("==|>|<|!=", fieldExprs[i],perl = TRUE)
       opIndex <- opMatch[[1]]
       opLength <- attr(opMatch, "match.length")
-      op <- trimws(substr(fieldExprs[i], opIndex, opIndex+opLength))
+      op <- trimws(substr(fieldExprs[i], opIndex, opIndex+opLength-1L))
       if (i > 1) {
         fieldQuery <- paste0(fieldQuery, ',')
       }
+      fieldValue <- trimws(fieldExpr[2])
+      # There might be a better way to check if the value is a number or not ...
+      if (suppressWarnings(is.na(as.numeric(fieldValue)))) {
+        fieldValue <- paste0('"',fieldValue, '"')
+      }
       fieldQuery <- paste0(fieldQuery, '"', trimws(fieldExpr[1]),
-                          '":{"value":"',trimws(fieldExpr[2]),
-                          '","operator":"', op ,'","orgPath":"","orgFormat":"","xmlns":"',
+                          '":{"value":',fieldValue,
+                          ',"operator":"', op ,'","orgPath":"","orgFormat":"","xmlns":"',
                           ns, '"}')
     }
+
     fieldQuery <- paste0(fieldQuery, '}')
     queryComArgs <- c(queryComArgs,  'rs:fieldQuery'=fieldQuery)
   }
+
   # Collection and/or directory filtering
   if (length(collection) > 0) {
     strColl <- '['

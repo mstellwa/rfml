@@ -6,6 +6,7 @@ function getStat(context, params) {
   var directory = (params.directory) ? JSON.parse(params.directory): null;
   var pageLength = params.pageLength;
   var statFunc = params.statfunc; //JSON.parse(params.statfunc);
+  var aggFields = (params.fields) ? JSON.parse(params.fields): null;
   var groupByFields = (params.groupBy) ? JSON.parse(params.groupBy): null;
 
   /* pageStart only works with math functions because we first selects the result
@@ -21,65 +22,59 @@ function getStat(context, params) {
   var whereQuery = rfmlUtilities.getCtsQuery(qText, collections, directory, fieldQuery);
 
   context.outputTypes = ['application/json'];
-  var fields = {};
-  if (params.fields) {
-     fields = JSON.parse(params.fields);
-     /* Get the orginal name of the flatten fields */
-    var orgFields = [];
-    for (var field in fields) {
-      orgFields.push({"name": fields[field].orgField, "format": fields[field].orgFormat});
-     }
-
-  }
-  var idxFunc;
+  var mulitElement = false;
+  var inxFunc;
   var func;
   switch(statFunc) {
     case "cor":
-      idxFunc = cts.correlation;
+      inxFunc = cts.correlation;
       func = math.correlation;
+      mulitElement = true;
       break;
     case "cov":
-      idxFunc = cts.covariance;
+      inxFunc = cts.covariance;
       func = math.covariance;
+      mulitElement = true;
       break;
     case "cov.pop":
-      idxFunc = cts.covarianceP;
+      inxFunc = cts.covarianceP;
       func = math.covarianceP;
+      mulitElement = true;
       break;
     case "var":
-      idxFunc = cts.variance;
+      inxFunc = cts.variance;
       func = math.variance;
       break;
     case "var.pop":
-      idxFunc = cts.varianceP;
+      inxFunc = cts.varianceP;
       func = math.varianceP;
       break;
     case "sd":
-      idxFunc = cts.stddev;
+      inxFunc = cts.stddev;
       func = math.stddev;
       break;
     case "sd.pop":
-      idxFunc = cts.stddevP;
+      inxFunc = cts.stddevP;
       func = math.stddevP;
       break;
     case "median":
-      idxFunc = cts.median;
+      inxFunc = cts.median;
       func = math.median;
       break;
     case "mean":
-      idxFunc = cts.avgAggregate;
+      inxFunc = cts.avgAggregate;
       func = fn.avg;
       break;
     case "sum":
-      idxFunc = cts.sumAggregate;
+      inxFunc = cts.sumAggregate;
       func = fn.sum;
       break;
     case "max":
-      idxFunc = cts.max;
+      inxFunc = cts.max;
       func = fn.max;
       break;
     case "min":
-      idxFunc = cts.min;
+      inxFunc = cts.min;
       func = fn.min;
       break;
     default:
@@ -88,22 +83,47 @@ function getStat(context, params) {
       break;
   }
 
+  if (groupByFields) {
+    var elementRefs = [];
+    for (var field in grpByFields) {
+        elementRefs.push(cts.elementReference(xs.QName(grpByFields[field].orgField)));
+    }
+  } else {
+
+  }
   /* Check if we have indexes and then could use cts* functions */
  try {
-    var elementRefs = [];
-    for (var i = 0; i < orgFields.length; i++) {
-      if (orgFields[i].format == 'XML') {
-        elementRefs.push(cts.elementReference(fn.QName( (orgFields[i].xmlns != "NA") ? forgFields[i].xmlns : "", orgFields[i].name)));
-      } else {
-        elementRefs.push(cts.jsonPropertyReference(xs.QName(orgFields[i].name)));
+    var elementRefs;
+   /*
+      Need to chwck that we only
+      Object.keys(funcFields).length
+   */
+    if ((Object.keys(aggFields).length > 1 ) && (mulitElement)) {
+      elementRefs = [];
+      for (var aggField in aggFields) {
+        var elementRef;
+        if (aggFields[aggField].orgFormat == 'XML') {
+          elementRef = cts.elementReference(fn.QName((aggFields[aggField].xmlns != "NA") ? aggFields[aggField].xmlns : "", aggFields[aggField].orgField));
+        } else {
+          elementRef = cts.jsonPropertyReference(aggFields[aggField].orgField);
+        }
+        elementRefs.push(elementRef)
       }
+    } else if (!mulitElement) {
+        var fieldName = Object.keys(aggFields)[0];
+        if (aggFields[fieldName].orgFormat == 'XML') {
+          elementRefs = cts.elementReference(fn.QName((aggFields[fieldName].xmlns != "NA") ? aggFields[fieldName].xmlns : "", aggFields[fieldName].orgField));
+        } else {
+          elementRefs = cts.jsonPropertyReference(aggFields[fieldName].orgField);
+        }
+    } else  {
+      return null;
     }
-     return idxFunc(elementRefs, null, whereQuery);
-
+     return inxFunc(elementRefs, null, whereQuery);
   } catch(err) {
-    var funcArray = rfmlUtilities.fields2array(whereQuery,pageStart, getRows, fields)
+    var funcArray = rfmlUtilities.fields2array(whereQuery,pageStart, getRows, aggFields)
     return func(funcArray);
-  }
+ }
 
 }
 

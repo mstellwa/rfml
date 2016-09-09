@@ -18,7 +18,7 @@ An S4 class to represent a ml.data.frame.
 
 \item{\code{.start}}{A integer with the index of the first result to get}
 
-\item{\code{.nrows}}{A integer with the number of rows in the result}
+\item{\code{.nrows}}{A integer with the number of rows in the result and that will be returned}
 
 \item{\code{.extracted}}{A logical value indicating if we have selected a subset of fields}
 

@@ -33,7 +33,7 @@ setClass("ml.conn",
 #' @slot .conn The \link{ml.conn-class} object that was created with ml.connect
 #' @slot .queryArgs A list with parameters used to query MarkLogic Server
 #' @slot .start A integer with the index of the first result to get
-#' @slot .nrows A integer with the number of rows in the result
+#' @slot .nrows A integer with the number of rows in the result and that will be returned
 #' @slot .extracted A logical value indicating if we have selected a subset of fields
 #' @slot .col.name A character vector with the field names
 #' @slot .col.data_type A character vector with the data types of the fields

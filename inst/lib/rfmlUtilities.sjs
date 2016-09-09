@@ -83,7 +83,6 @@ function flatten(data, result, retFieldDef, docFormat, docXmlns) {
  * @property {boolean} sourceFlat - if the source data is already flat
  */
  function getFlatResult(docRaw, docFormat, searchRelatedVals, addFields, extrFields, sourceFlat) {
-   /* DEBUG */
    var xml2json = require('/ext/rfml/xml2json.sjs');
    var resultContent;
    var mlVersion = xdmp.version();
@@ -146,7 +145,7 @@ function flatten(data, result, retFieldDef, docFormat, docXmlns) {
  }
 
 /**
-* Returns a flatten result set using cts.search
+* Returns a flatten result set using cts.search in a ndjson format
 *
 * @property {cts.query} whereQuery - a cts.query used for the search
 * @property {integer} pageStart - One-based index of the first document to return.
@@ -159,7 +158,7 @@ function flatten(data, result, retFieldDef, docFormat, docXmlns) {
 */
 function getResultNdJson(whereQuery, pageStart, getRows, relevanceScores, docUri, addFields, extrFields, sourceFlat) {
   /* DEBUG */
-  console.log("getResultNdJson start: %d", Date.now());
+  /* console.log("getResultNdJson start: %d", Date.now()); */
 
   var path = typeof path !== 'undefined' ?  path : "";
   var flatResult = [];
@@ -175,13 +174,11 @@ function getResultNdJson(whereQuery, pageStart, getRows, relevanceScores, docUri
       searchRelatedVals.confidence = results.confidence;
       searchRelatedVals.fitness = results.fitness;
     }
-    //var flatDoc = getFlatResult(result, result.documentFormat, searchRelatedVals, addFields, extrFields, sourceFlat);
-    //flatResult.push(flatDoc);
-    //flatResult.push(getFlatResult(result, result.documentFormat, searchRelatedVals, addFields, extrFields, sourceFlat));
     ndJsonString += JSON.stringify(getFlatResult(result, result.documentFormat, searchRelatedVals, addFields, extrFields, sourceFlat)) + '\n';
   }
-  console.log("getResultNdJson end: %d", Date.now());
-  return ndJsonString; //{"results":flatResult};
+  /* DEBUG */
+  /* console.log("getResultNdJson end: %d", Date.now()); */
+  return ndJsonString;
 }
 
 /**
@@ -198,7 +195,7 @@ function getResultNdJson(whereQuery, pageStart, getRows, relevanceScores, docUri
 */
 function getResultData(whereQuery, pageStart, getRows, relevanceScores, docUri, addFields, extrFields, sourceFlat) {
   /* DEBUG */
-  console.log("getResultData start: %d", Date.now());
+  /* console.log("getResultData start: %d", Date.now()); */
 
   var path = typeof path !== 'undefined' ?  path : "";
   var flatResult = [];
@@ -213,11 +210,10 @@ function getResultData(whereQuery, pageStart, getRows, relevanceScores, docUri, 
       searchRelatedVals.fitness = cts.fitness(result); // results.fitness;
 
     }
-    //var flatDoc = getFlatResult(result, result.documentFormat, searchRelatedVals, addFields, extrFields, sourceFlat);
-    //flatResult.push(flatDoc);
     flatResult.push(getFlatResult(result, result.documentFormat, searchRelatedVals, addFields, extrFields, sourceFlat));
   }
-  console.log("getResultData end: %d", Date.now());
+  /* DEBUG */
+  /* console.log("getResultData end: %d", Date.now()); */
   return {"results":flatResult};
 }
 
@@ -227,22 +223,14 @@ function getResultData(whereQuery, pageStart, getRows, relevanceScores, docUri, 
  * @property {cts.query} whereQuery - a cts.query used for the search
  * @property {integer} pageStart - One-based index of the first document to return.
  * @property {integer} getRows - The one-based index of the document after the last document to return
- * @property {object} fields - The fields which values is added to the returned array.
+ * @property {object} fields - The fields whos values is added to the returned array.
  *************************************************************************************************/
  function fields2array(whereQuery, pageStart, getRows, fields) {
-   //var mlVersion = xdmp.version();
-   var res = {};
-     /* Check version and do diffrently */
-   //if (mlVersion >= "8.0-4") {
-     /* jsearch DocumentsSearch.slice starts on 0 so we need to decrease with 1 (subsequence used in with cts starts at 1) */
-     //pageStart = pageStart -1;
-     //res = getDataJS(whereQuery, pageStart,getRows, true, true, fields, fields)
-   //} else {
-     res = getResultData(whereQuery, pageStart, getRows, true, true, fields, fields, false)
-  // };
-  var resArray = res.results;
-  var flatResult = [];
-  for (var i=0; i<resArray.length;i++) {
+
+   var res = getResultData(whereQuery, pageStart, getRows, true, true, fields, fields, false)
+   var resArray = res.results;
+   var flatResult = [];
+   for (var i=0; i<resArray.length;i++) {
       var useFields = [];
       for (var field in resArray[i]) {
         useFields.push(resArray[i][field])
@@ -250,10 +238,10 @@ function getResultData(whereQuery, pageStart, getRows, relevanceScores, docUri, 
       flatResult.push(useFields);
     }
     return flatResult;
-}
+  }
 
 /**
- * Creates a result set that can be used to create a summary table (descreptive statsitcs).
+ * Creates a result set that can be used to create a summary table (descreptive statistics).
  *
  * @property {cts.query} whereQuery - a cts.query used for the search
  * @property {integer} pageStart - One-based index of the first document to return.
@@ -266,13 +254,7 @@ function getResultData(whereQuery, pageStart, getRows, relevanceScores, docUri, 
 function getMatrixResult(whereQuery, pageStart,getRows, relevanceScores, docUri, addFields, extFields) {
   var mlVersion = xdmp.version();
   var res = {};
-//  if (mlVersion >= "8.0-4") {
-    /* jsearch DocumentsSearch.slice starts on 0 so we need to decrease with 1 (subsequence used in with cts starts at 1) */
-//    pageStart = pageStart -1;
-//    res = getDataJS(whereQuery, pageStart, getRows, relevanceScores, docUri, addFields,extFields);
-//  } else {
-    res = getResultData(whereQuery, pageStart, getRows, relevanceScores, docUri, addFields, extFields);
-//  };
+  res = getResultData(whereQuery, pageStart, getRows, relevanceScores, docUri, addFields, extFields);
   var resArray = res.results;
   var flatResult = {};
   /* Add the values for each filed in a array for that field name */
@@ -372,82 +354,85 @@ function getMatrixResult(whereQuery, pageStart,getRows, relevanceScores, docUri,
  * @property {Object} dirs - directories to search on
  * @property {Object} fields - elementValueQuery/elementRangeQuery definitions
  */
-function getCtsQuery(qText, colls, dirs, fields) {
-  console.log("getCtsQuery start: %d", Date.now());
-    var ctsQuery,collectionQuery, directoryQuery;
-    var mlVersion = xdmp.version();
+ function getCtsQuery(qText, colls, dirs, fields) {
+   console.log("getCtsQuery start: %d", Date.now());
+     var ctsQuery,collectionQuery, directoryQuery;
+     var mlVersion = xdmp.version();
 
-    // count arguments to decide if and query...
-    var queries = 0;
+     // count arguments to decide if and query...
+     var queries = 0;
 
-    if ((colls) && (colls.length > 0)) {
-      queries = queries +1;
-      if (Array.isArray(colls)) {
-        var collParams = [];
-        for (var i = 0; i < colls.length; i++) {
-          collParams.push(colls[i]);
-        }
-        collectionQuery = cts.collectionQuery(collParams);
-      } else {
-        collectionQuery = cts.collectionQuery(colls);
-      }
-    }
-
-    if ((dirs) && (dirs.length > 0)) {
-      queries = queries +1;
-       if (Array.isArray(dirs)) {
-        var dirParams = [];
-        for (var i = 0; i < dirs.length; i++) {
-          dirParams.push(dirs[i]);
-        }
-        directoryQuery = cts.directoryQuery(dirParams);
-      } else {
-        directoryQuery = cts.directoryQuery(dirs);
-      }
-    }
-    /*
-      In order to be able to handle both XML and JSON without knowing beforehand,
-      cts.orQuery needs to be used:
-      cts.orQuery([cts.elementValueQuery(xs.QName("addressLine1"), "4092 Furth Circle"),cts.jsonPropertyValueQuery("addressLine1", "4092 Furth Circle")])
-      If there is filtering on multiple fields (field1, field2)
-        cts.orQuery([field1 XML, field1 JSON]),cts.orQuery([field2 XML, field2 JSON])
-    */
-    if ((fields)) {
+     if ((colls) && (colls.length > 0)) {
        queries = queries +1;
-        var ctsFieldQuery = [];
-        for (var field in fields) {
-          switch(fields[field].operator) {
-            case "==":
-              ctsFieldQuery.push(cts.orQuery([cts.elementValueQuery(fn.QName((fields[field].xmlns != "NA") ? fields[field].xmlns : "",field), fields[field].value),cts.jsonPropertyValueQuery(field, fields[field].value)]));
-              break;
-            default:
-              ctsFieldQuery.push(cts.orQuery([cts.elementRangeQuery(fn.QName((fields[field].xmlns != "NA") ? fields[field].xmlns : "",field),fields[field].operator, fields[field].value),
-                                             cts.jsonPropertyRangeQuery(field,fields[field].operator, fields[field].value)]));
-          }
-        }
-    }
-    if (qText != "") {
+       if (Array.isArray(colls)) {
+         var collParams = [];
+         for (var i = 0; i < colls.length; i++) {
+           collParams.push(colls[i]);
+         }
+         collectionQuery = cts.collectionQuery(collParams);
+       } else {
+         collectionQuery = cts.collectionQuery(colls);
+       }
+     }
+
+     if ((dirs) && (dirs.length > 0)) {
        queries = queries +1;
-      if (mlVersion >= "8.0-4") {
-        ctsQuery = cts.parse(qText);
-      } else {
-        var parseQuery = xdmp.xqueryEval(
-                'xquery version "1.0-ml";  ' +
-                'import module namespace search = "http://marklogic.com/appservices/search"  ' +
-                '    at "/MarkLogic/appservices/search/search.xqy";  ' +
-                'declare variable $qtext as xs:string external;  ' +
-                'search:parse($qtext)',
-                 { '{}qtext': qText });
-          ctsQuery = cts.query(parseQuery);
-      }
-    }
-    console.log("getCtsQuery end: %d", Date.now());
-    if (queries > 1) {
-      return cts.andQuery([ctsQuery,ctsFieldQuery,collectionQuery,directoryQuery]);
-    } else {
-      return (ctsQuery) ? ctsQuery : (ctsFieldQuery) ? ctsFieldQuery : (collectionQuery) ? collectionQuery : directoryQuery;
-    }
-  }
+        if (Array.isArray(dirs)) {
+         var dirParams = [];
+         for (var i = 0; i < dirs.length; i++) {
+           dirParams.push(dirs[i]);
+         }
+         directoryQuery = cts.directoryQuery(dirParams);
+       } else {
+         directoryQuery = cts.directoryQuery(dirs);
+       }
+     }
+     /*
+       In order to be able to handle both XML and JSON without knowing beforehand,
+       cts.orQuery needs to be used:
+       cts.orQuery([cts.elementValueQuery(xs.QName("addressLine1"), "4092 Furth Circle"),cts.jsonPropertyValueQuery("addressLine1", "4092 Furth Circle")])
+       If there is filtering on multiple fields (field1, field2)
+         cts.orQuery([field1 XML, field1 JSON]),cts.orQuery([field2 XML, field2 JSON])
+     */
+     if ((fields)) {
+        queries = queries +1;
+         var ctsOrQuery = [];
+         for (var field in fields) {
+           switch(fields[field].operator) {
+             case "==":
+               ctsOrQuery.push(cts.orQuery([cts.elementValueQuery(fn.QName((fields[field].xmlns != "NA") ? fields[field].xmlns : "",field), String(fields[field].value))
+                                               ,cts.jsonPropertyValueQuery(field, fields[field].value)]));
+               break;
+             default:
+               ctsOrQuery.push(cts.orQuery([cts.elementRangeQuery(fn.QName((fields[field].xmlns != "NA") ? fields[field].xmlns : "",field),fields[field].operator, String(fields[field].value)),
+                            cts.jsonPropertyRangeQuery(field,fields[field].operator, fields[field].value)]));
+           }
+         }
+         var ctsFieldQuery = cts.andQuery(ctsOrQuery);
+
+     }
+     if (qText != "") {
+        queries = queries +1;
+       if (mlVersion >= "8.0-4") {
+         ctsQuery = cts.parse(qText);
+       } else {
+         var parseQuery = xdmp.xqueryEval(
+                 'xquery version "1.0-ml";  ' +
+                 'import module namespace search = "http://marklogic.com/appservices/search"  ' +
+                 '    at "/MarkLogic/appservices/search/search.xqy";  ' +
+                 'declare variable $qtext as xs:string external;  ' +
+                 'search:parse($qtext)',
+                  { '{}qtext': qText });
+           ctsQuery = cts.query(parseQuery);
+       }
+     }
+     console.log("getCtsQuery end: %d", Date.now());
+     if (queries > 1) {
+       return cts.andQuery([ctsQuery,ctsFieldQuery,collectionQuery,directoryQuery]);
+     } else {
+       return (ctsQuery) ? ctsQuery : (ctsFieldQuery) ? ctsFieldQuery : (collectionQuery) ? collectionQuery : directoryQuery;
+     }
+   }
 /**
  * Generates and save documents based on a cts query using cts search
  *
