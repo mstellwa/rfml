@@ -32,16 +32,22 @@ function getDframe(context, params) {
 
   var whereQuery = rfmlUtilities.getCtsQuery(qText, collections, directory, fieldQuery);
 
-  if (params.return == 'data') {
-     var addFields = {};
-     if (params.fields) {
-       addFields = JSON.parse(params.fields);
-     }
-    //return rfmlUtilities.getResultData(whereQuery, pageStart, getRows, relevanceScores, docUri, addFields, extFields, sourceFlat);
-    return rfmlUtilities.getResultNdJson(whereQuery, pageStart, getRows, relevanceScores, docUri, addFields, extFields, sourceFlat);
-   } else {
+  switch(params.return) {
+    case 'data':
+       var addFields = {};
+       if (params.fields) {
+         addFields = JSON.parse(params.fields);
+       }
+      //return rfmlUtilities.getResultData(whereQuery, pageStart, getRows, relevanceScores, docUri, addFields, extFields, sourceFlat);
+      return rfmlUtilities.getResultNdJson(whereQuery, pageStart, getRows, relevanceScores, docUri, addFields, extFields, sourceFlat);
+      break;
+    case 'rowCount':
+      return cts.estimate(whereQuery);
+      break;
+    //return whereQuery;
+    default:
      return rfmlUtilities.getResultMetadata(whereQuery, getRows, relevanceScores, docUri, extFields);
-   };
+   }
  }
 
  function saveDframe(context, params, input) {

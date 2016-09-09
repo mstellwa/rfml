@@ -1,100 +1,27 @@
-###############################################################################
-# Internal functions used in the package
-###############################################################################
+.get.ml.rowcount <- function(mlDf) {
+  conn <- mlDf@.conn
+  key <- .rfmlEnv$key[[conn@.id]]
+  password <- tryCatch(rawToChar(PKI::PKI.decrypt(conn@.password, key))
+                       , error = function(err) stop("Need a valid connection. Use ml.connection to create one!"))
+  username <- conn@.username
+  queryArgs <- c(mlDf@.queryArgs, 'rs:return'="rowCount")
 
-# verify that the database has everything neccessary in order to use the package
-# if it exists it returns TRUE if not FALSE and if any other status_code than 404
-# it will add a warning
-.check.database <- function(mlHost, username, password) {
+  mlHost <- paste("http://", conn@.host, ":", conn@.port, sep="")
+  mlSearchURL <- paste0(mlHost, "/v1/resources/rfml.dframe")
 
-  mlURL <- paste0(mlHost, "/v1/resources/rfml.check")
-  response <- .curl("GET",mlURL,username = username, password = password)
+  response <- .curl("GET",mlSearchURL, queryArgs, username, password)
+
+  # get the content
   rContent <- .content(response)
-  if (response$status_code != 200){
-    stop(paste("It seems like rfml is not installed on ",mlHost,
-               "\nUse ml.init.database for setting up the database.", sep=""))
+
+  if(response$status_code != 200) {
+    errorMsg <- paste0("statusCode: ",
+                       rContent$errorResponse$statusCode,
+                       ", status: ", rContent$errorResponse$status,
+                       ", message: ", rContent$errorResponse$message)
+    stop(paste0("Ops, something went wrong.", errorMsg))
   }
-  curRfmlVer <- as.character(packageVersion("rfml"))
-  mlVersion <- rContent$mlVersion
-  if (curRfmlVer != rContent$rfmlVersion) {
-    stop(paste("The installed rfml version on ",mlHost, " is not the same version as installed version.",
-               "\nVersion on MarkLogic Server: ",rContent$rfmlVersion,
-               "\nInstalled version: ",curRfmlVer,
-               "\nUse ml.init.database for updating the database.", sep=""))
-  }
-  return(mlVersion)
-}
-
-# internal function to add rest interface used
-.insert.lib <- function(mlHost, username, password, mlLibName)  {
-
-  mlLibFile <- paste0(mlLibName, ".sjs")
-  file <- system.file("lib",mlLibFile ,package = "rfml")
-  type <- "application/vnd.marklogic-javascript"
-  lib <- curl::form_file(file, type)
-  mlURL <- paste0(mlHost, "/v1/ext/rfml/", mlLibFile)
-  # add or replace modules to the database
-  response <- .curlBody('PUT', mlURL, body = lib, username =  username, password =  password)
-  status_code <- response$status_code
-  if (status_code != 201 && status_code != 204) {
-    rContent <- .content(response)
-    errorMsg <- paste("statusCode: ",
-                      rContent$errorResponse$statusCode,
-                      ", status: ", rContent$errorResponse$status,
-                      ", message: ", rContent$errorResponse$message, sep="")
-    stop(paste("Ops, something went wrong.", errorMsg))
-
-  }
-  # return the name of the search options
-  return(TRUE)
-}
-
-# internal function to add exstention to rest interface used
-.insert.ext <- function(mlHost, username, password, mlExtName)  {
-
-  mlExtFile <- paste(mlExtName, ".sjs", sep='')
-  file <- system.file("ext",mlExtFile ,package = "rfml")
-  type <- "application/vnd.marklogic-javascript"
-  ext <- curl::form_file(file, type)
-
-  mlURL <- paste(mlHost, "/v1/config/resources/", mlExtName, sep="")
-  # add or replace search options to the database
-  response <- .curlBody('PUT', mlURL, body = ext, username = username, password = password)
-  status_code <- response$status_code
-  if (status_code != 201 && status_code != 204) {
-    rContent <- .content(response)
-    errorMsg <- paste("statusCode: ",
-                      rContent$errorResponse$statusCode,
-                      ", status: ", rContent$errorResponse$status,
-                      ", message: ", rContent$errorResponse$message, sep="")
-    stop(paste("Ops, something went wrong.", errorMsg))
-
-  }
-  # return the name of the search options
-  return(TRUE)
-}
-
-# internal function to remove extensions and library used
-.remove.ext <- function(mlHost, username, password, mlExtName)  {
-
-  mlURL <- paste0(mlHost, mlExtName)
-  # add or replace search options to the database
-  #response <- DELETE(mlURL, authenticate(username, password, type="digest"), accept_json())
-  response <- .curl("DELETE",mlURL, username = username, password = password)
-
-  if (response$status_code != 204) {
-
-    rContent <- .content(response)
-    errorMsg <- paste("statusCode: ",
-                      rContent$errorResponse$statusCode,
-                      ", status: ", rContent$errorResponse$status,
-                      ", message: ", rContent$errorResponse$message, sep="")
-    stop(paste("Ops, something went wrong.", errorMsg))
-  }
-  # return the name of the search options
-  return(TRUE)
-}
-.get.ml.metadata <- function(mlDf, nrows=0, searchOption=NULL) {
+  return(rContent)
 
 }
 .get.ml.data <- function(mlDf, nrows=0, searchOption=NULL) {
@@ -133,6 +60,17 @@
     }
     extFields <- paste(extFields, '}', sep='')
     queryArgs <- c(queryArgs,'rs:extfields'=extFields)
+    qryStr <- .fixQuery(queryArgs)
+    mlUrl <- paste0(mlUrl,"?", qryStr)
+    userpwd <- paste0(username, ":",password)
+    httpauth <- 2
+    options <- list(httpauth = httpauth, userpwd=userpwd)
+    h <- curl::new_handle()
+    curl::handle_setopt(h, .list = options)
+    headers <- c("Accept" = "application/json")
+    curl::handle_setheaders(h, .list = headers)
+    on.exit(expr = curl::handle_reset(h), add = TRUE)
+
   }
 
   # create
@@ -147,24 +85,10 @@
     fields <- paste(fields, '}', sep='')
     queryArgs <- c(queryArgs, 'rs:fields'=fields)
   }
-   # do a search
+  # do a search
   # IS IT POSSIBLE TO USE
   # fix queryArgs for curl
   qryStr <- .fixQuery(queryArgs)
-  # response <- GET(mlSearchURL, query = queryArgs, authenticate(username, password, type="digest"), accept_json())
-  # check that we get an 200
-  # rContent <- content(response, as = "text")
-  # if(response$status_code != 200) {
-  #   errorMsg <- paste("statusCode: ",
-  #                     rContent, sep="")
-  #   stop(paste("Ops, something went wrong.", errorMsg))
-  # }
-  #
-  # if (validate(rContent)) {
-  #   return(fromJSON(rContent, simplifyDataFrame = TRUE)$results)
-  # } else {
-  #   stop("The call to MarkLogic did not return valid data. The ml.data.frame data could be missing in the database.")
-  # }
   mlUrl <- paste0(mlUrl,"?", qryStr)
   userpwd <- paste0(username, ":",password)
   httpauth <- 2
@@ -363,7 +287,7 @@
   rContent <- .content(resp)
   if(resp$status_code != 200) {
     errorMsg <- paste0("statusCode: ",
-                      resp$status_code, "\nmessage: ", rContent)
+                       resp$status_code, "\nmessage: ", rContent)
     stop(paste("Ops, something went wrong.", errorMsg))
   }
   #browser()
@@ -404,7 +328,7 @@
   rContent <- .content(resp)
   if(resp$status_code != 200) {
     errorMsg <- paste0("statusCode: ",
-                      resp$status_code, "\nmessage: ",rContent)
+                       resp$status_code, "\nmessage: ",rContent)
     stop(paste0("Ops, something went wrong.", errorMsg))
   }
 
@@ -435,224 +359,3 @@
 
 }
 
-.generate.xml.body <- function(data, name, directory) {
-
-  boundary <- "--BOUNDARY"
-  contentType <- "Content-Type: application/xml"
-  bodyText <- c(boundary,contentType)
-
-  # add metadata
-  bodyText <- c(bodyText, "Content-Disposition: inline; category=metadata")
-  bodyText <- c(bodyText, "")
-  bodyText <- c(bodyText, '<?xml version="1.0" encoding="UTF-8"?>')
-  bodyText <- c(bodyText, '<rapi:metadata xmlns:rapi="http://marklogic.com/rest-api">')
-  bodyText <- c(bodyText, paste('<rapi:collections><rapi:collection>', name, '</rapi:collection></rapi:collections>', sep=""))
-  bodyText <- c(bodyText, '</rapi:metadata>')
-
-  # start loop
-  for (i in 1:nrow(data)) {
-    bodyText <- c(bodyText,boundary,contentType, paste("Content-Disposition: attachment;filename=",directory,row.names(data[i,]), ".xml" ,sep=""), "")
-    myXml <- xmlTree()
-    myXml$addTag(name, close=FALSE)
-    for (j in names(data)) {
-      myXml$addTag(j, data[i, j])
-    }
-    myXml$closeTag()
-    bodyText <- c(bodyText, saveXML(myXml,indent = FALSE,prefix = '<?xml version="1.0"?>'))
-  }
-  bodyText <- c(bodyText, "--BOUNDARY--", "")
-  # add it
-  tf <- tempfile()
-  multipartBody <- file(tf, open = "wb")
-
-  # need to have CRLF no matter of which platform it is running on...
-  writeLines(text = bodyText, con = multipartBody, sep="\r\n")
-  close(multipartBody)
-  return(tf)
-
-}
-
-.generate.json.body <- function(data, name, directory) {
-
-  boundary <- "--BOUNDARY"
-  contentType <- "Content-Type: application/json"
-  bodyText <- c(boundary,contentType)
-
-  # add metadata
-  bodyText <- c(bodyText, "Content-Disposition: inline; category=metadata")
-  bodyText <- c(bodyText, "")
-  bodyText <- c(bodyText, paste('{"collections" : ["', name, '"] }', sep=""))
-
-  if (is.data.frame(data)) {
-    # start loop
-    for (i in 1:nrow(data)) {
-      bodyText <- c(bodyText,boundary,contentType, paste('Content-Disposition: attachment;filename="',directory,row.names(data[i,]), '.json"', sep=""), "")
-      jsonData <- jsonlite::toJSON(data[i,])
-      # need to remove the [ ] in the doc, before sending it
-      jsonData <- gsub("\\]", "", gsub("\\[", "", jsonData))
-
-      bodyText <- c(bodyText,jsonData)
-    }
-  } else if (is.character(data)) {
-    uploadFiles <- list.files(system.file(data, package = "rfml"))
-    for (i in 1:length(uploadFiles)) {
-      bodyText <- c(bodyText,boundary,contentType, paste("Content-Disposition: inline;extension=json;directory=", directory,sep=""), "")
-      fileName <- system.file(data, uploadFiles[i], package="rfml")
-      jsonData <-readChar(fileName, file.info(fileName)$size) #toJSON(data[i,])
-
-      bodyText <- c(bodyText, jsonData)
-    }
-  }
-  bodyText <- c(bodyText, "--BOUNDARY--", "")
-  # add it
-  tf <- tempfile()
-  multipartBody <- file(tf, open = "wb")
-  # need to have CRLF no matter of which platform it is running on...
-  writeLines(text = bodyText, con = multipartBody, sep="\r\n")
-  close(multipartBody)
-  return(tf)
-}
-# generate a UUID that is used to identify a connection object
-.uuid <- function(uppercase=FALSE) {
-
-  hex_digits <- c(as.character(0:9), letters[1:6])
-  hex_digits <- if (uppercase) toupper(hex_digits) else hex_digits
-
-  y_digits <- hex_digits[9:12]
-
-  paste(
-    paste0(sample(hex_digits, 8), collapse=''),
-    paste0(sample(hex_digits, 4), collapse=''),
-    paste0('4', sample(hex_digits, 3), collapse=''),
-    paste0(sample(y_digits,1),
-           sample(hex_digits, 3),
-           collapse=''),
-    paste0(sample(hex_digits, 12), collapse=''),
-    sep='-')
-}
-
-.list2object <-  function(from, to) {
-  if (!length(from)) return(new(to))
-  s <- slotNames(to)
-  p <- pmatch(names(from), s)
-  if(any(is.na(p))) stop(paste("\nInvalid parameter:",
-                               paste(names(from)[is.na(p)], collapse=" ")), call.=FALSE)
-  names(from) <- s[p]
-  do.call("new", c(from, Class = to))
-}
-
-.fixQuery <- function(query) {
-  names <- curl::curl_escape(names(query))
-  encode <- function(x) {
-    if (inherits(x, "AsIs")) return(x)
-    curl::curl_escape(x)
-  }
-  values <- vapply(query, encode, character(1))
-  paste0(names, "=", values, collapse = "&")
-}
-
-.content <- function(r, format = "json") {
-  # need probably to allow some more parameteres like encoding and simplifyVector
-  # return(jsonlite::fromJSON(iconv(readBin(r$content, character()), from = "UTF-8", to = "UTF-8"), simplifyVector = FALSE))
-  if (format == "json") {
-    return(jsonlite::fromJSON(readBin(r$content, character()), simplifyVector = FALSE))
-  } else if (format == "text") {
-    return(readBin(r$content, character()))
-  } else {
-    # wrong format
-
-  }
-}
-
-.curl <- function(reqType = 'GET', mlUrl, queryArgs = NULL, username, password) {
-
-  if (!is.null(queryArgs)) {
-    qryStr <- .fixQuery(queryArgs)
-    mlUrl <- paste0(mlUrl,"?", qryStr)
-  }
-  userpwd <- paste0(username, ":",password)
-  httpauth <- 2
-  options <- list(httpauth = httpauth, userpwd=userpwd, customrequest = reqType)
-
-  h <- curl::new_handle()
-  curl::handle_setopt(h, .list = options)
-
-  headers <- c("Accept" = "application/json")
-  curl::handle_setheaders(h, .list = headers)
-  on.exit(expr = curl::handle_reset(h), add = TRUE)
-
-  return(curl::curl_fetch_memory(url = mlUrl, handle = h))
-}
-
-.curlBody <- function(reqType = 'PUT', mlUrl, queryArgs = NULL, body = NULL, encode = NULL,username, password) {
-
-  if (!is.null(queryArgs)) {
-    qryStr <- .fixQuery(queryArgs)
-    mlUrl <- paste0(mlUrl,"?", qryStr)
-  }
-  userpwd <- paste0(username, ":",password)
-  httpauth <- 2
-  options <- list(httpauth = httpauth, userpwd=userpwd, customrequest = reqType,
-                  post = TRUE)
-  fields <- NULL
-  if (is.character(body) || is.raw(body)) {
-    if (is.character(body)) {
-      body <- charToRaw(paste(body, collapse = "\n"))
-    }
-    bodyOps <- list(postfieldsize = length(body), postfields = body)
-    if (is.null(encode)) {
-      type <- ''
-    } else {
-      if (encode == "json") {
-        type <- "application/json"
-      } else {
-        type <- encode
-      }
-    }
-  } else if (inherits(body, "form_file")) {
-    con <- file(body$path, "rb")
-    size <- file.info(body$path)$size
-
-    bodyOps <- list(
-        readfunction = function(nbytes, ...) {
-          if(is.null(con))
-            return(raw())
-          bin <- readBin(con, "raw", nbytes)
-          if (length(bin) < nbytes){
-            close(con)
-            con <<- NULL
-          }
-          bin
-        },
-        postfieldsize_large = size
-      )
-    type <- body$type
-  } else if (is.null(body)) {
-    body <- raw()
-    type <- ''
-    bodyOps <- list(postfieldsize = length(body), postfields = body)
-  } else if (encode == "json") {
-    null <- vapply(body, is.null, logical(1))
-    body <- body[!null]
-    charToRaw(paste(jsonlite::toJSON(body, auto_unbox = TRUE),collapse = "\n"))
-    type <- "application/json"
-  } else if (encode == "multipart") {
-    #request(fields = lapply(body, as.character))
-    fields <- lapply(body, as.character)
-  }
-  h <- curl::new_handle()
-
-  options <- c(options, bodyOps)
-
-  curl::handle_setopt(h, .list = options)
-
-  if (!is.null(fields)) {
-    curl::handle_setform(h, .list = fields)
-  }
-
-  headers <- c("Accept" = "application/json", "Content-Type" = type)
-  curl::handle_setheaders(h, .list = headers)
-  on.exit(expr = curl::handle_reset(h), add = TRUE)
-
-  return(curl::curl_fetch_memory(url = mlUrl, handle = h))
-}

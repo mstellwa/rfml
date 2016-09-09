@@ -433,6 +433,7 @@ setMethod("[", c(x = "ml.data.frame", i="ANY", j="ANY"), function(x, i, j, ...)
     }
     x@.queryArgs <- newQueryArgs
     # need to re execute to get rows...
+    x@.nrows <- .get.ml.rowcount(x)
 
   }
   # column selection.

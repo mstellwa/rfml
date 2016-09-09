@@ -16,6 +16,8 @@
 (#20) rm.ml.data.frame is failing with unknown hostname
 (#19) Nested JSON with properties with same name will only show first
 (#16) Can only search with one collection
+(#11) Update row count on ml.data.frame subsets
+
 
 # rfml 0.1.0
 First CRAN release
