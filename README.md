@@ -1,3 +1,6 @@
+# Notice!
+Since I am no longer working for and with MarkLogic I have stopped developing this package. If you are intrested in taking over please send me a notice.
+
 # rfml – a R package for MarkLogic Server
 [![Build Status](https://travis-ci.org/mstellwa/rfml.svg?branch=master)](https://travis-ci.org/mstellwa/rfml)
 [![CRAN_Status_Badge](http://www.r-pkg.org/badges/version/rfml)](http://cran.r-project.org/package=rfml)
